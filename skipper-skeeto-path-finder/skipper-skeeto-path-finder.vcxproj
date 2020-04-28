@@ -19,11 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\skipper-skeeto-path-finder\data.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\item.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\room.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\task.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\data.cpp" />
     <ClCompile Include="src\room.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

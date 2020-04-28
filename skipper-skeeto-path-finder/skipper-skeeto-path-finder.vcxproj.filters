@@ -21,11 +21,17 @@
     <ClInclude Include="include\skipper-skeeto-path-finder\task.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\skipper-skeeto-path-finder\data.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="include\skipper-skeeto-path-finder\item.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\data.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\room.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
