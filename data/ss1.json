@@ -1,0 +1,698 @@
+{
+  "items": {
+    "Dog": {
+      "room": "Home",
+      "task_obstacle": null
+    },
+    "Coin": {
+      "room": "Outside home",
+      "task_obstacle": null
+    },
+    "Letter": {
+      "room": "Outside home",
+      "task_obstacle": null
+    },
+    "Handle": {
+      "room": "Bee home",
+      "task_obstacle": null
+    },
+    "Elf hat": {
+      "room": "Ladder",
+      "task_obstacle": null
+    },
+    "Sheet": {
+      "room": "Playground horse",
+      "task_obstacle": null
+    },
+    "Dummy": {
+      "room": "Playground sandbox",
+      "task_obstacle": null
+    },
+    "Blue stick": {
+      "room": "Fox bush",
+      "task_obstacle": null
+    },
+    "Mirror": {
+      "room": "Outside shed",
+      "task_obstacle": null
+    },
+    "Flashlight": {
+      "room": "Shed",
+      "task_obstacle": null
+    },
+    "Book": {
+      "room": "Cat corner",
+      "task_obstacle": null
+    },
+    "Red stick": {
+      "room": "Rocket",
+      "task_obstacle": null
+    },
+    "Can": {
+      "room": "Path bee",
+      "task_obstacle": null
+    },
+    "Yellow key": {
+      "room": "Birds house",
+      "task_obstacle": null
+    },
+    "Pants": {
+      "room": "Snail corner",
+      "task_obstacle": null
+    },
+    "Broom": {
+      "room": "Path bat",
+      "task_obstacle": null
+    },
+    "Ludo cube": {
+      "room": "Bat entry",
+      "task_obstacle": null
+    },
+    "Purple stick": {
+      "room": "Path elf house",
+      "task_obstacle": null
+    },
+    "Trumpet": {
+      "room": "Elf house",
+      "task_obstacle": null
+    },
+    "Radio": {
+      "room": "Owl house",
+      "task_obstacle": null
+    },
+    "Bucket": {
+      "room": "Path rose bush",
+      "task_obstacle": null
+    },
+    "Diaper": {
+      "room": "Path puddle",
+      "task_obstacle": null
+    },
+    "Glasses": {
+      "room": "Rabbit house",
+      "task_obstacle": null
+    },
+    "Helmet": {
+      "room": "Squirrel house",
+      "task_obstacle": null
+    },
+    "Nut": {
+      "room": "Playground sandbox",
+      "task_obstacle": null
+    },
+    "Nose": {
+      "room": "Trashbin",
+      "task_obstacle": "Throw away trash"
+    },
+    "Gas": {
+      "room": "Shed",
+      "task_obstacle": "Unlock left closet"
+    },
+    "Needle": {
+      "room": "Duck",
+      "task_obstacle": "Help duck"
+    },
+    "Flowers": {
+      "room": "Flower bush",
+      "task_obstacle": null
+    },
+    "Green stick": {
+      "room": "Snake corner",
+      "task_obstacle": null
+    },
+    "Crown": {
+      "room": "Snake corner",
+      "task_obstacle": null
+    },
+    "Strawberries": {
+      "room": "Statue bottom",
+      "task_obstacle": null
+    },
+    "Garlic box": {
+      "room": "Statue bottom",
+      "task_obstacle": null
+    },
+    "Diving mask": {
+      "room": "Well top",
+      "task_obstacle": null
+    },
+    "Yellow stick": {
+      "room": "Wall",
+      "task_obstacle": "Help monkey"
+    },
+    "Worm": {
+      "room": "Lake bottom",
+      "task_obstacle": null
+    },
+    "Horn": {
+      "room": "Lake bottom",
+      "task_obstacle": null
+    },
+    "Cake": {
+      "room": "Well top",
+      "task_obstacle": "Throw coin in well"
+    },
+    "Green key": {
+      "room": "Fly",
+      "task_obstacle": null
+    },
+    "Fishing pole": {
+      "room": "Secret hideout",
+      "task_obstacle": "Unlock hideout closet"
+    },
+    "Chick": {
+      "room": "Home",
+      "task_obstacle": "Pick up chick"
+    },
+    "Wand": {
+      "room": "Tree trunk top",
+      "task_obstacle": "Remove dog"
+    }
+  },
+  "tasks": {
+    "Throw cake at fly": {
+      "room": "Fly",
+      "items_needed": [
+        "Cake"
+      ]
+    },
+    "Scare fox": {
+      "room": "Fox bush",
+      "items_needed": [
+        "Trumpet"
+      ]
+    },
+    "Unlock left closet": {
+      "room": "Shed",
+      "items_needed": [
+        "Yellow key"
+      ]
+    },
+    "Scare cat": {
+      "room": "Cat corner",
+      "items_needed": [
+        "Dog"
+      ]
+    },
+    "Pick up chick": {
+      "room": "Bee home",
+      "items_needed": [
+        "Worm"
+      ]
+    },
+    "Deliver chick": {
+      "room": "Birds house",
+      "items_needed": [
+        "Chick"
+      ]
+    },
+    "Remove witch": {
+      "room": "Tree trunk bottom",
+      "items_needed": [
+        "Gas",
+        "Garlic box"
+      ]
+    },
+    "Light up cave": {
+      "room": "Bat cave",
+      "items_needed": [
+        "Flashlight"
+      ]
+    },
+    "Help elfs": {
+      "room": "Elf house",
+      "items_needed": [
+        "Elf hat",
+        "Flowers"
+      ]
+    },
+    "Help fish": {
+      "room": "Bridge",
+      "items_needed": [
+        "Ludo cube"
+      ]
+    },
+    "Let down snake": {
+      "room": "Snake corner",
+      "items_needed": [
+        "Needle"
+      ]
+    },
+    "Help rabbit": {
+      "room": "Rabbit house",
+      "items_needed": [
+        "Pants"
+      ]
+    },
+    "Scare rat": {
+      "room": "Rat corner",
+      "items_needed": [
+        "Sheet"
+      ]
+    },
+    "Help ant mom": {
+      "room": "Mushroom houses",
+      "items_needed": [
+        "Dummy"
+      ]
+    },
+    "Throw away trash": {
+      "room": "Trashbin",
+      "items_needed": [
+        "Diaper",
+        "Can"
+      ]
+    },
+    "Help duck": {
+      "room": "Duck",
+      "items_needed": [
+        "Mirror"
+      ]
+    },
+    "Help squirrel": {
+      "room": "Squirrel house",
+      "items_needed": [
+        "Nut"
+      ]
+    },
+    "Help frog": {
+      "room": "Frog",
+      "items_needed": [
+        "Strawberries"
+      ]
+    },
+    "Fix statue": {
+      "room": "Statue head",
+      "items_needed": [
+        "Nose"
+      ]
+    },
+    "Help ant queen": {
+      "room": "Ant house",
+      "items_needed": [
+        "Crown"
+      ]
+    },
+    "Help monkey": {
+      "room": "Wall",
+      "items_needed": [
+        "Radio"
+      ]
+    },
+    "Dive": {
+      "room": "Bridge",
+      "items_needed": [
+        "Diving mask"
+      ]
+    },
+    "Help snail": {
+      "room": "Snail corner",
+      "items_needed": [
+        "Horn"
+      ]
+    },
+    "Help rocket mouse": {
+      "room": "Rocket",
+      "items_needed": [
+        "Helmet",
+        "Broom"
+      ]
+    },
+    "Help owl": {
+      "room": "Owl house",
+      "items_needed": [
+        "Glasses",
+        "Book"
+      ]
+    },
+    "Help bee": {
+      "room": "Bee home",
+      "items_needed": [
+        "Bucket"
+      ]
+    },
+    "Repair ladder": {
+      "room": "Ladder",
+      "items_needed": [
+        "Red stick",
+        "Purple stick",
+        "Yellow stick",
+        "Blue stick",
+        "Green stick"
+      ]
+    },
+    "Unlock hideout closet": {
+      "room": "Secret hideout",
+      "items_needed": [
+        "Green key"
+      ]
+    },
+    "Throw coin in well": {
+      "room": "Well top",
+      "items_needed": [
+        "Coin"
+      ]
+    },
+    "Fix well winch": {
+      "room": "Well top",
+      "items_needed": [
+        "Handle"
+      ]
+    },
+    "Help bat": {
+      "room": "Bat cave",
+      "items_needed": [
+        "Letter"
+      ]
+    },
+    "Remove dog": {
+      "room": "Tree trunk top",
+      "items_needed": [
+        "Fishing pole"
+      ]
+    },
+    "Hand over wand": {
+      "room": "Well bottom",
+      "items_needed": [
+        "Wand"
+      ]
+    }
+  },
+  "rooms": {
+    "Home": {
+      "task_obstacle": null,
+      "left": null,
+      "right": null,
+      "up": null,
+      "down": "Outside home"
+    },
+    "Outside home": {
+      "task_obstacle": null,
+      "left": "Home",
+      "right": "Ladder",
+      "up": null,
+      "down": "Fly"
+    },
+    "Fly": {
+      "task_obstacle": "Throw cake at fly",
+      "left": "Rocket",
+      "right": "Bee home",
+      "up": "Outside home",
+      "down": "Bench"
+    },
+    "Bee home": {
+      "task_obstacle": null,
+      "left": "Fly",
+      "right": "Duck",
+      "up": "Ladder",
+      "down": "Path bee"
+    },
+    "Ladder": {
+      "task_obstacle": null,
+      "left": "Outside home",
+      "right": "Secret hideout",
+      "up": "Mushroom houses",
+      "down": "Bee home"
+    },
+    "Mushroom houses": {
+      "task_obstacle": null,
+      "left": "Playground horse",
+      "right": "Bridge",
+      "up": "Owl house",
+      "down": "Ladder"
+    },
+    "Playground horse": {
+      "task_obstacle": null,
+      "left": "Playground sandbox",
+      "right": "Mushroom houses",
+      "up": null,
+      "down": null
+    },
+    "Playground sandbox": {
+      "task_obstacle": null,
+      "left": "Outside shed",
+      "right": "Playground horse",
+      "up": "Fox bush",
+      "down": null
+    },
+    "Fox bush": {
+      "task_obstacle": "Scare fox",
+      "left": null,
+      "right": "Flower bush",
+      "up": null,
+      "down": "Playground sandbox"
+    },
+    "Outside shed": {
+      "task_obstacle": null,
+      "left": "Shed",
+      "right": "Playground sandbox",
+      "up": "Rat corner",
+      "down": "Cat corner"
+    },
+    "Shed": {
+      "task_obstacle": null,
+      "left": null,
+      "right": "Outside shed",
+      "up": null,
+      "down": null
+    },
+    "Cat corner": {
+      "task_obstacle": "Scare cat",
+      "left": null,
+      "right": "Trashbin",
+      "up": "Outside shed",
+      "down": null
+    },
+    "Trashbin": {
+      "task_obstacle": null,
+      "left": "Cat corner",
+      "right": "Bench",
+      "up": "Rocket",
+      "down": null
+    },
+    "Rocket": {
+      "task_obstacle": null,
+      "left": null,
+      "right": "Fly",
+      "up": null,
+      "down": "Trashbin"
+    },
+    "Bench": {
+      "task_obstacle": null,
+      "left": "Trashbin",
+      "right": "Path bee",
+      "up": "Fly",
+      "down": null
+    },
+    "Path bee": {
+      "task_obstacle": null,
+      "left": "Bench",
+      "right": "Snail corner",
+      "up": "Bee home",
+      "down": "Tree bottom"
+    },
+    "Tree bottom": {
+      "task_obstacle": null,
+      "left": "Path bee",
+      "right": null,
+      "up": "Birds house",
+      "down": null
+    },
+    "Birds house": {
+      "task_obstacle": null,
+      "left": null,
+      "right": null,
+      "up": null,
+      "down": "Tree bottom"
+    },
+    "Snail corner": {
+      "task_obstacle": null,
+      "left": "Path bee",
+      "right": "Tree trunk bottom",
+      "up": "Path bat",
+      "down": null
+    },
+    "Path bat": {
+      "task_obstacle": null,
+      "left": "Duck",
+      "right": "Bat entry",
+      "up": "Path elf house",
+      "down": "Snail corner"
+    },
+    "Bat entry": {
+      "task_obstacle": null,
+      "left": "Path bat",
+      "right": "Bat cave",
+      "up": null,
+      "down": null
+    },
+    "Bat cave": {
+      "task_obstacle": "Light up cave",
+      "left": null,
+      "right": null,
+      "up": null,
+      "down": "Bat entry"
+    },
+    "Path elf house": {
+      "task_obstacle": null,
+      "left": "Bridge",
+      "right": "Elf house",
+      "up": "Snake corner",
+      "down": "Path bat"
+    },
+    "Duck": {
+      "task_obstacle": null,
+      "left": "Bee home",
+      "right": "Path bat",
+      "up": null,
+      "down": null
+    },
+    "Elf house": {
+      "task_obstacle": null,
+      "left": "Path elf house",
+      "right": null,
+      "up": null,
+      "down": null
+    },
+    "Bridge": {
+      "task_obstacle": null,
+      "left": "Mushroom houses",
+      "right": "Path elf house",
+      "up": null,
+      "down": "Lake bottom"
+    },
+    "Snake corner": {
+      "task_obstacle": "Let down snake",
+      "left": "Path puddle",
+      "right": null,
+      "up": "Statue bottom",
+      "down": "Path elf house"
+    },
+    "Owl house": {
+      "task_obstacle": null,
+      "left": null,
+      "right": "Frog",
+      "up": "Path rose bush",
+      "down": "Mushroom houses"
+    },
+    "Frog": {
+      "task_obstacle": null,
+      "left": "Owl house",
+      "right": null,
+      "up": "Path puddle",
+      "down": null
+    },
+    "Path rose bush": {
+      "task_obstacle": null,
+      "left": "Rat corner",
+      "right": "Path puddle",
+      "up": "Rabbit house",
+      "down": "Owl house"
+    },
+    "Path puddle": {
+      "task_obstacle": null,
+      "left": "Path rose bush",
+      "right": "Snake corner",
+      "up": "Squirrel house",
+      "down": "Frog"
+    },
+    "Rabbit house": {
+      "task_obstacle": null,
+      "left": "Wall",
+      "right": "Squirrel house",
+      "up": null,
+      "down": "Path rose bush"
+    },
+    "Squirrel house": {
+      "task_obstacle": null,
+      "left": "Rabbit house",
+      "right": null,
+      "up": null,
+      "down": "Path puddle"
+    },
+    "Rat corner": {
+      "task_obstacle": "Scare rat",
+      "left": "Well top",
+      "right": "Path rose bush",
+      "up": "Wall",
+      "down": "Outside shed"
+    },
+    "Flower bush": {
+      "task_obstacle": null,
+      "left": "Fox bush",
+      "right": null,
+      "up": null,
+      "down": null
+    },
+    "Statue bottom": {
+      "task_obstacle": null,
+      "left": null,
+      "right": null,
+      "up": "Statue head",
+      "down": "Snake corner"
+    },
+    "Statue head": {
+      "task_obstacle": null,
+      "left": null,
+      "right": null,
+      "up": null,
+      "down": "Statue bottom"
+    },
+    "Well bottom": {
+      "task_obstacle": "Fix well winch",
+      "left": null,
+      "right": null,
+      "up": "Well top",
+      "down": null
+    },
+    "Well top": {
+      "task_obstacle": null,
+      "left": "Ant house",
+      "right": "Rat corner",
+      "up": null,
+      "down": "Well bottom"
+    },
+    "Ant house": {
+      "task_obstacle": null,
+      "left": null,
+      "right": null,
+      "up": null,
+      "down": "Well top"
+    },
+    "Wall": {
+      "task_obstacle": null,
+      "left": null,
+      "right": null,
+      "up": null,
+      "down": "Rat corner"
+    },
+    "Lake bottom": {
+      "task_obstacle": "Dive",
+      "left": null,
+      "right": null,
+      "up": "Bridge",
+      "down": null
+    },
+    "Secret hideout": {
+      "task_obstacle": "Repair ladder",
+      "left": null,
+      "right": null,
+      "up": null,
+      "down": "Ladder"
+    },
+    "Tree trunk bottom": {
+      "task_obstacle": "Remove witch",
+      "left": "Snail corner",
+      "right": null,
+      "up": "Tree trunk top",
+      "down": null
+    },
+    "Tree trunk top": {
+      "task_obstacle": null,
+      "left": null,
+      "right": null,
+      "up": null,
+      "down": "Tree trunk bottom"
+    }
+  }
+}
