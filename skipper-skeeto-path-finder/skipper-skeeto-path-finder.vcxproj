@@ -21,11 +21,16 @@
   <ItemGroup>
     <ClInclude Include="include\skipper-skeeto-path-finder\data.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\item.h" />
+    <ClInclude Include="include\skipper-skeeto-path-finder\path.h" />
+    <ClInclude Include="include\skipper-skeeto-path-finder\path_controller.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\room.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\task.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\data.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\path.cpp" />
+    <ClCompile Include="src\path_controller.cpp" />
     <ClCompile Include="src\room.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
