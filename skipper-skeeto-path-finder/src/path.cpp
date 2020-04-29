@@ -1,8 +1,8 @@
 #include "skipper-skeeto-path-finder/path.h"
 
 #include "skipper-skeeto-path-finder/item.h"
-#include "skipper-skeeto-path-finder/task.h"
 #include "skipper-skeeto-path-finder/room.h"
+#include "skipper-skeeto-path-finder/task.h"
 
 #include <algorithm>
 
@@ -28,6 +28,12 @@ void Path::pickUpItem(const Item *item) {
   steps.push_back(std::string("  - Pick up: ") + item->key);
 }
 
+void Path::pickUpItems(const std::vector<const Item *> &items) {
+  for (const auto &item : items) {
+    pickUpItem(item);
+  }
+}
+
 void Path::completeTask(const Task *task) {
   auto taskIterator = std::find(remainingTasks.begin(), remainingTasks.end(), task);
   if (taskIterator == remainingTasks.end()) {
@@ -40,9 +46,21 @@ void Path::completeTask(const Task *task) {
   steps.push_back(std::string("  - Complete task: ") + task->key);
 }
 
+void Path::completeTasks(const std::vector<const Task *> &tasks) {
+  for (const auto &task : tasks) {
+    completeTask(task);
+  }
+}
+
 void Path::enterRoom(const Room *room) {
   steps.push_back(std::string("- Move to: ") + room->key);
   currentRoom = room;
+}
+
+void Path::enterRooms(const std::vector<const Room *> rooms) {
+  for (const auto &room : rooms) {
+    enterRoom(room);
+  }
 }
 
 const Room *Path::getCurrentRoom() const {

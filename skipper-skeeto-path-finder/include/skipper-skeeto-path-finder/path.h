@@ -15,9 +15,15 @@ public:
 
   void pickUpItem(const Item *item);
 
+  void pickUpItems(const std::vector<const Item *> &items);
+
   void completeTask(const Task *task);
 
+  void completeTasks(const std::vector<const Task *> &tasks);
+
   void enterRoom(const Room *room);
+
+  void enterRooms(const std::vector<const Room *> rooms);
 
   const Room *getCurrentRoom() const;
 
