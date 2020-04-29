@@ -3,12 +3,14 @@
 #include "data.h"
 #include "path.h"
 
-#include <chrono>
 #include <unordered_map>
+
+class CommonState;
 
 class PathController {
 public:
   PathController(const Data *data);
+  ~PathController();
 
   void start();
 
@@ -22,6 +24,8 @@ private:
   };
 
   void moveOnRecursive(const Path *path);
+
+  void moveOnDistributeRecursive(const std::vector<Path> paths);
 
   template <class NewPathCallback>
   void forkPaths(const Path *path, const NewPathCallback &newPathCallback) {
@@ -74,6 +78,7 @@ private:
 
           bool anythingDone = newPath.getStepCount() > startStepCount;
           if (anythingDone) {
+            newPath.depth++;
             newPathCallback(std::move(newPath));
           } else {
             pathsToContinue.push_back(std::move(newPath));
@@ -97,17 +102,6 @@ private:
 
   bool submitIfDone(const Path *path);
 
-  void maybePrint();
-
-  int maxStepCount = 5000;
-  std::unordered_map<const Room *, std::unordered_map<std::vector<bool>, int>> stepsForStage;
-  std::vector<Path> goodOnes;
+  CommonState *commonState;
   const Data *data;
-
-  int tooManyGeneralStepsCount = 0;
-  int tooManyGeneralStepsDepthTotal = 0;
-  int tooManyStateStepsCount = 0;
-  int tooManyStateStepsDepthTotal = 0;
-
-  std::chrono::time_point<std::chrono::system_clock> lastPrintTime = std::chrono::system_clock::now();
 };

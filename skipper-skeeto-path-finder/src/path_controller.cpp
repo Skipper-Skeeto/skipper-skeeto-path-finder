@@ -1,10 +1,19 @@
 #include "skipper-skeeto-path-finder/path_controller.h"
 
-#include <iomanip>
+#include "skipper-skeeto-path-finder/common_state.h"
+
 #include <iostream>
+
+#include <mutex>
+#include <thread>
 
 PathController::PathController(const Data *data) {
   this->data = data;
+  this->commonState = new CommonState();
+}
+
+PathController::~PathController() {
+  delete this->commonState;
 }
 
 void PathController::start() {
@@ -12,11 +21,13 @@ void PathController::start() {
 
   performPossibleActions(&startPath);
 
-  moveOnRecursive(&startPath);
+  moveOnDistributeRecursive({startPath});
+  //moveOnRecursive(&startPath);
 }
 
 void PathController::printResult() const {
 
+  auto goodOnes = commonState->getGoodOnes();
   for (int index = 0; index < goodOnes.size(); ++index) {
     std::cout << std::endl
               << "PATH #" << index + 1 << ":" << std::endl;
@@ -33,9 +44,52 @@ void PathController::moveOnRecursive(const Path *path) {
   }
 
   forkPaths(path, [this](Path path) {
-    path.depth++;
     moveOnRecursive(&path);
   });
+}
+
+void PathController::moveOnDistributeRecursive(const std::vector<Path> paths) {
+  if (paths.size() > 10) {
+    std::cout << "Found " << paths.size() << " paths. Doing recursive threading" << std::endl
+              << std::endl;
+
+    std::vector<std::thread> threads;
+    auto startWithRecursive = [this](const Path path) {
+      moveOnRecursive(&path);
+    };
+    for (const auto &path : paths) {
+      std::thread thread(startWithRecursive, path);
+      threads.push_back(std::move(thread));
+    }
+
+    auto printer = [this]() {
+      while (!commonState->shouldStop()) {
+        commonState->printStatus();
+
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+      }
+    };
+    std::thread printerThread(printer);
+
+    for (auto &thread : threads) {
+      thread.join();
+    }
+
+    commonState->stop();
+
+    printerThread.join();
+
+    return;
+  }
+
+  std::vector<Path> newPaths;
+  for (const auto &path : paths) {
+    forkPaths(&path, [&newPaths](Path path) {
+      newPaths.push_back(std::move(path));
+    });
+  }
+
+  moveOnDistributeRecursive(newPaths);
 }
 
 PathController::EnterRoomResult PathController::canEnterRoom(const Path *path, const Room *room) {
@@ -86,74 +140,9 @@ bool PathController::canPickUpItem(const Path *path, const Item *item) {
 }
 
 bool PathController::makesSenseToMoveOn(const Path *path) {
-  if (path->isDone()) {
-    return true;
-  }
-
-  if (path->getStepCount() >= maxStepCount) {
-    tooManyGeneralStepsCount += 1;
-    tooManyGeneralStepsDepthTotal += path->depth;
-
-    maybePrint();
-
-    return false;
-  }
-
-  // TODO: If direction ever get an impact (e.g. double-left is good), this might has to check count <= count
-  auto state = path->getState();
-  auto &roomStates = stepsForStage[path->getCurrentRoom()];
-  auto stepsIterator = roomStates.find(state);
-  if (stepsIterator != roomStates.end() && stepsIterator->second < path->getStepCount()) {
-    tooManyStateStepsCount += 1;
-    tooManyStateStepsDepthTotal += path->depth;
-
-    maybePrint();
-
-    return false;
-  }
-
-  // TODO: Doesn't need to be set if count == count
-  roomStates[state] = path->getStepCount();
-
-  return true;
+  return commonState->makesSenseToMoveOn(path);
 }
 
 bool PathController::submitIfDone(const Path *path) {
-  if (!path->isDone()) {
-    return false;
-  }
-
-  if (path->getStepCount() < maxStepCount) {
-    maxStepCount = path->getStepCount();
-    goodOnes.clear();
-  }
-
-  std::cout << "Found new good with " << path->getStepCount() << " steps (depth " << path->depth << ")" << std::endl;
-
-  goodOnes.push_back(*path);
-  return true;
-}
-
-void PathController::maybePrint() {
-  auto now = std::chrono::system_clock::now();
-  if (now - lastPrintTime < std::chrono::seconds(5)) {
-    return;
-  }
-
-  double depthKillGeneralAvg = 0;
-  if (tooManyGeneralStepsCount != 0) {
-    depthKillGeneralAvg = (double)tooManyGeneralStepsDepthTotal / tooManyGeneralStepsCount;
-  }
-
-  double depthKillStateAvg = 0;
-  if (tooManyStateStepsCount != 0) {
-    depthKillStateAvg = (double)tooManyStateStepsDepthTotal / tooManyStateStepsCount;
-  }
-
-  std::cout << "good: " << goodOnes.size() << "; max: " << maxStepCount
-            << "; general: " << std::setw(8) << tooManyGeneralStepsCount << "=" << std::fixed << std::setprecision(8) << depthKillGeneralAvg
-            << "; state: " << std::setw(8) << tooManyStateStepsCount << "=" << std::fixed << std::setprecision(8) << depthKillStateAvg
-            << std::endl;
-
-  lastPrintTime = now;
+  return commonState->submitIfDone(path);
 }
