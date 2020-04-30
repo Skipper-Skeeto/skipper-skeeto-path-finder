@@ -36,7 +36,7 @@ private:
   mutable std::mutex printMutex;
 
   int maxVisitedRoomsCount = 5000;
-  std::unordered_map<const Room *, std::unordered_map<std::vector<bool>, std::pair<int, int>>> stepsForStage;
+  std::unordered_map<const Room *, std::unordered_map<std::vector<bool>, int>> stepsForStage;
   std::vector<Path> goodOnes;
 
   int tooManyGeneralStepsCount = 0;

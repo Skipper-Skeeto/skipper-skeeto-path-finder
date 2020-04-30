@@ -112,13 +112,13 @@ bool CommonState::checkForDuplicateState(const Path *path) {
   if (stepsIterator != roomStates.end()) {
 
     // TODO: If directions etc. ever gets to be weighted (e.g. left->left vs. left->up), this should maybe be count < count
-    if (stepsIterator->second.first <= path->getVisitedRoomsCount()) {
+    if (stepsIterator->second <= visitedRoomsCount) {
       return false;
     }
   }
 
   // TODO: Doesn't need to be set if count == count
-  roomStates[state] = std::make_pair(path->getVisitedRoomsCount(), path->depth);
+  roomStates[state] = visitedRoomsCount;
 
   return true;
 }
