@@ -54,6 +54,7 @@ void Path::completeTasks(const std::vector<const Task *> &tasks) {
 
 void Path::enterRoom(const Room *room) {
   steps.push_back(std::string("- Move to: ") + room->key);
+  ++enteredRoomsCount;
   currentRoom = room;
 }
 
@@ -69,6 +70,10 @@ const Room *Path::getCurrentRoom() const {
 
 int Path::getStepCount() const {
   return int(steps.size());
+}
+
+int Path::getVisitedRoomsCount() const {
+  return enteredRoomsCount;
 }
 
 bool Path::isDone() const {

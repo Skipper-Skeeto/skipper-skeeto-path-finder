@@ -8,12 +8,32 @@ std::vector<Path> CommonState::getGoodOnes() const {
   return goodOnes;
 }
 
-bool CommonState::makesSenseToMoveOn(const Path *path) {
-  if (path->isDone()) {
-    return true;
+bool CommonState::makesSenseToPerformActions(const Path *path) {
+
+  // Even if count has reached max, the actions might complete the path and thus we won't exceed max
+  if (path->getVisitedRoomsCount() > getMaxVisitedRoomsCount()) {
+    std::lock_guard<std::mutex> guard(statisticsMutex);
+    tooManyGeneralStepsCount += 1;
+    tooManyGeneralStepsDepthTotal += path->depth;
+
+    return false;
   }
 
-  if (hasReachMaxSteps(path)) {
+  if (!checkForDuplicateState(path)) {
+    std::lock_guard<std::mutex> guard(statisticsMutex);
+    tooManyStateStepsCount += 1;
+    tooManyStateStepsDepthTotal += path->depth;
+
+    return false;
+  }
+
+  return true;
+}
+
+bool CommonState::makesSenseToMoveOn(const Path *path) {
+
+  // If we move on, the count would exceed max - that's why we check for equality too
+  if (path->getVisitedRoomsCount() >= getMaxVisitedRoomsCount()) {
     std::lock_guard<std::mutex> guard(statisticsMutex);
     tooManyGeneralStepsCount += 1;
     tooManyGeneralStepsDepthTotal += path->depth;
@@ -40,7 +60,7 @@ bool CommonState::submitIfDone(const Path *path) {
   addNewGoodOne(path);
 
   std::lock_guard<std::mutex> guard(printMutex);
-  std::cout << "Found new good with " << path->getStepCount() << " steps (depth " << path->depth << ")" << std::endl;
+  std::cout << "Found new good with " << path->getVisitedRoomsCount() << " rooms (depth " << path->depth << ")" << std::endl;
 
   return true;
 }
@@ -71,15 +91,15 @@ void CommonState::printStatus() {
   }
 
   std::lock_guard<std::mutex> guardPrint(printMutex);
-  std::cout << "good: " << goodOnes.size() << "; max: " << maxStepCount
+  std::cout << "good: " << goodOnes.size() << "; max: " << maxVisitedRoomsCount
             << "; general: " << std::setw(8) << tooManyGeneralStepsCount << "=" << std::fixed << std::setprecision(8) << depthKillGeneralAvg
             << "; state: " << std::setw(8) << tooManyStateStepsCount << "=" << std::fixed << std::setprecision(8) << depthKillStateAvg
             << std::endl;
 }
 
-bool CommonState::hasReachMaxSteps(const Path *path) const {
+int CommonState::getMaxVisitedRoomsCount() const {
   std::lock_guard<std::mutex> guard(finalStateMutex);
-  return path->getStepCount() >= maxStepCount;
+  return maxVisitedRoomsCount;
 }
 
 bool CommonState::checkForDuplicateState(const Path *path) {
@@ -92,21 +112,21 @@ bool CommonState::checkForDuplicateState(const Path *path) {
   if (stepsIterator != roomStates.end()) {
 
     // TODO: If direction ever get an impact (e.g. double-left is good), this might has to check count <= count
-    if (stepsIterator->second.first < path->getStepCount()) {
+    if (stepsIterator->second.first < path->getVisitedRoomsCount()) {
       return false;
     }
   }
 
   // TODO: Doesn't need to be set if count == count
-  roomStates[state] = std::make_pair(path->getStepCount(), path->depth);
+  roomStates[state] = std::make_pair(path->getVisitedRoomsCount(), path->depth);
 
   return true;
 }
 
 void CommonState::addNewGoodOne(const Path *path) {
   std::lock_guard<std::mutex> guard(finalStateMutex);
-  if (path->getStepCount() < maxStepCount) {
-    maxStepCount = path->getStepCount();
+  if (path->getVisitedRoomsCount() < maxVisitedRoomsCount) {
+    maxVisitedRoomsCount = path->getVisitedRoomsCount();
     goodOnes.clear();
   }
 

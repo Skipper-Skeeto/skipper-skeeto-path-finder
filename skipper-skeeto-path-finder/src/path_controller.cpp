@@ -39,10 +39,6 @@ void PathController::printResult() const {
 }
 
 void PathController::moveOnRecursive(const Path *path) {
-  if (submitIfDone(path)) {
-    return;
-  }
-
   forkPaths(path, [this](Path path) {
     moveOnRecursive(&path);
   });
@@ -137,12 +133,4 @@ bool PathController::canPickUpItem(const Path *path, const Item *item) {
   }
 
   return path->hasCompletedTask(item->taskObstacle);
-}
-
-bool PathController::makesSenseToMoveOn(const Path *path) {
-  return commonState->makesSenseToMoveOn(path);
-}
-
-bool PathController::submitIfDone(const Path *path) {
-  return commonState->submitIfDone(path);
 }

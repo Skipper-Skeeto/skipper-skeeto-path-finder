@@ -29,6 +29,8 @@ public:
 
   int getStepCount() const;
 
+  int getVisitedRoomsCount() const;
+
   bool isDone() const;
 
   const State &getState() const;
@@ -52,5 +54,6 @@ private:
   std::vector<const Task *> completedTasks;
   std::vector<const Task *> remainingTasks;
   std::vector<std::string> steps;
+  int enteredRoomsCount = 0;
   std::vector<bool> state;
 };

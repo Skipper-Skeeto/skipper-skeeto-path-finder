@@ -2,10 +2,10 @@
 
 #include "data.h"
 #include "path.h"
+#include "skipper-skeeto-path-finder/common_state.h"
 
 #include <unordered_map>
 
-class CommonState;
 
 class PathController {
 public:
@@ -58,7 +58,7 @@ private:
           Path newPath(path);
           newPath.enterRoom(avaiableRoom);
 
-          if (!makesSenseToMoveOn(&newPath)) {
+          if (!commonState->makesSenseToPerformActions(&newPath)) {
             continue;
           }
 
@@ -72,7 +72,9 @@ private:
 
           performPossibleActions(&newPath);
 
-          if (!makesSenseToMoveOn(&newPath)) {
+          commonState->submitIfDone(&newPath);
+
+          if (!commonState->makesSenseToMoveOn(&newPath)) {
             continue;
           }
 
@@ -97,10 +99,6 @@ private:
   bool canCompleteTask(const Path *path, const Task *task);
 
   bool canPickUpItem(const Path *path, const Item *item);
-
-  bool makesSenseToMoveOn(const Path *path);
-
-  bool submitIfDone(const Path *path);
 
   CommonState *commonState;
   const Data *data;

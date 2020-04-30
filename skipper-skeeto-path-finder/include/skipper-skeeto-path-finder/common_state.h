@@ -10,6 +10,8 @@ class CommonState {
 public:
   std::vector<Path> getGoodOnes() const;
 
+  bool makesSenseToPerformActions(const Path *path);
+
   bool makesSenseToMoveOn(const Path *path);
 
   bool submitIfDone(const Path *path);
@@ -21,7 +23,7 @@ public:
   void printStatus();
 
 private:
-  bool hasReachMaxSteps(const Path *path) const;
+  int getMaxVisitedRoomsCount() const;
 
   bool checkForDuplicateState(const Path *path);
 
@@ -33,7 +35,7 @@ private:
   mutable std::mutex stopMutex;
   mutable std::mutex printMutex;
 
-  int maxStepCount = 5000;
+  int maxVisitedRoomsCount = 5000;
   std::unordered_map<const Room *, std::unordered_map<std::vector<bool>, std::pair<int, int>>> stepsForStage;
   std::vector<Path> goodOnes;
 
