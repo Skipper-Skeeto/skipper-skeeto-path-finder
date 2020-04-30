@@ -111,8 +111,8 @@ bool CommonState::checkForDuplicateState(const Path *path) {
   auto stepsIterator = roomStates.find(state);
   if (stepsIterator != roomStates.end()) {
 
-    // TODO: If direction ever get an impact (e.g. double-left is good), this might has to check count <= count
-    if (stepsIterator->second.first < path->getVisitedRoomsCount()) {
+    // TODO: If directions etc. ever gets to be weighted (e.g. left->left vs. left->up), this should maybe be count < count
+    if (stepsIterator->second.first <= path->getVisitedRoomsCount()) {
       return false;
     }
   }
