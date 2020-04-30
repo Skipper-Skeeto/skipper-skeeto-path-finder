@@ -6,7 +6,6 @@
 
 #include <unordered_map>
 
-
 class PathController {
 public:
   PathController(const Data *data);
@@ -28,17 +27,23 @@ private:
   void moveOnDistributeRecursive(const std::vector<Path> paths);
 
   template <class NewPathCallback>
-  void forkPaths(const Path *path, const NewPathCallback &newPathCallback) {
+  void forkPaths(const Path *originPath, const NewPathCallback &newPathCallback) {
     auto availableRooms = data->getRooms();
-    availableRooms.erase(std::find(availableRooms.begin(), availableRooms.end(), path->getCurrentRoom()));
+    availableRooms.erase(std::find(availableRooms.begin(), availableRooms.end(), originPath->getCurrentRoom()));
 
-    std::vector<Path> onGoingPaths{*path}; // TODO: Can we avoid copy?
+    std::vector<std::vector<const Room *>> onGoingPaths{{}};
     while (onGoingPaths.size() > 0) {
-      std::vector<Path> pathsToContinue;
+      std::vector<std::vector<const Room *>> pathsToContinue;
 
-      for (const auto &path : onGoingPaths) {
+      for (const auto &subPath : onGoingPaths) {
+        const Room *currentRoom;
+        if (subPath.empty()) {
+          currentRoom = originPath->getCurrentRoom();
+        } else {
+          currentRoom = subPath.back();
+        }
 
-        for (const auto &nextRoom : path.getCurrentRoom()->getNextRooms()) {
+        for (const auto &nextRoom : currentRoom->getNextRooms()) {
 
           auto availableRoomIterator = std::find(availableRooms.begin(), availableRooms.end(), nextRoom);
           if (availableRoomIterator == availableRooms.end()) {
@@ -50,41 +55,83 @@ private:
           const Room *avaiableRoom = *availableRoomIterator;
           availableRooms.erase(availableRoomIterator);
 
-          auto enterRoomResult = canEnterRoom(&path, avaiableRoom);
+          auto enterRoomResult = canEnterRoom(originPath, avaiableRoom);
           if (enterRoomResult == EnterRoomResult::CannotEnter) {
             continue;
           }
 
-          Path newPath(path);
-          newPath.enterRoom(avaiableRoom);
+          std::vector<const Room *> newSubPath(subPath);
+          newSubPath.push_back(avaiableRoom);
 
-          if (!commonState->makesSenseToPerformActions(&newPath)) {
+          if (!commonState->makesSenseToPerformActions(originPath, newSubPath)) {
             continue;
           }
 
-          int startStepCount = newPath.getStepCount();
-
           if (enterRoomResult == EnterRoomResult::CanEnterWithTaskObstacle) {
+            Path newPath(*originPath);
+            newPath.enterRooms(newSubPath);
             newPath.completeTask(avaiableRoom->taskObstacle);
+
+            performPossibleActions(&newPath);
+
+            if (commonState->submitIfDone(&newPath)) {
+              continue;
+            }
+
+            if (commonState->makesSenseToStartNewSubPath(&newPath)) {
+              newPath.depth++;
+              newPathCallback(std::move(newPath));
+            }
+
+            continue;
+
           } else if (enterRoomResult != EnterRoomResult::CanEnter) {
             throw std::exception("Unknown enter room result!");
           }
 
-          performPossibleActions(&newPath);
+          auto possibleTasks = getPossibleTasks(originPath, avaiableRoom);
+          if (!possibleTasks.empty()) {
+            Path newPath(*originPath);
+            newPath.enterRooms(newSubPath);
+            newPath.completeTasks(possibleTasks);
 
-          commonState->submitIfDone(&newPath);
+            newPath.pickUpItems(getPossibleItems(&newPath, avaiableRoom));
 
-          if (!commonState->makesSenseToMoveOn(&newPath)) {
+            if (commonState->submitIfDone(&newPath)) {
+              continue;
+            }
+
+            if (commonState->makesSenseToStartNewSubPath(&newPath)) {
+              newPath.depth++;
+              newPathCallback(std::move(newPath));
+            }
+
             continue;
           }
 
-          bool anythingDone = newPath.getStepCount() > startStepCount;
-          if (anythingDone) {
-            newPath.depth++;
-            newPathCallback(std::move(newPath));
-          } else {
-            pathsToContinue.push_back(std::move(newPath));
+          auto possibleItems = getPossibleItems(originPath, avaiableRoom);
+          if (!possibleItems.empty()) {
+            Path newPath(*originPath);
+            newPath.enterRooms(newSubPath);
+            newPath.pickUpItems(possibleItems);
+
+            if (commonState->submitIfDone(&newPath)) {
+              continue;
+            }
+
+            if (commonState->makesSenseToStartNewSubPath(&newPath)) {
+              newPath.depth++;
+              newPathCallback(std::move(newPath));
+            }
+
+            continue;
           }
+
+          if (!commonState->makesSenseToExpandSubPath(originPath, newSubPath)) {
+            continue;
+          }
+
+          pathsToContinue.push_back(newSubPath);
         }
       }
 
@@ -96,9 +143,13 @@ private:
 
   void performPossibleActions(Path *path);
 
-  bool canCompleteTask(const Path *path, const Task *task);
+  std::vector<const Task *> getPossibleTasks(const Path *path, const Room *room) const;
 
-  bool canPickUpItem(const Path *path, const Item *item);
+  std::vector<const Item *> getPossibleItems(const Path *path, const Room *room) const;
+
+  bool canCompleteTask(const Path *path, const Task *task) const;
+
+  bool canPickUpItem(const Path *path, const Item *item) const;
 
   CommonState *commonState;
   const Data *data;

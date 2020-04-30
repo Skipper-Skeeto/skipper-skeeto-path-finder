@@ -10,9 +10,11 @@ class CommonState {
 public:
   std::vector<Path> getGoodOnes() const;
 
-  bool makesSenseToPerformActions(const Path *path);
+  bool makesSenseToPerformActions(const Path *originPath, const std::vector<const Room *> &subPath);
 
-  bool makesSenseToMoveOn(const Path *path);
+  bool makesSenseToStartNewSubPath(const Path *path);
+
+  bool makesSenseToExpandSubPath(const Path *originPath, const std::vector<const Room *> &subPath);
 
   bool submitIfDone(const Path *path);
 
@@ -25,7 +27,7 @@ public:
 private:
   int getMaxVisitedRoomsCount() const;
 
-  bool checkForDuplicateState(const Path *path);
+  bool checkForDuplicateState(const State &state, const Room *room, int visitedRoomsCount);
 
   void addNewGoodOne(const Path *path);
 

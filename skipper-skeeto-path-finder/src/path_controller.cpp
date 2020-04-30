@@ -105,20 +105,35 @@ PathController::EnterRoomResult PathController::canEnterRoom(const Path *path, c
 }
 
 void PathController::performPossibleActions(Path *path) {
-  for (const auto &task : path->getRemainingTasksForRoom(path->getCurrentRoom())) {
-    if (canCompleteTask(path, task)) {
-      path->completeTask(task);
-    }
-  }
-
-  for (const auto &item : path->getRemainingItemsForRoom(path->getCurrentRoom())) {
-    if (canPickUpItem(path, item)) {
-      path->pickUpItem(item);
-    }
-  }
+  path->completeTasks(getPossibleTasks(path, path->getCurrentRoom()));
+  path->pickUpItems(getPossibleItems(path, path->getCurrentRoom()));
 }
 
-bool PathController::canCompleteTask(const Path *path, const Task *task) {
+std::vector<const Task *> PathController::getPossibleTasks(const Path *path, const Room *room) const {
+  std::vector<const Task *> possibleTasks;
+
+  for (const auto &task : path->getRemainingTasksForRoom(room)) {
+    if (canCompleteTask(path, task)) {
+      possibleTasks.push_back(task);
+    }
+  }
+
+  return possibleTasks;
+}
+
+std::vector<const Item *> PathController::getPossibleItems(const Path *path, const Room *room) const {
+  std::vector<const Item *> possibleItems;
+
+  for (const auto &item : path->getRemainingItemsForRoom(room)) {
+    if (canPickUpItem(path, item)) {
+      possibleItems.push_back(item);
+    }
+  }
+
+  return possibleItems;
+}
+
+bool PathController::canCompleteTask(const Path *path, const Task *task) const {
   return std::all_of(
       task->itemsNeeded.begin(),
       task->itemsNeeded.end(),
@@ -127,7 +142,7 @@ bool PathController::canCompleteTask(const Path *path, const Task *task) {
       });
 }
 
-bool PathController::canPickUpItem(const Path *path, const Item *item) {
+bool PathController::canPickUpItem(const Path *path, const Item *item) const {
   if (item->taskObstacle == nullptr) {
     return true;
   }

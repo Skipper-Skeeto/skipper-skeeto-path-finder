@@ -8,21 +8,22 @@ std::vector<Path> CommonState::getGoodOnes() const {
   return goodOnes;
 }
 
-bool CommonState::makesSenseToPerformActions(const Path *path) {
+bool CommonState::makesSenseToPerformActions(const Path *originPath, const std::vector<const Room *> &subPath) {
+  int visitedRoomsCount = originPath->getVisitedRoomsCount() + subPath.size();
 
   // Even if count has reached max, the actions might complete the path and thus we won't exceed max
-  if (path->getVisitedRoomsCount() > getMaxVisitedRoomsCount()) {
+  if (visitedRoomsCount > getMaxVisitedRoomsCount()) {
     std::lock_guard<std::mutex> guard(statisticsMutex);
     tooManyGeneralStepsCount += 1;
-    tooManyGeneralStepsDepthTotal += path->depth;
+    tooManyGeneralStepsDepthTotal += originPath->depth;
 
     return false;
   }
 
-  if (!checkForDuplicateState(path)) {
+  if (!checkForDuplicateState(originPath->getState(), subPath.back(), visitedRoomsCount)) {
     std::lock_guard<std::mutex> guard(statisticsMutex);
     tooManyStateStepsCount += 1;
-    tooManyStateStepsDepthTotal += path->depth;
+    tooManyStateStepsDepthTotal += originPath->depth;
 
     return false;
   }
@@ -30,7 +31,7 @@ bool CommonState::makesSenseToPerformActions(const Path *path) {
   return true;
 }
 
-bool CommonState::makesSenseToMoveOn(const Path *path) {
+bool CommonState::makesSenseToStartNewSubPath(const Path *path) {
 
   // If we move on, the count would exceed max - that's why we check for equality too
   if (path->getVisitedRoomsCount() >= getMaxVisitedRoomsCount()) {
@@ -41,13 +42,31 @@ bool CommonState::makesSenseToMoveOn(const Path *path) {
     return false;
   }
 
-  if (!checkForDuplicateState(path)) {
+  if (!checkForDuplicateState(path->getState(), path->getCurrentRoom(), path->getVisitedRoomsCount())) {
     std::lock_guard<std::mutex> guard(statisticsMutex);
     tooManyStateStepsCount += 1;
     tooManyStateStepsDepthTotal += path->depth;
 
     return false;
   }
+
+  return true;
+}
+
+bool CommonState::makesSenseToExpandSubPath(const Path *originPath, const std::vector<const Room *> &subPath) {
+  int visitedRoomsCount = originPath->getVisitedRoomsCount() + subPath.size();
+
+  // If we move on, the count would exceed max - that's why we check for equality too
+  if (visitedRoomsCount >= getMaxVisitedRoomsCount()) {
+    std::lock_guard<std::mutex> guard(statisticsMutex);
+    tooManyGeneralStepsCount += 1;
+    tooManyGeneralStepsDepthTotal += originPath->depth;
+
+    return false;
+  }
+
+  // Note that we don't check for duplicate state, since it has been done in makesSenseToPerformActions().
+  // After that check we only get here if no actions was done - and thus it would be the same state!
 
   return true;
 }
@@ -102,12 +121,9 @@ int CommonState::getMaxVisitedRoomsCount() const {
   return maxVisitedRoomsCount;
 }
 
-bool CommonState::checkForDuplicateState(const Path *path) {
-
-  auto state = path->getState();
-
+bool CommonState::checkForDuplicateState(const State &state, const Room *room, int visitedRoomsCount) {
   std::lock_guard<std::mutex> guard(stepStageMutex);
-  auto &roomStates = stepsForStage[path->getCurrentRoom()];
+  auto &roomStates = stepsForStage[room];
   auto stepsIterator = roomStates.find(state);
   if (stepsIterator != roomStates.end()) {
 
