@@ -15,6 +15,24 @@ Path::Path(const std::vector<const Item *> &allItems, const std::vector<const Ta
   state = std::vector<bool>(remainingItems.size() + remainingTasks.size(), false);
 }
 
+Path Path::createFromSubPath(std::vector<const Room *> subPath) const {
+  Path path;
+
+  path.currentRoom = currentRoom;
+  path.foundItems = foundItems;
+  path.remainingItems = remainingItems;
+  path.completedTasks = completedTasks;
+  path.remainingTasks = remainingTasks;
+  path.steps = steps;
+  path.enteredRoomsCount = enteredRoomsCount;
+  path.state = state;
+  path.depth = depth;
+
+  path.enterRooms(subPath);
+
+  return path;
+}
+
 void Path::pickUpItem(const Item *item) {
   auto itemIterator = std::find(remainingItems.begin(), remainingItems.end(), item);
   if (itemIterator == remainingItems.end()) {

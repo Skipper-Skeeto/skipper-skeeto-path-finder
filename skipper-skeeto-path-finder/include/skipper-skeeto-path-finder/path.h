@@ -13,6 +13,8 @@ class Path {
 public:
   Path(const std::vector<const Item *> &allItems, const std::vector<const Task *> &allTasks, const Room *startRoom);
 
+  Path createFromSubPath(std::vector<const Room *> subPath) const;
+
   void pickUpItem(const Item *item);
 
   void pickUpItems(const std::vector<const Item *> &items);
@@ -48,6 +50,8 @@ public:
   int depth{0};
 
 private:
+  Path() = default;
+
   const Room *currentRoom;
   std::vector<const Item *> foundItems;
   std::vector<const Item *> remainingItems;

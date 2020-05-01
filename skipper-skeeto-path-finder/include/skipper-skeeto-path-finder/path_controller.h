@@ -4,8 +4,8 @@
 #include "path.h"
 #include "skipper-skeeto-path-finder/common_state.h"
 
-#include <unordered_map>
 #include <queue>
+#include <unordered_map>
 
 class PathController {
 public:
@@ -70,8 +70,7 @@ private:
         }
 
         if (enterRoomResult == EnterRoomResult::CanEnterWithTaskObstacle) {
-          Path newPath(*originPath);
-          newPath.enterRooms(newSubPath);
+          Path newPath = originPath->createFromSubPath(newSubPath);
           newPath.completeTask(avaiableRoom->taskObstacle);
 
           performPossibleActions(&newPath);
@@ -93,8 +92,7 @@ private:
 
         auto possibleTasks = getPossibleTasks(originPath, avaiableRoom);
         if (!possibleTasks.empty()) {
-          Path newPath(*originPath);
-          newPath.enterRooms(newSubPath);
+          Path newPath = originPath->createFromSubPath(newSubPath);
           newPath.completeTasks(possibleTasks);
 
           newPath.pickUpItems(getPossibleItems(&newPath, avaiableRoom));
@@ -113,8 +111,7 @@ private:
 
         auto possibleItems = getPossibleItems(originPath, avaiableRoom);
         if (!possibleItems.empty()) {
-          Path newPath(*originPath);
-          newPath.enterRooms(newSubPath);
+          Path newPath = originPath->createFromSubPath(newSubPath);
           newPath.pickUpItems(possibleItems);
 
           if (commonState->submitIfDone(&newPath)) {
