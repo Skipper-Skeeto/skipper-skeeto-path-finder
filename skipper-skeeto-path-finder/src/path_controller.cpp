@@ -21,7 +21,7 @@ void PathController::start() {
 
   performPossibleActions(&startPath);
 
-  moveOnDistributeRecursive({startPath});
+  moveOnDistributeRecursive({&startPath});
   //moveOnRecursive(&startPath);
 }
 
@@ -38,20 +38,38 @@ void PathController::printResult() const {
   }
 }
 
-void PathController::moveOnRecursive(const Path *path) {
-  forkPaths(path, [this](Path path) {
-    moveOnRecursive(&path);
-  });
+void PathController::moveOnRecursive(Path *path) {
+  while (findNewPath(path)) {
+    auto nextPathIterator = path->subPathInfo.getNextPath();
+    moveOnRecursive(&*nextPathIterator);
+    path->subPathInfo.erase(nextPathIterator);
+  }
 }
 
-void PathController::moveOnDistributeRecursive(const std::vector<Path> paths) {
+bool PathController::moveOnDistributed(Path *path) {
+  findNewPath(path);
+
+  if (path->subPathInfo.empty()) {
+    return false;
+  }
+
+  auto nextPathIterator = path->subPathInfo.getNextPath();
+  bool continueWork = moveOnDistributed(&*nextPathIterator);
+  if (!continueWork) {
+    path->subPathInfo.erase(nextPathIterator);
+  }
+
+  return true;
+}
+
+void PathController::moveOnDistributeRecursive(const std::vector<Path *> paths) {
   if (paths.size() > 10) {
     std::cout << "Found " << paths.size() << " paths. Doing recursive threading" << std::endl
               << std::endl;
 
     std::vector<std::thread> threads;
-    auto startWithRecursive = [this](const Path path) {
-      moveOnRecursive(&path);
+    auto startWithRecursive = [this](Path *path) {
+      moveOnRecursive(path);
     };
     for (const auto &path : paths) {
       std::thread thread(startWithRecursive, path);
@@ -78,14 +96,136 @@ void PathController::moveOnDistributeRecursive(const std::vector<Path> paths) {
     return;
   }
 
-  std::vector<Path> newPaths;
+  std::vector<Path *> newPaths;
+
   for (const auto &path : paths) {
-    forkPaths(&path, [&newPaths](Path path) {
-      newPaths.push_back(std::move(path));
-    });
+    while (findNewPath(path)) {
+      newPaths.push_back(&*path->subPathInfo.getNextPath());
+    }
   }
 
   moveOnDistributeRecursive(newPaths);
+}
+
+bool PathController::findNewPath(Path *originPath) {
+  while (originPath->subPathInfo.remainingUnfinishedSubPaths.size() > 0) {
+    std::vector<const Room *> subPath = originPath->subPathInfo.remainingUnfinishedSubPaths.front();
+    if (originPath->subPathInfo.nextRoomsForFirstSubPath.empty()) {
+      const Room *currentRoom;
+      if (subPath.empty()) {
+        currentRoom = originPath->getCurrentRoom();
+
+        originPath->subPathInfo.availableRooms = data->getRooms();
+        originPath->subPathInfo.availableRooms.erase(std::find(
+            originPath->subPathInfo.availableRooms.begin(),
+            originPath->subPathInfo.availableRooms.end(),
+            originPath->getCurrentRoom()));
+      } else {
+        currentRoom = subPath.back();
+      }
+
+      originPath->subPathInfo.nextRoomsForFirstSubPath = currentRoom->getNextRooms();
+    }
+
+    const Room *nextRoom = originPath->subPathInfo.nextRoomsForFirstSubPath.front();
+    originPath->subPathInfo.nextRoomsForFirstSubPath.erase(originPath->subPathInfo.nextRoomsForFirstSubPath.begin());
+
+    if (originPath->subPathInfo.nextRoomsForFirstSubPath.empty()) {
+
+      // After this iteration we should skip to next subPath
+      originPath->subPathInfo.remainingUnfinishedSubPaths.pop_front();
+    }
+
+    auto availableRoomIterator = std::find(
+        originPath->subPathInfo.availableRooms.begin(),
+        originPath->subPathInfo.availableRooms.end(),
+        nextRoom);
+    if (availableRoomIterator == originPath->subPathInfo.availableRooms.end()) {
+      // Room already reached or cannot be entered.
+      // We cannot have gotten here faster than the other steps getting here.
+      continue;
+    }
+
+    const Room *avaiableRoom = *availableRoomIterator;
+    originPath->subPathInfo.availableRooms.erase(availableRoomIterator);
+
+    auto enterRoomResult = canEnterRoom(originPath, avaiableRoom);
+    if (enterRoomResult == EnterRoomResult::CannotEnter) {
+      continue;
+    }
+
+    std::vector<const Room *> newSubPath(subPath);
+    newSubPath.push_back(avaiableRoom);
+
+    if (!commonState->makesSenseToPerformActions(originPath, newSubPath)) {
+      continue;
+    }
+
+    if (enterRoomResult == EnterRoomResult::CanEnterWithTaskObstacle) {
+      Path newPath = originPath->createFromSubPath(newSubPath);
+      newPath.completeTask(avaiableRoom->taskObstacle);
+
+      performPossibleActions(&newPath);
+
+      if (commonState->submitIfDone(&newPath)) {
+        continue;
+      }
+
+      if (commonState->makesSenseToStartNewSubPath(&newPath)) {
+        originPath->subPathInfo.push_back(std::move(newPath));
+        return true;
+      }
+
+      continue;
+
+    } else if (enterRoomResult != EnterRoomResult::CanEnter) {
+      throw std::exception("Unknown enter room result!");
+    }
+
+    auto possibleTasks = getPossibleTasks(originPath, avaiableRoom);
+    if (!possibleTasks.empty()) {
+      Path newPath = originPath->createFromSubPath(newSubPath);
+      newPath.completeTasks(possibleTasks);
+
+      newPath.pickUpItems(getPossibleItems(&newPath, avaiableRoom));
+
+      if (commonState->submitIfDone(&newPath)) {
+        continue;
+      }
+
+      if (commonState->makesSenseToStartNewSubPath(&newPath)) {
+        originPath->subPathInfo.push_back(std::move(newPath));
+        return true;
+      }
+
+      continue;
+    }
+
+    auto possibleItems = getPossibleItems(originPath, avaiableRoom);
+    if (!possibleItems.empty()) {
+      Path newPath = originPath->createFromSubPath(newSubPath);
+      newPath.pickUpItems(possibleItems);
+
+      if (commonState->submitIfDone(&newPath)) {
+        continue;
+      }
+
+      if (commonState->makesSenseToStartNewSubPath(&newPath)) {
+        originPath->subPathInfo.push_back(std::move(newPath));
+        return true;
+      }
+
+      continue;
+    }
+
+    if (!commonState->makesSenseToExpandSubPath(originPath, newSubPath)) {
+      continue;
+    }
+
+    originPath->subPathInfo.remainingUnfinishedSubPaths.push_back(newSubPath);
+  }
+
+  return false;
 }
 
 PathController::EnterRoomResult PathController::canEnterRoom(const Path *path, const Room *room) {

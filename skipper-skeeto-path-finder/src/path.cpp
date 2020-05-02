@@ -15,22 +15,28 @@ Path::Path(const std::vector<const Item *> &allItems, const std::vector<const Ta
   state = std::vector<bool>(remainingItems.size() + remainingTasks.size(), false);
 }
 
-Path Path::createFromSubPath(std::vector<const Room *> subPath) const {
-  Path path;
+Path::Path(const Path &path) {
+  currentRoom = path.currentRoom;
+  foundItems = path.foundItems;
+  remainingItems = path.remainingItems;
+  completedTasks = path.completedTasks;
+  remainingTasks = path.remainingTasks;
+  steps = path.steps;
+  enteredRoomsCount = path.enteredRoomsCount;
+  state = path.state;
+  depth = path.depth;
 
-  path.currentRoom = currentRoom;
-  path.foundItems = foundItems;
-  path.remainingItems = remainingItems;
-  path.completedTasks = completedTasks;
-  path.remainingTasks = remainingTasks;
-  path.steps = steps;
-  path.enteredRoomsCount = enteredRoomsCount;
-  path.state = state;
-  path.depth = depth;
+  // Note that we don't copy subPathInfo, since that should be clean
+}
+
+Path Path::createFromSubPath(std::vector<const Room *> subPath) const {
+  Path path(*this);
+
+  path.depth++;
 
   path.enterRooms(subPath);
 
-  return path;
+  return std::move(path);
 }
 
 void Path::pickUpItem(const Item *item) {

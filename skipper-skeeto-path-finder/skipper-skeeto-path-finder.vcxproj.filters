@@ -36,6 +36,9 @@
     <ClInclude Include="include\skipper-skeeto-path-finder\common_state.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\skipper-skeeto-path-finder\sub_path_info.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -54,6 +57,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="include\skipper-skeeto-path-finder\common_state.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sub_path_info.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

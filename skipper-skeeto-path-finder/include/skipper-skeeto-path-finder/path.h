@@ -1,5 +1,7 @@
 #pragma once
 
+#include "skipper-skeeto-path-finder/sub_path_info.h"
+
 #include <string>
 #include <vector>
 
@@ -12,6 +14,8 @@ class Room;
 class Path {
 public:
   Path(const std::vector<const Item *> &allItems, const std::vector<const Task *> &allTasks, const Room *startRoom);
+
+  Path(const Path &path);
 
   Path createFromSubPath(std::vector<const Room *> subPath) const;
 
@@ -49,9 +53,9 @@ public:
 
   int depth{0};
 
-private:
-  Path() = default;
+  SubPathInfo subPathInfo;
 
+private:
   const Room *currentRoom;
   std::vector<const Item *> foundItems;
   std::vector<const Item *> remainingItems;
