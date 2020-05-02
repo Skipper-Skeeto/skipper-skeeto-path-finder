@@ -11,5 +11,6 @@ public:
   int uniqueIndex = -1;
   std::string key;
   Room *room = nullptr;
+  Task *taskObstacle = nullptr;
   std::vector<Item *> itemsNeeded;
 };

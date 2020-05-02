@@ -274,6 +274,12 @@ std::vector<const Item *> PathController::getPossibleItems(const Path *path, con
 }
 
 bool PathController::canCompleteTask(const Path *path, const Task *task) const {
+  if (task->taskObstacle != nullptr) {
+    if (!path->hasCompletedTask(task->taskObstacle)) {
+      return false;
+    }
+  }
+
   return std::all_of(
       task->itemsNeeded.begin(),
       task->itemsNeeded.end(),

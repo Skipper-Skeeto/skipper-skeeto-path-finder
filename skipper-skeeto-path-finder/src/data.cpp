@@ -31,6 +31,14 @@ Data::Data(const nlohmann::json &jsonData) {
     taskMapping[jsonTaskMapping.key()] = task;
   }
 
+  for (auto const &jsonTaskMapping : jsonData["tasks"].items()) {
+    auto &task = taskMapping[jsonTaskMapping.key()];
+
+    if (jsonTaskMapping.value()["task_obstacle"] != nullptr) {
+      task.taskObstacle = &taskMapping[jsonTaskMapping.value()["task_obstacle"]];
+    }
+  }
+
   for (auto const &jsonRoomMapping : jsonData["rooms"].items()) {
     auto &room = roomMapping[jsonRoomMapping.key()];
 
