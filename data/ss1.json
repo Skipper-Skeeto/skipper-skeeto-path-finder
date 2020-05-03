@@ -159,10 +159,6 @@
     "Fishing pole": {
       "room": "Secret hideout",
       "task_obstacle": "Unlock hideout closet"
-    },
-    "Wand": {
-      "room": "Tree trunk top",
-      "task_obstacle": "Remove dog"
     }
   },
   "tasks": {
@@ -395,13 +391,6 @@
       "task_obstacle": null,
       "items_needed": [
         "Fishing pole"
-      ]
-    },
-    "Hand over wand": {
-      "room": "Well bottom",
-      "task_obstacle": null,
-      "items_needed": [
-        "Wand"
       ]
     },
     "Visit tree trunk top": {
