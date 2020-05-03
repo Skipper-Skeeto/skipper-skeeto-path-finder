@@ -45,4 +45,6 @@ private:
 
   CommonState *commonState;
   const Data *data;
+
+  std::string resultDirName;
 };

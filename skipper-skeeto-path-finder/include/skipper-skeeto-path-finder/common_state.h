@@ -24,7 +24,11 @@ public:
 
   void printStatus();
 
+  void dumpGoodOnes(const std::string &dirName);
+
 private:
+  static const char *DUMPED_GOOD_ONES_BASE_DIR;
+
   int getMaxVisitedRoomsCount() const;
 
   bool checkForDuplicateState(const State &state, const Room *room, int visitedRoomsCount);
@@ -40,6 +44,7 @@ private:
   int maxVisitedRoomsCount = 5000;
   std::unordered_map<const Room *, std::unordered_map<std::vector<bool>, int>> stepsForStage;
   std::vector<Path> goodOnes;
+  int dumpedGoodOnes = 0;
 
   int tooManyGeneralStepsCount = 0;
   int tooManyGeneralStepsDepthTotal = 0;

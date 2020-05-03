@@ -1,7 +1,14 @@
 #include "skipper-skeeto-path-finder/common_state.h"
 
+#include <fstream>
 #include <iomanip>
 #include <iostream>
+
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
+const char *CommonState::DUMPED_GOOD_ONES_BASE_DIR = "results";
 
 std::vector<Path> CommonState::getGoodOnes() const {
   std::lock_guard<std::mutex> guard(finalStateMutex);
@@ -116,6 +123,41 @@ void CommonState::printStatus() {
             << std::endl;
 }
 
+void CommonState::dumpGoodOnes(const std::string &dirName) {
+  std::lock_guard<std::mutex> guardFinalState(finalStateMutex);
+  if (dumpedGoodOnes >= goodOnes.size()) {
+    return;
+  }
+
+  int newDumpedCount = goodOnes.size() - dumpedGoodOnes;
+
+  std::string dirPath = std::string(DUMPED_GOOD_ONES_BASE_DIR) + "/" + dirName;
+  std::string fileName = dirPath + "/" + std::to_string(maxVisitedRoomsCount) + ".txt";
+
+#ifdef _WIN32
+  !CreateDirectoryA(DUMPED_GOOD_ONES_BASE_DIR, nullptr);
+  !CreateDirectoryA(dirPath.c_str(), nullptr);
+#else
+#error "Creating directory was not implemented for this platform"
+#endif
+
+  std::ofstream dumpFile(fileName);
+  for (int index = 0; index < goodOnes.size(); ++index) {
+    dumpFile << "PATH #" << index + 1 << "(of " << goodOnes.size() << "):" << std::endl;
+    for (const auto &step : goodOnes[index].getSteps()) {
+      dumpFile << step << std::endl;
+    }
+
+    dumpFile << std::endl
+             << std::endl;
+  }
+
+  dumpedGoodOnes = goodOnes.size();
+
+  std::lock_guard<std::mutex> guardPrint(printMutex);
+  std::cout << "Dumped " << newDumpedCount << " new good one(s) to " << fileName << std::endl;
+}
+
 int CommonState::getMaxVisitedRoomsCount() const {
   std::lock_guard<std::mutex> guard(finalStateMutex);
   return maxVisitedRoomsCount;
@@ -144,6 +186,7 @@ void CommonState::addNewGoodOne(const Path *path) {
   if (path->getVisitedRoomsCount() < maxVisitedRoomsCount) {
     maxVisitedRoomsCount = path->getVisitedRoomsCount();
     goodOnes.clear();
+    dumpedGoodOnes = 0;
   }
 
   goodOnes.push_back(*path);

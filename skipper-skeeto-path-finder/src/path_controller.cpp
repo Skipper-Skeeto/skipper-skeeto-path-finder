@@ -4,12 +4,26 @@
 
 #include <iostream>
 
+#include <ctime>
+#include <iomanip>
 #include <mutex>
+#include <sstream>
 #include <thread>
 
 PathController::PathController(const Data *data) {
   this->data = data;
   this->commonState = new CommonState();
+
+  std::time_t currentTime = std::time(nullptr);
+  std::ostringstream stringStream;
+  std::tm localTime{};
+#ifdef _WIN32
+  localtime_s(&localTime, &currentTime);
+#else
+#error "Converting to locale time was not implemented for this platform"
+#endif
+  stringStream << std::put_time(&localTime, "%Y%m%d-%H%M%S");
+  resultDirName = stringStream.str();
 }
 
 PathController::~PathController() {
@@ -70,6 +84,8 @@ void PathController::moveOnDistributeRecursive(const std::vector<Path *> paths) 
     std::vector<std::thread> threads;
     auto startWithRecursive = [this](Path *path) {
       moveOnRecursive(path);
+      //while (moveOnDistributed(path)) {
+      //}
     };
     for (const auto &path : paths) {
       std::thread thread(startWithRecursive, path);
@@ -79,6 +95,8 @@ void PathController::moveOnDistributeRecursive(const std::vector<Path *> paths) 
     auto printer = [this]() {
       while (!commonState->shouldStop()) {
         commonState->printStatus();
+
+        commonState->dumpGoodOnes(resultDirName);
 
         std::this_thread::sleep_for(std::chrono::seconds(5));
       }
