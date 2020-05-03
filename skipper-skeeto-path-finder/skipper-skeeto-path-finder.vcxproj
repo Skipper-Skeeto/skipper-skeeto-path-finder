@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\skipper-skeeto-path-finder\action.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\common_state.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\data.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\item.h" />
@@ -31,11 +32,13 @@
   <ItemGroup>
     <ClCompile Include="include\skipper-skeeto-path-finder\common_state.cpp" />
     <ClCompile Include="src\data.cpp" />
+    <ClCompile Include="src\item.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\path.cpp" />
     <ClCompile Include="src\path_controller.cpp" />
     <ClCompile Include="src\room.cpp" />
     <ClCompile Include="src\sub_path_info.cpp" />
+    <ClCompile Include="src\task.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

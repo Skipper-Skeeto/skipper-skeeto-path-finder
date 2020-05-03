@@ -2,11 +2,11 @@
 
 #include "skipper-skeeto-path-finder/sub_path_info.h"
 
-#include <string>
 #include <vector>
 
 using State = std::vector<bool>;
 
+class Action;
 class Item;
 class Task;
 class Room;
@@ -45,7 +45,7 @@ public:
 
   std::vector<const Task *> getRemainingTasksForRoom(const Room *room) const;
 
-  std::vector<std::string> getSteps() const;
+  std::vector<const Action *> getSteps() const;
 
   bool hasFoundItem(const Item *item) const;
 
@@ -61,7 +61,7 @@ private:
   std::vector<const Item *> remainingItems;
   std::vector<const Task *> completedTasks;
   std::vector<const Task *> remainingTasks;
-  std::vector<std::string> steps;
+  std::vector<const Action *> steps;
   unsigned char enteredRoomsCount = 0;
   std::vector<bool> state;
 };

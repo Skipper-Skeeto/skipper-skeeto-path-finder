@@ -1,8 +1,11 @@
 #include "skipper-skeeto-path-finder/common_state.h"
 
+#include "skipper-skeeto-path-finder/action.h"
+
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <string>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -144,8 +147,8 @@ void CommonState::dumpGoodOnes(const std::string &dirName) {
   std::ofstream dumpFile(fileName);
   for (int index = 0; index < goodOnes.size(); ++index) {
     dumpFile << "PATH #" << index + 1 << "(of " << goodOnes.size() << "):" << std::endl;
-    for (const auto &step : goodOnes[index].getSteps()) {
-      dumpFile << step << std::endl;
+    for (const auto &action : goodOnes[index].getSteps()) {
+      dumpFile << action->getStepDescription() << std::endl;
     }
 
     dumpFile << std::endl

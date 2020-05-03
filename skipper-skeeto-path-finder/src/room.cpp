@@ -1,5 +1,9 @@
 #include "skipper-skeeto-path-finder/room.h"
 
+std::string Room::getStepDescription() const {
+  return std::string("- Move to: ") + key;
+}
+
 void Room::setupNextRooms(Room *left, Room *right, Room *up, Room *down) {
   rooms.clear();
 

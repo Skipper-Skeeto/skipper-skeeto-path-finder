@@ -49,7 +49,7 @@ void Path::pickUpItem(const Item *item) {
   foundItems.push_back(item);
   state[item->uniqueIndex] = true;
 
-  steps.push_back(std::string("  - Pick up: ") + item->key);
+  steps.push_back(item);
 }
 
 void Path::pickUpItems(const std::vector<const Item *> &items) {
@@ -67,7 +67,7 @@ void Path::completeTask(const Task *task) {
   completedTasks.push_back(task);
   state[task->uniqueIndex] = true;
 
-  steps.push_back(std::string("  - Complete task: ") + task->key);
+  steps.push_back(task);
 }
 
 void Path::completeTasks(const std::vector<const Task *> &tasks) {
@@ -77,7 +77,7 @@ void Path::completeTasks(const std::vector<const Task *> &tasks) {
 }
 
 void Path::enterRoom(const Room *room) {
-  steps.push_back(std::string("- Move to: ") + room->key);
+  steps.push_back(room);
   ++enteredRoomsCount;
   currentRoom = room;
 }
@@ -136,7 +136,7 @@ std::vector<const Task *> Path::getRemainingTasksForRoom(const Room *room) const
   return tasks;
 }
 
-std::vector<std::string> Path::getSteps() const {
+std::vector<const Action *> Path::getSteps() const {
   return steps;
 }
 
