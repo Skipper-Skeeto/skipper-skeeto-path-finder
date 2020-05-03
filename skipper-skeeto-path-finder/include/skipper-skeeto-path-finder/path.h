@@ -35,7 +35,7 @@ public:
 
   int getStepCount() const;
 
-  int getVisitedRoomsCount() const;
+  unsigned char getVisitedRoomsCount() const;
 
   bool isDone() const;
 
@@ -51,7 +51,7 @@ public:
 
   bool hasCompletedTask(const Task *task) const;
 
-  int depth{0};
+  unsigned char depth{0};
 
   SubPathInfo subPathInfo;
 
@@ -62,6 +62,6 @@ private:
   std::vector<const Task *> completedTasks;
   std::vector<const Task *> remainingTasks;
   std::vector<std::string> steps;
-  int enteredRoomsCount = 0;
+  unsigned char enteredRoomsCount = 0;
   std::vector<bool> state;
 };

@@ -29,9 +29,9 @@ public:
 private:
   static const char *DUMPED_GOOD_ONES_BASE_DIR;
 
-  int getMaxVisitedRoomsCount() const;
+  unsigned char getMaxVisitedRoomsCount() const;
 
-  bool checkForDuplicateState(const State &state, const Room *room, int visitedRoomsCount);
+  bool checkForDuplicateState(const State &state, const Room *room, unsigned char visitedRoomsCount);
 
   void addNewGoodOne(const Path *path);
 
@@ -41,8 +41,8 @@ private:
   mutable std::mutex stopMutex;
   mutable std::mutex printMutex;
 
-  int maxVisitedRoomsCount = 5000;
-  std::unordered_map<const Room *, std::unordered_map<std::vector<bool>, int>> stepsForStage;
+  unsigned char maxVisitedRoomsCount = 255;
+  std::unordered_map<const Room *, std::unordered_map<std::vector<bool>, unsigned char>> stepsForStage;
   std::vector<Path> goodOnes;
   int dumpedGoodOnes = 0;
 

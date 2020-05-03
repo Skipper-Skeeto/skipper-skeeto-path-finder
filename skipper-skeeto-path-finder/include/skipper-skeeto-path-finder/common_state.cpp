@@ -16,7 +16,7 @@ std::vector<Path> CommonState::getGoodOnes() const {
 }
 
 bool CommonState::makesSenseToPerformActions(const Path *originPath, const std::vector<const Room *> &subPath) {
-  int visitedRoomsCount = originPath->getVisitedRoomsCount() + subPath.size();
+  unsigned char visitedRoomsCount = originPath->getVisitedRoomsCount() + subPath.size();
 
   // Even if count has reached max, the actions might complete the path and thus we won't exceed max
   if (visitedRoomsCount > getMaxVisitedRoomsCount()) {
@@ -61,7 +61,7 @@ bool CommonState::makesSenseToStartNewSubPath(const Path *path) {
 }
 
 bool CommonState::makesSenseToExpandSubPath(const Path *originPath, const std::vector<const Room *> &subPath) {
-  int visitedRoomsCount = originPath->getVisitedRoomsCount() + subPath.size();
+  unsigned char visitedRoomsCount = originPath->getVisitedRoomsCount() + subPath.size();
 
   // If we move on, the count would exceed max - that's why we check for equality too
   if (visitedRoomsCount >= getMaxVisitedRoomsCount()) {
@@ -86,7 +86,7 @@ bool CommonState::submitIfDone(const Path *path) {
   addNewGoodOne(path);
 
   std::lock_guard<std::mutex> guard(printMutex);
-  std::cout << "Found new good with " << path->getVisitedRoomsCount() << " rooms (depth " << path->depth << ")" << std::endl;
+  std::cout << "Found new good with " << int(path->getVisitedRoomsCount()) << " rooms (depth " << int(path->depth) << ")" << std::endl;
 
   return true;
 }
@@ -117,7 +117,7 @@ void CommonState::printStatus() {
   }
 
   std::lock_guard<std::mutex> guardPrint(printMutex);
-  std::cout << "good: " << goodOnes.size() << "; max: " << maxVisitedRoomsCount
+  std::cout << "good: " << goodOnes.size() << "; max: " << int(maxVisitedRoomsCount)
             << "; general: " << std::setw(8) << tooManyGeneralStepsCount << "=" << std::fixed << std::setprecision(8) << depthKillGeneralAvg
             << "; state: " << std::setw(8) << tooManyStateStepsCount << "=" << std::fixed << std::setprecision(8) << depthKillStateAvg
             << std::endl;
@@ -158,12 +158,12 @@ void CommonState::dumpGoodOnes(const std::string &dirName) {
   std::cout << "Dumped " << newDumpedCount << " new good one(s) to " << fileName << std::endl;
 }
 
-int CommonState::getMaxVisitedRoomsCount() const {
+unsigned char CommonState::getMaxVisitedRoomsCount() const {
   std::lock_guard<std::mutex> guard(finalStateMutex);
   return maxVisitedRoomsCount;
 }
 
-bool CommonState::checkForDuplicateState(const State &state, const Room *room, int visitedRoomsCount) {
+bool CommonState::checkForDuplicateState(const State &state, const Room *room, unsigned char visitedRoomsCount) {
   std::lock_guard<std::mutex> guard(stepStageMutex);
   auto &roomStates = stepsForStage[room];
   auto stepsIterator = roomStates.find(state);

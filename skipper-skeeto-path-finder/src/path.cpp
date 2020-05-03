@@ -96,7 +96,7 @@ int Path::getStepCount() const {
   return int(steps.size());
 }
 
-int Path::getVisitedRoomsCount() const {
+unsigned char Path::getVisitedRoomsCount() const {
   return enteredRoomsCount;
 }
 
