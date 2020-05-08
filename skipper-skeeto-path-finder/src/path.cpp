@@ -9,7 +9,6 @@
 Path::Path(const std::vector<const Item *> &allItems, const std::vector<const Task *> &allTasks, const Room *startRoom) {
   this->currentRoom = startRoom;
 
-  state = std::vector<bool>(allItems.size() + allTasks.size(), false);
 }
 
 Path::Path(const Path &path) {

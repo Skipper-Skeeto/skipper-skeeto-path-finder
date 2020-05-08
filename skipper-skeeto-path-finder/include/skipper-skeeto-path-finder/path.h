@@ -2,9 +2,10 @@
 
 #include "skipper-skeeto-path-finder/sub_path_info.h"
 
+#include <array>
 #include <vector>
 
-using State = std::vector<bool>;
+using State = std::array<bool, ITEM_COUNT + TASK_COUNT>;
 
 class Action;
 class Item;
@@ -55,5 +56,5 @@ private:
   const Room *currentRoom;
   std::vector<const Action *> steps;
   unsigned char enteredRoomsCount = 0;
-  std::vector<bool> state;
+  State state{};
 };

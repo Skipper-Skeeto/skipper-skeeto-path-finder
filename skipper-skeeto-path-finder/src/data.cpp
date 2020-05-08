@@ -1,5 +1,7 @@
 #include "skipper-skeeto-path-finder/data.h"
 
+#include <sstream>
+
 Data::Data(const nlohmann::json &jsonData) {
   int nextUniqueIndex = 0;
 
@@ -83,6 +85,24 @@ Data::Data(const nlohmann::json &jsonData) {
     if (jsonItemMapping.value()["task_obstacle"] != nullptr) {
       item.taskObstacle = &taskMapping[jsonItemMapping.value()["task_obstacle"]];
     }
+  }
+
+  if (ROOM_COUNT != roomMapping.size()) {
+    std::stringstream stringStream;
+    stringStream << "Predefined room count (" << ROOM_COUNT << ") did not match the actual (" << roomMapping.size() << ")";
+    throw std::exception(stringStream.str().c_str());
+  }
+  
+  if (ITEM_COUNT != itemMapping.size()) {
+    std::stringstream stringStream;
+    stringStream << "Predefined item count (" << ITEM_COUNT << ") did not match the actual (" << itemMapping.size() << ")";
+    throw std::exception(stringStream.str().c_str());
+  }
+
+  if (TASK_COUNT != taskMapping.size()) {
+    std::stringstream stringStream;
+    stringStream << "Predefined task count (" << TASK_COUNT << ") did not match the actual (" << taskMapping.size() << ")";
+    throw std::exception(stringStream.str().c_str());
   }
 }
 

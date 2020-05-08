@@ -5,16 +5,24 @@
 #include "json/json.hpp"
 
 #include <fstream>
+#include <iostream>
 
 int main() {
   std::ifstream dataStream("../data/ss1.json");
   nlohmann::json jsonData;
   dataStream >> jsonData;
 
-  Data data(jsonData);
+  try {
+    Data data(jsonData);
 
-  PathController controller(&data);
-  controller.start();
+    PathController controller(&data);
+    controller.start();
 
-  controller.printResult();
+    controller.printResult();
+  } catch (const std::exception &exception) {
+    std::cout << "Caught exception: " << exception.what() << std::endl;
+    return -1;
+  }
+
+  return 0;
 }

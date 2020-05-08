@@ -3,8 +3,8 @@
 #include "skipper-skeeto-path-finder/path.h"
 
 #include <chrono>
+#include <map>
 #include <mutex>
-#include <unordered_map>
 
 class CommonState {
 public:
@@ -42,7 +42,7 @@ private:
   mutable std::mutex printMutex;
 
   unsigned char maxVisitedRoomsCount = 255;
-  std::unordered_map<const Room *, std::unordered_map<std::vector<bool>, unsigned char>> stepsForStage;
+  std::map<const Room *, std::map<State, unsigned char>> stepsForStage;
   std::vector<Path> goodOnes;
   int dumpedGoodOnes = 0;
 
