@@ -270,8 +270,8 @@ void PathController::performPossibleActions(Path *path) {
 std::vector<const Task *> PathController::getPossibleTasks(const Path *path, const Room *room) const {
   std::vector<const Task *> possibleTasks;
 
-  for (const auto &task : path->getRemainingTasksForRoom(room)) {
-    if (canCompleteTask(path, task)) {
+  for (const auto &task : data->getTasksForRoom(room)) {
+    if (!path->hasCompletedTask(task) && canCompleteTask(path, task)) {
       possibleTasks.push_back(task);
     }
   }
@@ -282,8 +282,8 @@ std::vector<const Task *> PathController::getPossibleTasks(const Path *path, con
 std::vector<const Item *> PathController::getPossibleItems(const Path *path, const Room *room) const {
   std::vector<const Item *> possibleItems;
 
-  for (const auto &item : path->getRemainingItemsForRoom(room)) {
-    if (canPickUpItem(path, item)) {
+  for (const auto &item : data->getItemsForRoom(room)) {
+    if (!path->hasFoundItem(item) && canPickUpItem(path, item)) {
       possibleItems.push_back(item);
     }
   }

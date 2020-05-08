@@ -20,10 +20,17 @@ public:
 
   std::vector<const Task *> getTasks() const;
 
+  std::vector<const Item *> getItemsForRoom(const Room *room) const;
+
+  std::vector<const Task *> getTasksForRoom(const Room *room) const;
+
   const Room *getStartRoom() const;
 
 private:
   std::unordered_map<std::string, Room> roomMapping;
   std::unordered_map<std::string, Item> itemMapping;
   std::unordered_map<std::string, Task> taskMapping;
+
+  std::unordered_map<const Room *, std::vector<const Item *>> roomToItemsMapping;
+  std::unordered_map<const Room *, std::vector<const Task *>> roomToTasksMapping;
 };

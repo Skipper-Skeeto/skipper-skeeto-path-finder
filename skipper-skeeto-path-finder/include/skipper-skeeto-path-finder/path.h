@@ -41,10 +41,6 @@ public:
 
   const State &getState() const;
 
-  std::vector<const Item *> getRemainingItemsForRoom(const Room *room) const;
-
-  std::vector<const Task *> getRemainingTasksForRoom(const Room *room) const;
-
   std::vector<const Action *> getSteps() const;
 
   bool hasFoundItem(const Item *item) const;
@@ -57,10 +53,6 @@ public:
 
 private:
   const Room *currentRoom;
-  std::vector<const Item *> foundItems;
-  std::vector<const Item *> remainingItems;
-  std::vector<const Task *> completedTasks;
-  std::vector<const Task *> remainingTasks;
   std::vector<const Action *> steps;
   unsigned char enteredRoomsCount = 0;
   std::vector<bool> state;

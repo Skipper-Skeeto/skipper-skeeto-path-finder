@@ -7,6 +7,9 @@ Data::Data(const nlohmann::json &jsonData) {
     auto room = Room();
     room.key = jsonRoomMapping.key();
     roomMapping[jsonRoomMapping.key()] = room;
+
+    roomToItemsMapping[&roomMapping[jsonRoomMapping.key()]];
+    roomToTasksMapping[&roomMapping[jsonRoomMapping.key()]];
   }
 
   for (auto const &jsonItemMapping : jsonData["items"].items()) {
@@ -33,6 +36,7 @@ Data::Data(const nlohmann::json &jsonData) {
 
   for (auto const &jsonTaskMapping : jsonData["tasks"].items()) {
     auto &task = taskMapping[jsonTaskMapping.key()];
+    roomToTasksMapping[task.room].push_back(&task);
 
     if (jsonTaskMapping.value()["task_obstacle"] != nullptr) {
       task.taskObstacle = &taskMapping[jsonTaskMapping.value()["task_obstacle"]];
@@ -74,6 +78,7 @@ Data::Data(const nlohmann::json &jsonData) {
     auto &item = itemMapping[jsonItemMapping.key()];
 
     item.room = &roomMapping[jsonItemMapping.value()["room"]];
+    roomToItemsMapping[item.room].push_back(&item);
 
     if (jsonItemMapping.value()["task_obstacle"] != nullptr) {
       item.taskObstacle = &taskMapping[jsonItemMapping.value()["task_obstacle"]];
@@ -103,6 +108,14 @@ std::vector<const Task *> Data::getTasks() const {
     tasks.push_back(&task.second);
   }
   return tasks;
+}
+
+std::vector<const Item *> Data::getItemsForRoom(const Room *room) const {
+  return roomToItemsMapping.find(room)->second;
+}
+
+std::vector<const Task *> Data::getTasksForRoom(const Room *room) const {
+  return roomToTasksMapping.find(room)->second;
 }
 
 const Room *Data::getStartRoom() const {

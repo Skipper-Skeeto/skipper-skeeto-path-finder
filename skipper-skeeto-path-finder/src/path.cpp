@@ -9,18 +9,11 @@
 Path::Path(const std::vector<const Item *> &allItems, const std::vector<const Task *> &allTasks, const Room *startRoom) {
   this->currentRoom = startRoom;
 
-  remainingItems = allItems;
-  remainingTasks = allTasks;
-
-  state = std::vector<bool>(remainingItems.size() + remainingTasks.size(), false);
+  state = std::vector<bool>(allItems.size() + allTasks.size(), false);
 }
 
 Path::Path(const Path &path) {
   currentRoom = path.currentRoom;
-  foundItems = path.foundItems;
-  remainingItems = path.remainingItems;
-  completedTasks = path.completedTasks;
-  remainingTasks = path.remainingTasks;
   steps = path.steps;
   enteredRoomsCount = path.enteredRoomsCount;
   state = path.state;
@@ -40,15 +33,11 @@ Path Path::createFromSubPath(std::vector<const Room *> subPath) const {
 }
 
 void Path::pickUpItem(const Item *item) {
-  auto itemIterator = std::find(remainingItems.begin(), remainingItems.end(), item);
-  if (itemIterator == remainingItems.end()) {
+  if (hasFoundItem(item)) {
     throw std::exception("Item was already picked up");
   }
 
-  remainingItems.erase(itemIterator);
-  foundItems.push_back(item);
   state[item->uniqueIndex] = true;
-
   steps.push_back(item);
 }
 
@@ -59,14 +48,11 @@ void Path::pickUpItems(const std::vector<const Item *> &items) {
 }
 
 void Path::completeTask(const Task *task) {
-  auto taskIterator = std::find(remainingTasks.begin(), remainingTasks.end(), task);
-  if (taskIterator == remainingTasks.end()) {
+  if (hasCompletedTask(task)) {
     throw std::exception("Task was already completed");
   }
-  remainingTasks.erase(taskIterator);
-  completedTasks.push_back(task);
-  state[task->uniqueIndex] = true;
 
+  state[task->uniqueIndex] = true;
   steps.push_back(task);
 }
 
@@ -101,39 +87,16 @@ unsigned char Path::getVisitedRoomsCount() const {
 }
 
 bool Path::isDone() const {
-  return remainingItems.empty() && remainingTasks.empty();
+  return std::all_of(
+      state.begin(),
+      state.end(),
+      [](bool value) {
+        return value;
+      });
 };
 
 const State &Path::getState() const {
   return state;
-}
-
-std::vector<const Item *> Path::getRemainingItemsForRoom(const Room *room) const {
-  std::vector<const Item *> items;
-
-  std::copy_if(
-      remainingItems.begin(),
-      remainingItems.end(),
-      std::back_inserter(items),
-      [room](const Item *item) {
-        return item->room == room;
-      });
-
-  return items;
-}
-
-std::vector<const Task *> Path::getRemainingTasksForRoom(const Room *room) const {
-  std::vector<const Task *> tasks;
-
-  std::copy_if(
-      remainingTasks.begin(),
-      remainingTasks.end(),
-      std::back_inserter(tasks),
-      [room](const Task *task) {
-        return task->room == room;
-      });
-
-  return tasks;
 }
 
 std::vector<const Action *> Path::getSteps() const {
@@ -141,9 +104,9 @@ std::vector<const Action *> Path::getSteps() const {
 }
 
 bool Path::hasFoundItem(const Item *item) const {
-  return std::find(foundItems.begin(), foundItems.end(), item) != foundItems.end();
+  return state[item->uniqueIndex];
 }
 
 bool Path::hasCompletedTask(const Task *task) const {
-  return std::find(completedTasks.begin(), completedTasks.end(), task) != completedTasks.end();
+  return state[task->uniqueIndex];
 }
