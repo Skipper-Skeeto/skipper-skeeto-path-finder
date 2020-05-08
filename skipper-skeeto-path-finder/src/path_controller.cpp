@@ -133,11 +133,7 @@ bool PathController::findNewPath(Path *originPath) {
       if (subPath.empty()) {
         currentRoom = originPath->getCurrentRoom();
 
-        originPath->subPathInfo.availableRooms = data->getRooms();
-        originPath->subPathInfo.availableRooms.erase(std::find(
-            originPath->subPathInfo.availableRooms.begin(),
-            originPath->subPathInfo.availableRooms.end(),
-            originPath->getCurrentRoom()));
+        originPath->subPathInfo.unavailableRooms[originPath->getCurrentRoom()->roomIndex] = true;
       } else {
         currentRoom = subPath.back();
       }
@@ -154,26 +150,21 @@ bool PathController::findNewPath(Path *originPath) {
       originPath->subPathInfo.remainingUnfinishedSubPaths.pop_front();
     }
 
-    auto availableRoomIterator = std::find(
-        originPath->subPathInfo.availableRooms.begin(),
-        originPath->subPathInfo.availableRooms.end(),
-        nextRoom);
-    if (availableRoomIterator == originPath->subPathInfo.availableRooms.end()) {
+    if (originPath->subPathInfo.unavailableRooms[nextRoom->roomIndex]) {
       // Room already reached or cannot be entered.
       // We cannot have gotten here faster than the other steps getting here.
       continue;
     }
 
-    const Room *avaiableRoom = *availableRoomIterator;
-    originPath->subPathInfo.availableRooms.erase(availableRoomIterator);
+    originPath->subPathInfo.unavailableRooms[nextRoom->roomIndex] = true;
 
-    auto enterRoomResult = canEnterRoom(originPath, avaiableRoom);
+    auto enterRoomResult = canEnterRoom(originPath, nextRoom);
     if (enterRoomResult == EnterRoomResult::CannotEnter) {
       continue;
     }
 
     std::vector<const Room *> newSubPath(subPath);
-    newSubPath.push_back(avaiableRoom);
+    newSubPath.push_back(nextRoom);
 
     if (!commonState->makesSenseToPerformActions(originPath, newSubPath)) {
       continue;
@@ -181,7 +172,7 @@ bool PathController::findNewPath(Path *originPath) {
 
     if (enterRoomResult == EnterRoomResult::CanEnterWithTaskObstacle) {
       Path newPath = originPath->createFromSubPath(newSubPath);
-      newPath.completeTask(avaiableRoom->taskObstacle);
+      newPath.completeTask(nextRoom->taskObstacle);
 
       performPossibleActions(&newPath);
 
@@ -200,12 +191,12 @@ bool PathController::findNewPath(Path *originPath) {
       throw std::exception("Unknown enter room result!");
     }
 
-    auto possibleTasks = getPossibleTasks(originPath, avaiableRoom);
+    auto possibleTasks = getPossibleTasks(originPath, nextRoom);
     if (!possibleTasks.empty()) {
       Path newPath = originPath->createFromSubPath(newSubPath);
       newPath.completeTasks(possibleTasks);
 
-      newPath.pickUpItems(getPossibleItems(&newPath, avaiableRoom));
+      newPath.pickUpItems(getPossibleItems(&newPath, nextRoom));
 
       if (commonState->submitIfDone(&newPath)) {
         continue;
@@ -219,7 +210,7 @@ bool PathController::findNewPath(Path *originPath) {
       continue;
     }
 
-    auto possibleItems = getPossibleItems(originPath, avaiableRoom);
+    auto possibleItems = getPossibleItems(originPath, nextRoom);
     if (!possibleItems.empty()) {
       Path newPath = originPath->createFromSubPath(newSubPath);
       newPath.pickUpItems(possibleItems);

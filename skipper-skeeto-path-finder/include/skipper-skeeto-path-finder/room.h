@@ -13,6 +13,7 @@ public:
 
   std::string key;
   Task *taskObstacle = nullptr;
+  int roomIndex;
 
   void setupNextRooms(Room *left, Room *right, Room *up, Room *down);
   std::vector<const Room *> getNextRooms() const;

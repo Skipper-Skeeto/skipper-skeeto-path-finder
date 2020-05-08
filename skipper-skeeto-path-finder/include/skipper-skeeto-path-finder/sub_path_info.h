@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <deque>
 #include <list>
 #include <vector>
@@ -22,7 +23,7 @@ public:
 
   std::deque<std::vector<const Room *>> remainingUnfinishedSubPaths{{}};
   std::vector<const Room *> nextRoomsForFirstSubPath;
-  std::vector<const Room *> availableRooms;
+  std::array<bool, ROOM_COUNT> unavailableRooms{};
 
 private:
   std::list<Path> paths;

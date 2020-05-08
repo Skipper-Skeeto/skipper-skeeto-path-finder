@@ -3,11 +3,13 @@
 #include <sstream>
 
 Data::Data(const nlohmann::json &jsonData) {
-  int nextUniqueIndex = 0;
+  int nextActionIndex = 0;
+  int nextRoomIndex = 0;
 
   for (auto const &jsonRoomMapping : jsonData["rooms"].items()) {
     auto room = Room();
     room.key = jsonRoomMapping.key();
+    room.roomIndex = nextRoomIndex++;
     roomMapping[jsonRoomMapping.key()] = room;
 
     roomToItemsMapping[&roomMapping[jsonRoomMapping.key()]];
@@ -17,7 +19,7 @@ Data::Data(const nlohmann::json &jsonData) {
   for (auto const &jsonItemMapping : jsonData["items"].items()) {
     auto item = Item();
     item.key = jsonItemMapping.key();
-    item.uniqueIndex = nextUniqueIndex++;
+    item.uniqueIndex = nextActionIndex++;
 
     itemMapping[jsonItemMapping.key()] = item;
   }
@@ -25,7 +27,7 @@ Data::Data(const nlohmann::json &jsonData) {
   for (auto const &jsonTaskMapping : jsonData["tasks"].items()) {
     auto task = Task();
     task.key = jsonTaskMapping.key();
-    task.uniqueIndex = nextUniqueIndex++;
+    task.uniqueIndex = nextActionIndex++;
 
     task.room = &roomMapping[jsonTaskMapping.value()["room"]];
 
