@@ -13,6 +13,7 @@ public:
   virtual std::string getStepDescription() const;
 
   int uniqueIndex = -1;
+  int stateIndex = -1;
   std::string key;
   Room *room = nullptr;
   Task *taskObstacle = nullptr;

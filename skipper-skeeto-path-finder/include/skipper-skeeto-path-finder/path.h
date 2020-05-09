@@ -5,7 +5,7 @@
 #include <array>
 #include <vector>
 
-using State = std::array<bool, ITEM_COUNT + TASK_COUNT>;
+using State = unsigned long long int;
 
 class Action;
 class Item;
@@ -56,4 +56,6 @@ private:
   std::vector<const Action *> steps;
   unsigned char enteredRoomsCount = 0;
   State state{};
+  unsigned long long int foundItems{};
+  unsigned long long int completedTasks{};
 };

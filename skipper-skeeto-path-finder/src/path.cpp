@@ -17,6 +17,8 @@ Path::Path(const Path &path) {
   steps = path.steps;
   enteredRoomsCount = path.enteredRoomsCount;
   state = path.state;
+  foundItems = path.foundItems;
+  completedTasks = path.completedTasks;
   depth = path.depth;
 
   // Note that we don't copy subPathInfo, since that should be clean
@@ -39,7 +41,8 @@ void Path::pickUpItem(const Item *item) {
     throw std::exception("Item was already picked up");
   }
 
-  state[item->uniqueIndex] = true;
+  state |= (1ULL << item->stateIndex);
+  foundItems |= (1ULL << item->uniqueIndex);
   steps.push_back(item);
 }
 
@@ -54,7 +57,8 @@ void Path::completeTask(const Task *task) {
     throw std::exception("Task was already completed");
   }
 
-  state[task->uniqueIndex] = true;
+  state |= (1ULL << task->stateIndex);
+  completedTasks |= (1ULL << task->uniqueIndex);
   steps.push_back(task);
 }
 
@@ -85,12 +89,7 @@ unsigned char Path::getVisitedRoomsCount() const {
 }
 
 bool Path::isDone() const {
-  return std::all_of(
-      state.begin(),
-      state.end(),
-      [](bool value) {
-        return value;
-      });
+  return (1ULL << STATE_COUNT) - 1 == state;
 };
 
 const State &Path::getState() const {
@@ -111,9 +110,9 @@ std::vector<const Action *> Path::getSteps() const {
 }
 
 bool Path::hasFoundItem(const Item *item) const {
-  return state[item->uniqueIndex];
+  return foundItems & (1ULL << item->uniqueIndex);
 }
 
 bool Path::hasCompletedTask(const Task *task) const {
-  return state[task->uniqueIndex];
+  return completedTasks & (1ULL << task->uniqueIndex);
 }

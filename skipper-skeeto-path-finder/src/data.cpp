@@ -3,7 +3,8 @@
 #include <sstream>
 
 Data::Data(const nlohmann::json &jsonData) {
-  int nextActionIndex = 0;
+  int nextItemIndex = 0;
+  int nextTaskIndex = 0;
   int nextRoomIndex = 0;
 
   for (auto const &jsonRoomMapping : jsonData["rooms"].items()) {
@@ -19,7 +20,7 @@ Data::Data(const nlohmann::json &jsonData) {
   for (auto const &jsonItemMapping : jsonData["items"].items()) {
     auto item = Item();
     item.key = jsonItemMapping.key();
-    item.uniqueIndex = nextActionIndex++;
+    item.uniqueIndex = nextItemIndex++;
 
     itemMapping[jsonItemMapping.key()] = item;
   }
@@ -27,7 +28,7 @@ Data::Data(const nlohmann::json &jsonData) {
   for (auto const &jsonTaskMapping : jsonData["tasks"].items()) {
     auto task = Task();
     task.key = jsonTaskMapping.key();
-    task.uniqueIndex = nextActionIndex++;
+    task.uniqueIndex = nextTaskIndex++;
 
     task.room = &roomMapping[jsonTaskMapping.value()["room"]];
 
@@ -89,12 +90,47 @@ Data::Data(const nlohmann::json &jsonData) {
     }
   }
 
+  int nextStateIndex = 0;
+  for (const auto &roomTasks : roomToTasksMapping) {
+    int noObstacleIndex = -1;
+    for (const auto &task : roomTasks.second) {
+      if (task->taskObstacle == nullptr && task->itemsNeeded.empty()) {
+        if (noObstacleIndex == -1) {
+          noObstacleIndex = nextStateIndex++;
+        }
+        taskMapping[task->key].stateIndex = noObstacleIndex;
+      } else {
+        taskMapping[task->key].stateIndex = nextStateIndex++;
+      }
+    }
+  }
+
+  for (const auto &roomItems : roomToItemsMapping) {
+    int noObstacleIndex = -1;
+    if (roomItems.first->taskObstacle != nullptr && roomItems.first->taskObstacle->room == roomItems.first) {
+      noObstacleIndex = roomItems.first->taskObstacle->stateIndex;
+    }
+
+    for (const auto &item : roomItems.second) {
+      if (item->taskObstacle == nullptr) {
+        if (noObstacleIndex == -1) {
+          noObstacleIndex = nextStateIndex++;
+        }
+        itemMapping[item->key].stateIndex = noObstacleIndex;
+      } else if (item->taskObstacle->room == roomItems.first) {
+        itemMapping[item->key].stateIndex = item->taskObstacle->stateIndex;
+      } else {
+        itemMapping[item->key].stateIndex = nextStateIndex++;
+      }
+    }
+  }
+
   if (ROOM_COUNT != roomMapping.size()) {
     std::stringstream stringStream;
     stringStream << "Predefined room count (" << ROOM_COUNT << ") did not match the actual (" << roomMapping.size() << ")";
     throw std::exception(stringStream.str().c_str());
   }
-  
+
   if (ITEM_COUNT != itemMapping.size()) {
     std::stringstream stringStream;
     stringStream << "Predefined item count (" << ITEM_COUNT << ") did not match the actual (" << itemMapping.size() << ")";
@@ -104,6 +140,20 @@ Data::Data(const nlohmann::json &jsonData) {
   if (TASK_COUNT != taskMapping.size()) {
     std::stringstream stringStream;
     stringStream << "Predefined task count (" << TASK_COUNT << ") did not match the actual (" << taskMapping.size() << ")";
+    throw std::exception(stringStream.str().c_str());
+  }
+
+  if (STATE_COUNT != nextStateIndex) {
+    std::stringstream stringStream;
+    stringStream << "Predefined state count (" << STATE_COUNT << ") did not match the actual (" << nextStateIndex << ")";
+    throw std::exception(stringStream.str().c_str());
+  }
+
+  if (nextStateIndex > 64) {
+    std::stringstream stringStream;
+    stringStream << "Too many different states to be able to optimize state key. "
+                 << "Optimize the state-grouping or roll-back that use list of bools as state key. "
+                 << "Found " << nextStateIndex << " unique states";
     throw std::exception(stringStream.str().c_str());
   }
 }
