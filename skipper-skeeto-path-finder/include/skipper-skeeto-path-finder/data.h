@@ -1,8 +1,8 @@
 #pragma once
 
-#include "item.h"
-#include "room.h"
-#include "task.h"
+#include "skipper-skeeto-path-finder/item.h"
+#include "skipper-skeeto-path-finder/room.h"
+#include "skipper-skeeto-path-finder/task.h"
 
 #include <string>
 #include <unordered_map>

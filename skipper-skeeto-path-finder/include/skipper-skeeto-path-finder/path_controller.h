@@ -1,8 +1,8 @@
 #pragma once
 
-#include "data.h"
-#include "path.h"
 #include "skipper-skeeto-path-finder/common_state.h"
+#include "skipper-skeeto-path-finder/data.h"
+#include "skipper-skeeto-path-finder/path.h"
 
 #include <queue>
 #include <unordered_map>
