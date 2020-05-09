@@ -4,6 +4,7 @@
 #include "skipper-skeeto-path-finder/data.h"
 #include "skipper-skeeto-path-finder/path.h"
 
+#include <functional>
 #include <queue>
 #include <unordered_map>
 
@@ -27,7 +28,7 @@ private:
 
   bool moveOnDistributed(Path *path);
 
-  void moveOnDistributeRecursive(const std::vector<Path *> paths);
+  void distributeToThreads(const std::vector<Path *> paths, const std::function<void(Path *)> &threadFunction);
 
   bool findNewPath(Path *originPath);
 

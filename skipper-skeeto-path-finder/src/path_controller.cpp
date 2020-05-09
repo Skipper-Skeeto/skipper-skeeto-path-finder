@@ -35,8 +35,13 @@ void PathController::start() {
 
   performPossibleActions(&startPath);
 
-  moveOnDistributeRecursive({&startPath});
-  //moveOnRecursive(&startPath);
+  auto threadFunction = [this](Path *path) {
+    //moveOnRecursive(path);
+    while (moveOnDistributed(path)) {
+    }
+  };
+
+  distributeToThreads({&startPath}, threadFunction);
 }
 
 void PathController::printResult() const {
@@ -76,19 +81,14 @@ bool PathController::moveOnDistributed(Path *path) {
   return true;
 }
 
-void PathController::moveOnDistributeRecursive(const std::vector<Path *> paths) {
+void PathController::distributeToThreads(const std::vector<Path *> paths, const std::function<void(Path *)> &threadFunction) {
   if (paths.size() > 10) {
-    std::cout << "Found " << paths.size() << " paths. Doing recursive threading" << std::endl
+    std::cout << "Spawning " << paths.size() << " threads with paths." << std::endl
               << std::endl;
 
     std::vector<std::thread> threads;
-    auto startWithRecursive = [this](Path *path) {
-      moveOnRecursive(path);
-      //while (moveOnDistributed(path)) {
-      //}
-    };
     for (const auto &path : paths) {
-      std::thread thread(startWithRecursive, path);
+      std::thread thread(threadFunction, path);
       threads.push_back(std::move(thread));
     }
 
@@ -122,7 +122,7 @@ void PathController::moveOnDistributeRecursive(const std::vector<Path *> paths) 
     }
   }
 
-  moveOnDistributeRecursive(newPaths);
+  distributeToThreads(newPaths, threadFunction);
 }
 
 bool PathController::findNewPath(Path *originPath) {
