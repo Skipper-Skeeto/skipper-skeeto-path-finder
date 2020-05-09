@@ -34,8 +34,6 @@ public:
 
   const Room *getCurrentRoom() const;
 
-  int getStepCount() const;
-
   unsigned char getVisitedRoomsCount() const;
 
   bool isDone() const;

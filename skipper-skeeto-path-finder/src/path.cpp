@@ -77,10 +77,6 @@ const Room *Path::getCurrentRoom() const {
   return currentRoom;
 }
 
-int Path::getStepCount() const {
-  return int(steps.size());
-}
-
 unsigned char Path::getVisitedRoomsCount() const {
   return enteredRoomsCount;
 }
