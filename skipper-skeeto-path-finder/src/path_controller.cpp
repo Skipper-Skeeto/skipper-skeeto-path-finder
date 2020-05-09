@@ -111,6 +111,8 @@ void PathController::distributeToThreads(const std::vector<Path *> paths, const 
 
     printerThread.join();
 
+    commonState->dumpGoodOnes(resultDirName);
+
     return;
   }
 
