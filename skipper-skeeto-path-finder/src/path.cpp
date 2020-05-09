@@ -12,6 +12,7 @@ Path::Path(const std::vector<const Item *> &allItems, const std::vector<const Ta
 }
 
 Path::Path(const Path &path) {
+  previousPath = path.previousPath;
   currentRoom = path.currentRoom;
   steps = path.steps;
   enteredRoomsCount = path.enteredRoomsCount;
@@ -24,6 +25,8 @@ Path::Path(const Path &path) {
 Path Path::createFromSubPath(std::vector<const Room *> subPath) const {
   Path path(*this);
 
+  path.steps.clear();
+  path.previousPath = this;
   path.depth++;
 
   path.enterRooms(subPath);
@@ -95,7 +98,16 @@ const State &Path::getState() const {
 }
 
 std::vector<const Action *> Path::getSteps() const {
-  return steps;
+  std::vector<const Action *> combinedSteps;
+
+  if (previousPath != nullptr) {
+    auto firstSteps = previousPath->getSteps();
+    combinedSteps.insert(combinedSteps.end(), firstSteps.begin(), firstSteps.end());
+  }
+
+  combinedSteps.insert(combinedSteps.end(), steps.begin(), steps.end());
+
+  return combinedSteps;
 }
 
 bool Path::hasFoundItem(const Item *item) const {

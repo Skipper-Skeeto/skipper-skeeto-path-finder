@@ -51,6 +51,7 @@ public:
   SubPathInfo subPathInfo;
 
 private:
+  const Path *previousPath = nullptr;
   const Room *currentRoom;
   std::vector<const Action *> steps;
   unsigned char enteredRoomsCount = 0;

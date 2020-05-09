@@ -8,7 +8,7 @@
 
 class CommonState {
 public:
-  std::vector<Path> getGoodOnes() const;
+  std::vector<std::vector<const Action *>> getGoodOnes() const;
 
   bool makesSenseToPerformActions(const Path *originPath, const std::vector<const Room *> &subPath);
 
@@ -43,7 +43,7 @@ private:
 
   unsigned char maxVisitedRoomsCount = 255;
   std::map<const Room *, std::map<State, unsigned char>> stepsForStage;
-  std::vector<Path> goodOnes;
+  std::vector<std::vector<const Action *>> goodOnes;
   int dumpedGoodOnes = 0;
 
   int tooManyGeneralStepsCount = 0;

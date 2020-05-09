@@ -1,6 +1,7 @@
 #include "skipper-skeeto-path-finder/common_state.h"
 
 #include "skipper-skeeto-path-finder/action.h"
+#include "skipper-skeeto-path-finder/path.h"
 
 #include <fstream>
 #include <iomanip>
@@ -13,7 +14,7 @@
 
 const char *CommonState::DUMPED_GOOD_ONES_BASE_DIR = "results";
 
-std::vector<Path> CommonState::getGoodOnes() const {
+std::vector<std::vector<const Action *>> CommonState::getGoodOnes() const {
   std::lock_guard<std::mutex> guard(finalStateMutex);
   return goodOnes;
 }
@@ -147,7 +148,7 @@ void CommonState::dumpGoodOnes(const std::string &dirName) {
   std::ofstream dumpFile(fileName);
   for (int index = 0; index < goodOnes.size(); ++index) {
     dumpFile << "PATH #" << index + 1 << "(of " << goodOnes.size() << "):" << std::endl;
-    for (const auto &action : goodOnes[index].getSteps()) {
+    for (const auto &action : goodOnes[index]) {
       dumpFile << action->getStepDescription() << std::endl;
     }
 
@@ -192,5 +193,5 @@ void CommonState::addNewGoodOne(const Path *path) {
     dumpedGoodOnes = 0;
   }
 
-  goodOnes.push_back(*path);
+  goodOnes.push_back(path->getSteps());
 }

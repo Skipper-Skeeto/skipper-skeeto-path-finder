@@ -45,7 +45,7 @@ void PathController::printResult() const {
   for (int index = 0; index < goodOnes.size(); ++index) {
     std::cout << std::endl
               << "PATH #" << index + 1 << ":" << std::endl;
-    for (const auto &step : goodOnes[index].getSteps()) {
+    for (const auto &step : goodOnes[index]) {
       std::cout << step << std::endl;
     }
     std::cout << std::endl;
