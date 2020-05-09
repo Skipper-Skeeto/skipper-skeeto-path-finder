@@ -2,6 +2,7 @@
 
 #include "skipper-skeeto-path-finder/action.h"
 #include "skipper-skeeto-path-finder/path.h"
+#include "skipper-skeeto-path-finder/room.h"
 
 #include <fstream>
 #include <iomanip>
@@ -169,7 +170,7 @@ unsigned char CommonState::getMaxVisitedRoomsCount() const {
 
 bool CommonState::checkForDuplicateState(const State &state, const Room *room, unsigned char visitedRoomsCount) {
   std::lock_guard<std::mutex> guard(stepStageMutex);
-  auto &roomStates = stepsForStage[room];
+  auto &roomStates = stepsForStage[room->roomIndex];
   auto stepsIterator = roomStates.find(state);
   if (stepsIterator != roomStates.end()) {
 
