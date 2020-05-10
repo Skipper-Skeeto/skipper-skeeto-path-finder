@@ -126,6 +126,23 @@ void CommonState::printStatus() {
             << "; general: " << std::setw(8) << tooManyGeneralStepsCount << "=" << std::fixed << std::setprecision(8) << depthKillGeneralAvg
             << "; state: " << std::setw(8) << tooManyStateStepsCount << "=" << std::fixed << std::setprecision(8) << depthKillStateAvg
             << std::endl;
+
+  std::cout << "Paths for depths (1/2): ";
+  auto totalFinished = SubPathInfo::getTotalAndFinishedPathsCount();
+  for (int depth = 0; depth < totalFinished.size(); ++depth) {
+    int total = totalFinished[depth].first;
+    int finished = totalFinished[depth].second;
+
+    if (depth == totalFinished.size() / 2) {
+      std::cout << std::endl
+                << "Paths for depths (2/2): ";
+    }
+
+    if (total > 0) {
+      std::cout << depth << ": " << finished << "/" << total << " (" << std::setprecision(2) << (double)finished * 100 / total << "%); ";
+    }
+  }
+  std::cout << std::endl;
 }
 
 void CommonState::dumpGoodOnes(const std::string &dirName) {
