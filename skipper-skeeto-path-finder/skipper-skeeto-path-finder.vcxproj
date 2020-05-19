@@ -40,6 +40,9 @@
     <ClCompile Include="src\sub_path_info.cpp" />
     <ClCompile Include="src\task.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\data\ss1.json" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{6B892891-2A8B-4816-8DC2-D4D1DE5028E6}</ProjectGuid>
