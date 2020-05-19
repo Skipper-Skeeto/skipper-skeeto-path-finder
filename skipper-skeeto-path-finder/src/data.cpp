@@ -36,6 +36,10 @@ Data::Data(const nlohmann::json &jsonData) {
       task.itemsNeeded.push_back(&itemMapping[itemKey]);
     }
 
+    if (jsonTaskMapping.value()["post_room"] != nullptr) {
+      task.postRoom = &roomMapping[jsonTaskMapping.value()["post_room"]];
+    }
+
     taskMapping[jsonTaskMapping.key()] = task;
   }
 

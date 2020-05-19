@@ -167,40 +167,46 @@
       "task_obstacle": null,
       "items_needed": [
         "Cake"
-      ]
+      ],
+      "post_room": null
     },
     "Scare fox": {
       "room": "Fox bush",
       "task_obstacle": null,
       "items_needed": [
         "Trumpet"
-      ]
+      ],
+      "post_room": null
     },
     "Unlock left closet": {
       "room": "Shed",
       "task_obstacle": null,
       "items_needed": [
         "Yellow key"
-      ]
+      ],
+      "post_room": null
     },
     "Scare cat": {
       "room": "Cat corner",
       "task_obstacle": null,
       "items_needed": [
         "Dog"
-      ]
+      ],
+      "post_room": null
     },
     "Find chick": {
       "room": "Bench",
       "task_obstacle": "Talk with birds mother",
       "items_needed": [
         "Worm"
-      ]
+      ],
+      "post_room": null
     },
     "Deliver chick": {
       "room": "Birds house",
       "task_obstacle": "Find chick",
-      "items_needed": null
+      "items_needed": null,
+      "post_room": null
     },
     "Remove witch": {
       "room": "Tree trunk bottom",
@@ -208,14 +214,16 @@
       "items_needed": [
         "Gas",
         "Garlic box"
-      ]
+      ],
+      "post_room": null
     },
     "Light up cave": {
       "room": "Bat cave",
       "task_obstacle": null,
       "items_needed": [
         "Flashlight"
-      ]
+      ],
+      "post_room": null
     },
     "Help elfs": {
       "room": "Elf house",
@@ -223,42 +231,48 @@
       "items_needed": [
         "Elf hat",
         "Flowers"
-      ]
+      ],
+      "post_room": null
     },
     "Help fish": {
       "room": "Bridge",
       "task_obstacle": null,
       "items_needed": [
         "Ludo cube"
-      ]
+      ],
+      "post_room": null
     },
     "Let down snake": {
       "room": "Snake corner",
       "task_obstacle": null,
       "items_needed": [
         "Needle"
-      ]
+      ],
+      "post_room": null
     },
     "Help rabbit": {
       "room": "Rabbit house",
       "task_obstacle": null,
       "items_needed": [
         "Pants"
-      ]
+      ],
+      "post_room": null
     },
     "Scare rat": {
       "room": "Rat corner",
       "task_obstacle": null,
       "items_needed": [
         "Sheet"
-      ]
+      ],
+      "post_room": null
     },
     "Help ant mom": {
       "room": "Mushroom houses",
       "task_obstacle": null,
       "items_needed": [
         "Dummy"
-      ]
+      ],
+      "post_room": null
     },
     "Throw away trash": {
       "room": "Trashbin",
@@ -266,63 +280,72 @@
       "items_needed": [
         "Diaper",
         "Can"
-      ]
+      ],
+      "post_room": null
     },
     "Help duck": {
       "room": "Duck",
       "task_obstacle": null,
       "items_needed": [
         "Mirror"
-      ]
+      ],
+      "post_room": null
     },
     "Help squirrel": {
       "room": "Squirrel house",
       "task_obstacle": null,
       "items_needed": [
         "Nut"
-      ]
+      ],
+      "post_room": null
     },
     "Help frog": {
       "room": "Frog",
       "task_obstacle": null,
       "items_needed": [
         "Strawberries"
-      ]
+      ],
+      "post_room": null
     },
     "Fix statue": {
       "room": "Statue head",
       "task_obstacle": null,
       "items_needed": [
         "Nose"
-      ]
+      ],
+      "post_room": null
     },
     "Help ant queen": {
       "room": "Ant house",
       "task_obstacle": null,
       "items_needed": [
         "Crown"
-      ]
+      ],
+      "post_room": null
     },
     "Help monkey": {
       "room": "Wall",
       "task_obstacle": null,
       "items_needed": [
         "Radio"
-      ]
+      ],
+      "post_room": null
     },
     "Dive": {
       "room": "Bridge",
       "task_obstacle": null,
       "items_needed": [
         "Diving mask"
-      ]
+      ],
+      "post_room": null
     },
     "Help snail": {
       "room": "Snail corner",
       "task_obstacle": null,
       "items_needed": [
         "Horn"
-      ]
+      ],
+      "post_room": null
     },
     "Help rocket mouse": {
       "room": "Rocket",
@@ -330,7 +353,8 @@
       "items_needed": [
         "Helmet",
         "Broom"
-      ]
+      ],
+      "post_room": "Trashbin"
     },
     "Help owl": {
       "room": "Owl house",
@@ -338,14 +362,16 @@
       "items_needed": [
         "Glasses",
         "Book"
-      ]
+      ],
+      "post_room": null
     },
     "Help bee": {
       "room": "Bee home",
       "task_obstacle": null,
       "items_needed": [
         "Bucket"
-      ]
+      ],
+      "post_room": null
     },
     "Repair ladder": {
       "room": "Ladder",
@@ -356,57 +382,66 @@
         "Yellow stick",
         "Blue stick",
         "Green stick"
-      ]
+      ],
+      "post_room": null
     },
     "Unlock hideout closet": {
       "room": "Secret hideout",
       "task_obstacle": null,
       "items_needed": [
         "Green key"
-      ]
+      ],
+      "post_room": null
     },
     "Throw coin in well": {
       "room": "Well top",
       "task_obstacle": null,
       "items_needed": [
         "Coin"
-      ]
+      ],
+      "post_room": null
     },
     "Fix well winch": {
       "room": "Well top",
       "task_obstacle": null,
       "items_needed": [
         "Handle"
-      ]
+      ],
+      "post_room": null
     },
     "Help bat": {
       "room": "Bat cave",
       "task_obstacle": null,
       "items_needed": [
         "Letter"
-      ]
+      ],
+      "post_room": null
     },
     "Remove dog": {
       "room": "Tree trunk top",
       "task_obstacle": null,
       "items_needed": [
         "Fishing pole"
-      ]
+      ],
+      "post_room": null
     },
     "Visit tree trunk top": {
       "room": "Tree trunk top",
       "task_obstacle": null,
-      "items_needed": null
+      "items_needed": null,
+      "post_room": null
     },
     "Leave tree trunk top": {
       "room": "Tree trunk bottom",
       "task_obstacle": "Visit tree trunk top",
-      "items_needed": null
+      "items_needed": null,
+      "post_room": null
     },
     "Talk with birds mother": {
       "room": "Birds house",
       "task_obstacle": null,
-      "items_needed": null
+      "items_needed": null,
+      "post_room": null
     }
   },
   "rooms": {

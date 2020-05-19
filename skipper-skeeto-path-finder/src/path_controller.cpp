@@ -256,8 +256,25 @@ PathController::EnterRoomResult PathController::canEnterRoom(const Path *path, c
 }
 
 void PathController::performPossibleActions(Path *path) {
-  path->completeTasks(getPossibleTasks(path, path->getCurrentRoom()));
+  std::vector<const Task *> postRoomTasks;
+  for (const auto &task : getPossibleTasks(path, path->getCurrentRoom())) {
+    if (task->postRoom != nullptr) {
+      postRoomTasks.push_back(task);
+    } else {
+      path->completeTask(task);
+    }
+  }
+
   path->pickUpItems(getPossibleItems(path, path->getCurrentRoom()));
+
+  for (const auto &task : postRoomTasks) {
+    path->completeTask(task);
+    path->enterRoom(task->postRoom);
+
+    // We moved room, if there was more than one in postRoomTasks it would be for the wrong room!
+    // TODO: To make this more generic, if there could be more than one post room, split into seperate paths
+    return;
+  }
 }
 
 std::vector<const Task *> PathController::getPossibleTasks(const Path *path, const Room *room) const {

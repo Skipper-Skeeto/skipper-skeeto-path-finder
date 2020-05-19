@@ -18,4 +18,5 @@ public:
   Room *room = nullptr;
   Task *taskObstacle = nullptr;
   std::vector<Item *> itemsNeeded;
+  Room *postRoom = nullptr;
 };
