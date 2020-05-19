@@ -157,8 +157,8 @@ void CommonState::dumpGoodOnes(const std::string &dirName) {
   std::string fileName = dirPath + "/" + std::to_string(maxVisitedRoomsCount) + ".txt";
 
 #ifdef _WIN32
-  !CreateDirectoryA(DUMPED_GOOD_ONES_BASE_DIR, nullptr);
-  !CreateDirectoryA(dirPath.c_str(), nullptr);
+  CreateDirectoryA(DUMPED_GOOD_ONES_BASE_DIR, nullptr);
+  CreateDirectoryA(dirPath.c_str(), nullptr);
 #else
 #error "Creating directory was not implemented for this platform"
 #endif
