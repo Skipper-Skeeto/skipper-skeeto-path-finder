@@ -66,7 +66,17 @@ void PathController::moveOnRecursive(Path *path) {
 }
 
 bool PathController::moveOnDistributed(Path *path) {
-  findNewPath(path);
+  bool foundNew = findNewPath(path);
+
+  if (foundNew && path->depth <= SubPathInfo::MAX_DEPTH) {
+
+    // In case it's one of the depths we are monitoring,
+    // we want to get the total paths as fast as possible
+    while (findNewPath(path)) {
+    }
+
+    return true;
+  }
 
   if (path->subPathInfo.empty()) {
     return false;
