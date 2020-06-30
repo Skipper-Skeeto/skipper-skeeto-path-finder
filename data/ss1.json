@@ -431,12 +431,6 @@
       "items_needed": null,
       "post_room": null
     },
-    "Leave tree trunk top": {
-      "room": "Tree trunk bottom",
-      "task_obstacle": "Visit tree trunk top",
-      "items_needed": null,
-      "post_room": null
-    },
     "Talk with birds mother": {
       "room": "Birds house",
       "task_obstacle": null,
