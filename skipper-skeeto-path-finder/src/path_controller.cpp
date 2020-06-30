@@ -206,9 +206,8 @@ bool PathController::findNewPath(Path *originPath) {
     auto possibleTasks = getPossibleTasks(originPath, nextRoom);
     if (!possibleTasks.empty()) {
       Path newPath = originPath->createFromSubPath(newSubPath);
-      newPath.completeTasks(possibleTasks);
 
-      newPath.pickUpItems(getPossibleItems(&newPath, nextRoom));
+      performPossibleActions(&newPath, possibleTasks);
 
       if (commonState->submitIfDone(&newPath)) {
         continue;
@@ -266,8 +265,12 @@ PathController::EnterRoomResult PathController::canEnterRoom(const Path *path, c
 }
 
 void PathController::performPossibleActions(Path *path) {
+  performPossibleActions(path, getPossibleTasks(path, path->getCurrentRoom()));
+}
+
+void PathController::performPossibleActions(Path *path, const std::vector<const Task *> &possibleTasks) {
   std::vector<const Task *> postRoomTasks;
-  for (const auto &task : getPossibleTasks(path, path->getCurrentRoom())) {
+  for (const auto &task : possibleTasks) {
     if (task->postRoom != nullptr) {
       postRoomTasks.push_back(task);
     } else {
