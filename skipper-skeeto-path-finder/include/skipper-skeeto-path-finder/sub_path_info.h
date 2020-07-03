@@ -2,7 +2,6 @@
 
 #include <array>
 #include <deque>
-#include <list>
 #include <mutex>
 #include <vector>
 
@@ -16,9 +15,9 @@ public:
   SubPathInfo() = default;
   SubPathInfo(const SubPathInfo &subPathInfo){};
 
-  std::list<Path>::iterator getNextPath();
+  std::vector<Path *>::iterator getNextPath();
 
-  void erase(const std::list<Path>::iterator &iterator);
+  void erase(const std::vector<Path *>::iterator &iterator);
 
   void push_back(Path &&path);
 
@@ -37,6 +36,6 @@ private:
   static std::array<int, MAX_DEPTH + 1> totalPaths;
   static std::array<int, MAX_DEPTH + 1> finishedPaths;
 
-  std::list<Path> paths;
-  std::list<Path>::iterator lastPathIterator = paths.end();
+  std::vector<Path *> paths;
+  unsigned lastPathIndex = -1;
 };

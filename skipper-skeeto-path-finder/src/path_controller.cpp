@@ -60,7 +60,7 @@ void PathController::printResult() const {
 void PathController::moveOnRecursive(Path *path) {
   while (findNewPath(path)) {
     auto nextPathIterator = path->subPathInfo.getNextPath();
-    moveOnRecursive(&*nextPathIterator);
+    moveOnRecursive(*nextPathIterator);
     path->subPathInfo.erase(nextPathIterator);
   }
 }
@@ -83,7 +83,7 @@ bool PathController::moveOnDistributed(Path *path) {
   }
 
   auto nextPathIterator = path->subPathInfo.getNextPath();
-  bool continueWork = moveOnDistributed(&*nextPathIterator);
+  bool continueWork = moveOnDistributed(*nextPathIterator);
   if (!continueWork) {
     path->subPathInfo.erase(nextPathIterator);
   }
@@ -130,7 +130,7 @@ void PathController::distributeToThreads(const std::vector<Path *> paths, const 
 
   for (const auto &path : paths) {
     while (findNewPath(path)) {
-      newPaths.push_back(&*path->subPathInfo.getNextPath());
+      newPaths.push_back(*path->subPathInfo.getNextPath());
     }
   }
 

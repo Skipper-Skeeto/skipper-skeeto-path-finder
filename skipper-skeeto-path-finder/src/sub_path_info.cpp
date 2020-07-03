@@ -8,26 +8,29 @@ std::array<std::mutex, SubPathInfo::MAX_DEPTH + 1> SubPathInfo::finishedPathsMut
 std::array<int, SubPathInfo::MAX_DEPTH + 1> SubPathInfo::totalPaths{};
 std::array<int, SubPathInfo::MAX_DEPTH + 1> SubPathInfo::finishedPaths{};
 
-std::list<Path>::iterator SubPathInfo::getNextPath() {
-  if (lastPathIterator == paths.end() || ++lastPathIterator == paths.end()) {
-    lastPathIterator = paths.begin();
+std::vector<Path *>::iterator SubPathInfo::getNextPath() {
+  if (lastPathIndex >= paths.size() || ++lastPathIndex >= paths.size()) {
+    lastPathIndex = 0;
   }
 
-  return lastPathIterator;
+  return paths.begin() + lastPathIndex;
 }
 
-void SubPathInfo::erase(const std::list<Path>::iterator &iterator) {
-  if (iterator->depth <= MAX_DEPTH) {
-    std::lock_guard<std::mutex> finishedGuard(finishedPathsMutexes[iterator->depth]);
-    ++finishedPaths[iterator->depth];
+void SubPathInfo::erase(const std::vector<Path *>::iterator &iterator) {
+  auto pathDepth = (*iterator)->depth;
+  if (pathDepth <= MAX_DEPTH) {
+    std::lock_guard<std::mutex> finishedGuard(finishedPathsMutexes[pathDepth]);
+    ++finishedPaths[pathDepth];
   }
 
-  lastPathIterator = paths.erase(iterator);
-  if (lastPathIterator != paths.begin()) {
-    --lastPathIterator;
-  } else {
-    lastPathIterator = paths.end();
+  if (iterator == paths.begin() + lastPathIndex) {
+    // If the are going to delete the "current" index,
+    // we want the next to be the one after that
+    --lastPathIndex;
   }
+
+  delete *iterator;
+  paths.erase(iterator);
 }
 
 void SubPathInfo::push_back(Path &&path) {
@@ -36,7 +39,7 @@ void SubPathInfo::push_back(Path &&path) {
     ++totalPaths[path.depth];
   }
 
-  paths.push_back(std::move(path));
+  paths.push_back(new Path(std::move(path)));
 }
 
 bool SubPathInfo::empty() {
