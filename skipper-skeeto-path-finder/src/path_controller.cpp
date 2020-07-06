@@ -1,6 +1,7 @@
 #include "skipper-skeeto-path-finder/path_controller.h"
 
 #include "skipper-skeeto-path-finder/common_state.h"
+#include "skipper-skeeto-path-finder/sub_path.h"
 #include "skipper-skeeto-path-finder/sub_path_info_remaining.h"
 
 #include <iostream>
@@ -146,15 +147,15 @@ bool PathController::findNewPath(Path *originPath) {
   }
 
   while (originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.size() > 0) {
-    std::vector<const Room *> subPath = originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.front();
+    auto subPath = originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.front();
     if (originPath->subPathInfo.remaining->nextRoomsForFirstSubPath.empty()) {
       const Room *currentRoom;
-      if (subPath.empty()) {
+      if (subPath->isEmpty()) {
         currentRoom = originPath->getCurrentRoom();
 
         originPath->subPathInfo.remaining->unavailableRooms[originPath->getCurrentRoom()->roomIndex] = true;
       } else {
-        currentRoom = subPath.back();
+        currentRoom = subPath->getRoom();
       }
 
       originPath->subPathInfo.remaining->nextRoomsForFirstSubPath = currentRoom->getNextRooms();
@@ -182,15 +183,14 @@ bool PathController::findNewPath(Path *originPath) {
       continue;
     }
 
-    std::vector<const Room *> newSubPath(subPath);
-    newSubPath.push_back(nextRoom);
+    auto newSubPath = std::make_shared<SubPath>(nextRoom, subPath);
 
-    if (!commonState->makesSenseToPerformActions(originPath, newSubPath)) {
+    if (!commonState->makesSenseToPerformActions(originPath, newSubPath.get())) {
       continue;
     }
 
     if (enterRoomResult == EnterRoomResult::CanEnterWithTaskObstacle) {
-      Path newPath = originPath->createFromSubPath(newSubPath);
+      Path newPath = originPath->createFromSubPath(newSubPath->getRooms());
       newPath.completeTask(nextRoom->taskObstacle);
 
       performPossibleActions(&newPath);
@@ -212,7 +212,7 @@ bool PathController::findNewPath(Path *originPath) {
 
     auto possibleTasks = getPossibleTasks(originPath, nextRoom);
     if (!possibleTasks.empty()) {
-      Path newPath = originPath->createFromSubPath(newSubPath);
+      Path newPath = originPath->createFromSubPath(newSubPath->getRooms());
 
       performPossibleActions(&newPath, possibleTasks);
 
@@ -230,7 +230,7 @@ bool PathController::findNewPath(Path *originPath) {
 
     auto possibleItems = getPossibleItems(originPath, nextRoom);
     if (!possibleItems.empty()) {
-      Path newPath = originPath->createFromSubPath(newSubPath);
+      Path newPath = originPath->createFromSubPath(newSubPath->getRooms());
       newPath.pickUpItems(possibleItems);
 
       if (commonState->submitIfDone(&newPath)) {
@@ -245,7 +245,7 @@ bool PathController::findNewPath(Path *originPath) {
       continue;
     }
 
-    if (!commonState->makesSenseToExpandSubPath(originPath, newSubPath)) {
+    if (!commonState->makesSenseToExpandSubPath(originPath, newSubPath.get())) {
       continue;
     }
 

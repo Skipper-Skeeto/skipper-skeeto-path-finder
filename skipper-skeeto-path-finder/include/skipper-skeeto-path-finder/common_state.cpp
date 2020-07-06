@@ -3,6 +3,7 @@
 #include "skipper-skeeto-path-finder/action.h"
 #include "skipper-skeeto-path-finder/path.h"
 #include "skipper-skeeto-path-finder/room.h"
+#include "skipper-skeeto-path-finder/sub_path.h"
 
 #include <fstream>
 #include <iomanip>
@@ -20,8 +21,8 @@ std::vector<std::vector<const Action *>> CommonState::getGoodOnes() const {
   return goodOnes;
 }
 
-bool CommonState::makesSenseToPerformActions(const Path *originPath, const std::vector<const Room *> &subPath) {
-  unsigned char visitedRoomsCount = originPath->getVisitedRoomsCount() + subPath.size();
+bool CommonState::makesSenseToPerformActions(const Path *originPath, const SubPath *subPath) {
+  unsigned char visitedRoomsCount = originPath->getVisitedRoomsCount() + subPath->size();
 
   // Even if count has reached max, the actions might complete the path and thus we won't exceed max
   if (visitedRoomsCount > getMaxVisitedRoomsCount()) {
@@ -32,7 +33,7 @@ bool CommonState::makesSenseToPerformActions(const Path *originPath, const std::
     return false;
   }
 
-  if (!checkForDuplicateState(originPath->getState(), subPath.back(), visitedRoomsCount)) {
+  if (!checkForDuplicateState(originPath->getState(), subPath->getRoom(), visitedRoomsCount)) {
     std::lock_guard<std::mutex> guard(statisticsMutex);
     tooManyStateStepsCount += 1;
     tooManyStateStepsDepthTotal += originPath->depth;
@@ -65,8 +66,8 @@ bool CommonState::makesSenseToStartNewSubPath(const Path *path) {
   return true;
 }
 
-bool CommonState::makesSenseToExpandSubPath(const Path *originPath, const std::vector<const Room *> &subPath) {
-  unsigned char visitedRoomsCount = originPath->getVisitedRoomsCount() + subPath.size();
+bool CommonState::makesSenseToExpandSubPath(const Path *originPath, const SubPath *subPath) {
+  unsigned char visitedRoomsCount = originPath->getVisitedRoomsCount() + subPath->size();
 
   // If we move on, the count would exceed max - that's why we check for equality too
   if (visitedRoomsCount >= getMaxVisitedRoomsCount()) {

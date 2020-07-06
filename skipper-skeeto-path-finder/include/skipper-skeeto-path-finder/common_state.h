@@ -8,15 +8,17 @@
 #include <mutex>
 #include <vector>
 
+class SubPath;
+
 class CommonState {
 public:
   std::vector<std::vector<const Action *>> getGoodOnes() const;
 
-  bool makesSenseToPerformActions(const Path *originPath, const std::vector<const Room *> &subPath);
+  bool makesSenseToPerformActions(const Path *originPath, const SubPath *subPath);
 
   bool makesSenseToStartNewSubPath(const Path *path);
 
-  bool makesSenseToExpandSubPath(const Path *originPath, const std::vector<const Room *> &subPath);
+  bool makesSenseToExpandSubPath(const Path *originPath, const SubPath *subPath);
 
   bool submitIfDone(const Path *path);
 
