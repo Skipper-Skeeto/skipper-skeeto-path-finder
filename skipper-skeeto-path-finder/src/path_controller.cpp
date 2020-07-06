@@ -76,7 +76,9 @@ bool PathController::moveOnDistributed(Path *path) {
     while (findNewPath(path)) {
     }
 
-    return true;
+    if (path->depth == SubPathInfo::MAX_DEPTH) {
+      return true;
+    }
   }
 
   if (path->subPathInfo.empty()) {
