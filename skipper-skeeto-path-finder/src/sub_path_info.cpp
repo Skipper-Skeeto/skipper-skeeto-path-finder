@@ -1,12 +1,27 @@
 #include "skipper-skeeto-path-finder/sub_path_info.h"
 
 #include "skipper-skeeto-path-finder/path.h"
+#include "skipper-skeeto-path-finder/sub_path_info_remaining.h"
 
 std::array<std::mutex, SubPathInfo::MAX_DEPTH + 1> SubPathInfo::totalPathsMutexes{};
 std::array<std::mutex, SubPathInfo::MAX_DEPTH + 1> SubPathInfo::finishedPathsMutexes{};
 
 std::array<int, SubPathInfo::MAX_DEPTH + 1> SubPathInfo::totalPaths{};
 std::array<int, SubPathInfo::MAX_DEPTH + 1> SubPathInfo::finishedPaths{};
+
+SubPathInfo::SubPathInfo() {
+  remaining = new SubPathInfoRemaining();
+}
+
+SubPathInfo::SubPathInfo(const SubPathInfo &subPathInfo) {
+  remaining = new SubPathInfoRemaining();
+}
+
+SubPathInfo::~SubPathInfo() {
+  if (remaining != nullptr) {
+    delete remaining;
+  }
+}
 
 std::vector<Path *>::iterator SubPathInfo::getNextPath() {
   if (lastPathIndex >= paths.size() || ++lastPathIndex >= paths.size()) {

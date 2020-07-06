@@ -1,6 +1,7 @@
 #include "skipper-skeeto-path-finder/path_controller.h"
 
 #include "skipper-skeeto-path-finder/common_state.h"
+#include "skipper-skeeto-path-finder/sub_path_info_remaining.h"
 
 #include <iostream>
 
@@ -138,37 +139,41 @@ void PathController::distributeToThreads(const std::vector<Path *> paths, const 
 }
 
 bool PathController::findNewPath(Path *originPath) {
-  while (originPath->subPathInfo.remainingUnfinishedSubPaths.size() > 0) {
-    std::vector<const Room *> subPath = originPath->subPathInfo.remainingUnfinishedSubPaths.front();
-    if (originPath->subPathInfo.nextRoomsForFirstSubPath.empty()) {
+  if (originPath->subPathInfo.remaining == nullptr) {
+    return false;
+  }
+
+  while (originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.size() > 0) {
+    std::vector<const Room *> subPath = originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.front();
+    if (originPath->subPathInfo.remaining->nextRoomsForFirstSubPath.empty()) {
       const Room *currentRoom;
       if (subPath.empty()) {
         currentRoom = originPath->getCurrentRoom();
 
-        originPath->subPathInfo.unavailableRooms[originPath->getCurrentRoom()->roomIndex] = true;
+        originPath->subPathInfo.remaining->unavailableRooms[originPath->getCurrentRoom()->roomIndex] = true;
       } else {
         currentRoom = subPath.back();
       }
 
-      originPath->subPathInfo.nextRoomsForFirstSubPath = currentRoom->getNextRooms();
+      originPath->subPathInfo.remaining->nextRoomsForFirstSubPath = currentRoom->getNextRooms();
     }
 
-    const Room *nextRoom = originPath->subPathInfo.nextRoomsForFirstSubPath.front();
-    originPath->subPathInfo.nextRoomsForFirstSubPath.erase(originPath->subPathInfo.nextRoomsForFirstSubPath.begin());
+    const Room *nextRoom = originPath->subPathInfo.remaining->nextRoomsForFirstSubPath.front();
+    originPath->subPathInfo.remaining->nextRoomsForFirstSubPath.erase(originPath->subPathInfo.remaining->nextRoomsForFirstSubPath.begin());
 
-    if (originPath->subPathInfo.nextRoomsForFirstSubPath.empty()) {
+    if (originPath->subPathInfo.remaining->nextRoomsForFirstSubPath.empty()) {
 
       // After this iteration we should skip to next subPath
-      originPath->subPathInfo.remainingUnfinishedSubPaths.pop_front();
+      originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.pop_front();
     }
 
-    if (originPath->subPathInfo.unavailableRooms[nextRoom->roomIndex]) {
+    if (originPath->subPathInfo.remaining->unavailableRooms[nextRoom->roomIndex]) {
       // Room already reached or cannot be entered.
       // We cannot have gotten here faster than the other steps getting here.
       continue;
     }
 
-    originPath->subPathInfo.unavailableRooms[nextRoom->roomIndex] = true;
+    originPath->subPathInfo.remaining->unavailableRooms[nextRoom->roomIndex] = true;
 
     auto enterRoomResult = canEnterRoom(originPath, nextRoom);
     if (enterRoomResult == EnterRoomResult::CannotEnter) {
@@ -242,8 +247,11 @@ bool PathController::findNewPath(Path *originPath) {
       continue;
     }
 
-    originPath->subPathInfo.remainingUnfinishedSubPaths.push_back(newSubPath);
+    originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.push_back(newSubPath);
   }
+
+  delete originPath->subPathInfo.remaining;
+  originPath->subPathInfo.remaining = nullptr;
 
   return false;
 }

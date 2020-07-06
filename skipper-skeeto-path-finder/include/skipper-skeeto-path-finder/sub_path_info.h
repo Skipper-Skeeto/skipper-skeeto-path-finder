@@ -7,13 +7,17 @@
 
 class Room;
 class Path;
+class SubPathInfoRemaining;
 
 class SubPathInfo {
 public:
   static const int MAX_DEPTH = 10;
 
-  SubPathInfo() = default;
-  SubPathInfo(const SubPathInfo &subPathInfo){};
+  SubPathInfo();
+
+  SubPathInfo(const SubPathInfo &subPathInfo);
+
+  ~SubPathInfo();
 
   std::vector<Path *>::iterator getNextPath();
 
@@ -23,11 +27,9 @@ public:
 
   bool empty();
 
-  static std::array<std::pair<int, int>, MAX_DEPTH + 1> getTotalAndFinishedPathsCount();
+  SubPathInfoRemaining *remaining;
 
-  std::deque<std::vector<const Room *>> remainingUnfinishedSubPaths{{}};
-  std::vector<const Room *> nextRoomsForFirstSubPath;
-  std::array<bool, ROOM_COUNT> unavailableRooms{};
+  static std::array<std::pair<int, int>, MAX_DEPTH + 1> getTotalAndFinishedPathsCount();
 
 private:
   static std::array<std::mutex, MAX_DEPTH + 1> totalPathsMutexes;
