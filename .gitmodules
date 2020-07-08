@@ -1,0 +1,3 @@
+[submodule "libs/parallel-hashmap"]
+	path = libs/parallel-hashmap
+	url = https://github.com/greg7mdp/parallel-hashmap.git

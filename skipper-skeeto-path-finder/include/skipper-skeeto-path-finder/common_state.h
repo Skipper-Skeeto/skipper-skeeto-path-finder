@@ -2,9 +2,10 @@
 
 #include "skipper-skeeto-path-finder/path.h"
 
+#include <parallel_hashmap/phmap.h>
+
 #include <array>
 #include <chrono>
-#include <map>
 #include <mutex>
 #include <vector>
 
@@ -46,7 +47,7 @@ private:
   mutable std::mutex printMutex;
 
   unsigned char maxVisitedRoomsCount = 255;
-  std::array<std::map<State, unsigned char>, ROOM_COUNT> stepsForStage{};
+  std::array<phmap::parallel_flat_hash_map<State, unsigned char>, ROOM_COUNT> stepsForStage{};
   std::vector<std::vector<const Action *>> goodOnes;
   int dumpedGoodOnes = 0;
 
