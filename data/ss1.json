@@ -417,14 +417,6 @@
       ],
       "post_room": null
     },
-    "Remove dog": {
-      "room": "Tree trunk top",
-      "task_obstacle": null,
-      "items_needed": [
-        "Fishing pole"
-      ],
-      "post_room": null
-    },
     "Visit tree trunk top": {
       "room": "Tree trunk top",
       "task_obstacle": null,
