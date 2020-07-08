@@ -1,5 +1,7 @@
 #include "skipper-skeeto-path-finder/data.h"
 
+#include "skipper-skeeto-path-finder/info.h"
+
 #include <sstream>
 
 Data::Data(const nlohmann::json &jsonData) {

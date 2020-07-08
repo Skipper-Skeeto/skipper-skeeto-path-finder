@@ -1,5 +1,6 @@
 #include "skipper-skeeto-path-finder/path.h"
 
+#include "skipper-skeeto-path-finder/info.h"
 #include "skipper-skeeto-path-finder/item.h"
 #include "skipper-skeeto-path-finder/room.h"
 #include "skipper-skeeto-path-finder/task.h"
@@ -8,7 +9,6 @@
 
 Path::Path(const std::vector<const Item *> &allItems, const std::vector<const Task *> &allTasks, const Room *startRoom) {
   this->currentRoom = startRoom;
-
 }
 
 Path::Path(const Path &path) {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "skipper-skeeto-path-finder/info.h"
 #include "skipper-skeeto-path-finder/sub_path.h"
 
 #include <array>

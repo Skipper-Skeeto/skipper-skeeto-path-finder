@@ -1,5 +1,6 @@
 #pragma once
 
+#include "skipper-skeeto-path-finder/info.h"
 #include "skipper-skeeto-path-finder/path.h"
 
 #include <parallel_hashmap/phmap.h>
