@@ -36,7 +36,7 @@ private:
 
   unsigned char getMaxVisitedRoomsCount() const;
 
-  bool checkForDuplicateState(const State &currentState, const Room *newRoom, unsigned char visitedRoomsCount);
+  bool checkForDuplicateState(const State &state, unsigned char visitedRoomsCount);
 
   void addNewGoodOne(const Path *path);
 

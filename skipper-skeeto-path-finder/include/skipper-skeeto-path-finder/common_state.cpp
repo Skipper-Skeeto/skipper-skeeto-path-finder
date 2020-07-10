@@ -33,7 +33,8 @@ bool CommonState::makesSenseToPerformActions(const Path *originPath, const SubPa
     return false;
   }
 
-  if (!checkForDuplicateState(originPath->getState(), subPath->getRoom(), visitedRoomsCount)) {
+  auto newState = Path::getStateWithRoom(originPath->getState(), subPath->getRoom());
+  if (!checkForDuplicateState(newState, visitedRoomsCount)) {
     std::lock_guard<std::mutex> guard(statisticsMutex);
     tooManyStateStepsCount += 1;
     tooManyStateStepsDepthTotal += originPath->depth;
@@ -55,7 +56,7 @@ bool CommonState::makesSenseToStartNewSubPath(const Path *path) {
     return false;
   }
 
-  if (!checkForDuplicateState(path->getState(), path->getCurrentRoom(), path->getVisitedRoomsCount())) {
+  if (!checkForDuplicateState(path->getState(), path->getVisitedRoomsCount())) {
     std::lock_guard<std::mutex> guard(statisticsMutex);
     tooManyStateStepsCount += 1;
     tooManyStateStepsDepthTotal += path->depth;
@@ -186,11 +187,9 @@ unsigned char CommonState::getMaxVisitedRoomsCount() const {
   return maxVisitedRoomsCount;
 }
 
-bool CommonState::checkForDuplicateState(const State &currentState, const Room *newRoom, unsigned char visitedRoomsCount) {
-  auto newState = Path::getStateWithRoom(currentState, newRoom);
-
+bool CommonState::checkForDuplicateState(const State &state, unsigned char visitedRoomsCount) {
   std::lock_guard<std::mutex> guard(stepStageMutex);
-  auto stepsIterator = stepsForState.find(newState);
+  auto stepsIterator = stepsForState.find(state);
   if (stepsIterator != stepsForState.end()) {
 
     // TODO: If directions etc. ever gets to be weighted (e.g. left->left vs. left->up), this should maybe be count < count
@@ -200,7 +199,7 @@ bool CommonState::checkForDuplicateState(const State &currentState, const Room *
   }
 
   // TODO: Doesn't need to be set if count == count
-  stepsForState[newState] = visitedRoomsCount;
+  stepsForState[state] = visitedRoomsCount;
 
   return true;
 }
