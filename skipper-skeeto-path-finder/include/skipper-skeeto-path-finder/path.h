@@ -50,6 +50,8 @@ public:
 
   SubPathInfo subPathInfo;
 
+  static State getStateWithRoom(const State &state, const Room *room);
+
 private:
   const Path *previousPath = nullptr;
   const Room *currentRoom;

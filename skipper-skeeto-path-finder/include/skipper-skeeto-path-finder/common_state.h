@@ -1,6 +1,5 @@
 #pragma once
 
-#include "skipper-skeeto-path-finder/info.h"
 #include "skipper-skeeto-path-finder/path.h"
 
 #include <parallel_hashmap/phmap.h>
@@ -37,7 +36,7 @@ private:
 
   unsigned char getMaxVisitedRoomsCount() const;
 
-  bool checkForDuplicateState(const State &state, const Room *room, unsigned char visitedRoomsCount);
+  bool checkForDuplicateState(const State &currentState, const Room *newRoom, unsigned char visitedRoomsCount);
 
   void addNewGoodOne(const Path *path);
 
@@ -48,7 +47,7 @@ private:
   mutable std::mutex printMutex;
 
   unsigned char maxVisitedRoomsCount = 255;
-  std::array<phmap::parallel_flat_hash_map<State, unsigned char>, ROOM_COUNT> stepsForStage{};
+  phmap::parallel_flat_hash_map<State, unsigned char> stepsForState{};
   std::vector<std::vector<const Action *>> goodOnes;
   int dumpedGoodOnes = 0;
 

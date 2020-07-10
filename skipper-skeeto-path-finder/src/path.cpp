@@ -71,6 +71,7 @@ void Path::completeTasks(const std::vector<const Task *> &tasks) {
 void Path::enterRoom(const Room *room) {
   steps.push_back(room);
   ++enteredRoomsCount;
+  state = getStateWithRoom(state, room);
   currentRoom = room;
 }
 
@@ -89,7 +90,7 @@ unsigned char Path::getVisitedRoomsCount() const {
 }
 
 bool Path::isDone() const {
-  return (1ULL << STATE_COUNT) - 1 == state;
+  return (1ULL << STATE_TASK_ITEM_SIZE) - 1 == (state >> STATE_TASK_ITEM_START);
 };
 
 const State &Path::getState() const {
@@ -115,4 +116,8 @@ bool Path::hasFoundItem(const Item *item) const {
 
 bool Path::hasCompletedTask(const Task *task) const {
   return completedTasks & (1ULL << task->uniqueIndex);
+}
+
+State Path::getStateWithRoom(const State &state, const Room *room) {
+  return ((~((1ULL << STATE_ROOM_INDEX_SIZE) - 1) & state) | room->roomIndex);
 }

@@ -186,11 +186,12 @@ unsigned char CommonState::getMaxVisitedRoomsCount() const {
   return maxVisitedRoomsCount;
 }
 
-bool CommonState::checkForDuplicateState(const State &state, const Room *room, unsigned char visitedRoomsCount) {
+bool CommonState::checkForDuplicateState(const State &currentState, const Room *newRoom, unsigned char visitedRoomsCount) {
+  auto newState = Path::getStateWithRoom(currentState, newRoom);
+
   std::lock_guard<std::mutex> guard(stepStageMutex);
-  auto &roomStates = stepsForStage[room->roomIndex];
-  auto stepsIterator = roomStates.find(state);
-  if (stepsIterator != roomStates.end()) {
+  auto stepsIterator = stepsForState.find(newState);
+  if (stepsIterator != stepsForState.end()) {
 
     // TODO: If directions etc. ever gets to be weighted (e.g. left->left vs. left->up), this should maybe be count < count
     if (stepsIterator->second <= visitedRoomsCount) {
@@ -199,7 +200,7 @@ bool CommonState::checkForDuplicateState(const State &state, const Room *room, u
   }
 
   // TODO: Doesn't need to be set if count == count
-  roomStates[state] = visitedRoomsCount;
+  stepsForState[newState] = visitedRoomsCount;
 
   return true;
 }

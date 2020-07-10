@@ -96,7 +96,7 @@ Data::Data(const nlohmann::json &jsonData) {
     }
   }
 
-  int nextStateIndex = 0;
+  int nextStateIndex = STATE_TASK_ITEM_START;
   for (const auto &roomTasks : roomToTasksMapping) {
     int noObstacleIndex = -1;
     for (const auto &task : roomTasks.second) {
@@ -149,9 +149,10 @@ Data::Data(const nlohmann::json &jsonData) {
     throw std::exception(stringStream.str().c_str());
   }
 
-  if (STATE_COUNT != nextStateIndex) {
+  auto actualStateTaskItemSize = nextStateIndex - STATE_TASK_ITEM_START;
+  if (STATE_TASK_ITEM_SIZE != actualStateTaskItemSize) {
     std::stringstream stringStream;
-    stringStream << "Predefined state count (" << STATE_COUNT << ") did not match the actual (" << nextStateIndex << ")";
+    stringStream << "Predefined state count (" << STATE_TASK_ITEM_SIZE << ") did not match the actual (" << actualStateTaskItemSize << ")";
     throw std::exception(stringStream.str().c_str());
   }
 
