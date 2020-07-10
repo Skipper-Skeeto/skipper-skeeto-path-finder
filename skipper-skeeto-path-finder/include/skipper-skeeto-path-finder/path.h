@@ -32,7 +32,7 @@ public:
 
   void enterRooms(const std::vector<const Room *> rooms);
 
-  const Room *getCurrentRoom() const;
+  int getCurrentRoomIndex() const;
 
   unsigned char getVisitedRoomsCount() const;
 
@@ -54,7 +54,6 @@ public:
 
 private:
   const Path *previousPath = nullptr;
-  const Room *currentRoom;
   std::vector<const Action *> steps;
   unsigned char enteredRoomsCount = 0;
   State state{};

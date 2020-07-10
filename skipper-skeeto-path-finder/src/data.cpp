@@ -135,6 +135,10 @@ Data::Data(const nlohmann::json &jsonData) {
     std::stringstream stringStream;
     stringStream << "Predefined room count (" << ROOM_COUNT << ") did not match the actual (" << roomMapping.size() << ")";
     throw std::exception(stringStream.str().c_str());
+  } else {
+    for (const auto &roomInfo : roomMapping) {
+      rooms[roomInfo.second.roomIndex] = &roomInfo.second;
+    }
   }
 
   if (ITEM_COUNT != itemMapping.size()) {
@@ -195,6 +199,10 @@ std::vector<const Item *> Data::getItemsForRoom(const Room *room) const {
 
 std::vector<const Task *> Data::getTasksForRoom(const Room *room) const {
   return roomToTasksMapping.find(room)->second;
+}
+
+const Room *Data::getRoom(int index) const {
+  return rooms[index];
 }
 
 const Room *Data::getStartRoom() const {

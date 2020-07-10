@@ -151,9 +151,11 @@ bool PathController::findNewPath(Path *originPath) {
     if (originPath->subPathInfo.remaining->nextRoomsForFirstSubPath.empty()) {
       const Room *currentRoom;
       if (subPath->isEmpty()) {
-        currentRoom = originPath->getCurrentRoom();
+        auto currentRoomIndex = originPath->getCurrentRoomIndex();
 
-        originPath->subPathInfo.remaining->unavailableRooms[originPath->getCurrentRoom()->roomIndex] = true;
+        currentRoom = data->getRoom(currentRoomIndex);
+
+        originPath->subPathInfo.remaining->unavailableRooms[currentRoomIndex] = true;
       } else {
         currentRoom = subPath->getRoom();
       }
@@ -275,7 +277,8 @@ PathController::EnterRoomResult PathController::canEnterRoom(const Path *path, c
 }
 
 void PathController::performPossibleActions(Path *path) {
-  performPossibleActions(path, getPossibleTasks(path, path->getCurrentRoom()));
+  auto currentRoom = data->getRoom(path->getCurrentRoomIndex());
+  performPossibleActions(path, getPossibleTasks(path, currentRoom));
 }
 
 void PathController::performPossibleActions(Path *path, const std::vector<const Task *> &possibleTasks) {
@@ -288,7 +291,8 @@ void PathController::performPossibleActions(Path *path, const std::vector<const 
     }
   }
 
-  path->pickUpItems(getPossibleItems(path, path->getCurrentRoom()));
+  auto currentRoom = data->getRoom(path->getCurrentRoomIndex());
+  path->pickUpItems(getPossibleItems(path, currentRoom));
 
   for (const auto &task : postRoomTasks) {
     path->completeTask(task);

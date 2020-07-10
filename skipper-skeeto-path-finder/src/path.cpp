@@ -8,12 +8,11 @@
 #include <algorithm>
 
 Path::Path(const std::vector<const Item *> &allItems, const std::vector<const Task *> &allTasks, const Room *startRoom) {
-  this->currentRoom = startRoom;
+  state = getStateWithRoom(state, startRoom);
 }
 
 Path::Path(const Path &path) {
   previousPath = path.previousPath;
-  currentRoom = path.currentRoom;
   steps = path.steps;
   enteredRoomsCount = path.enteredRoomsCount;
   state = path.state;
@@ -72,7 +71,6 @@ void Path::enterRoom(const Room *room) {
   steps.push_back(room);
   ++enteredRoomsCount;
   state = getStateWithRoom(state, room);
-  currentRoom = room;
 }
 
 void Path::enterRooms(const std::vector<const Room *> rooms) {
@@ -81,8 +79,8 @@ void Path::enterRooms(const std::vector<const Room *> rooms) {
   }
 }
 
-const Room *Path::getCurrentRoom() const {
-  return currentRoom;
+int Path::getCurrentRoomIndex() const {
+  return ((1ULL << STATE_ROOM_INDEX_SIZE) - 1) & state;
 }
 
 unsigned char Path::getVisitedRoomsCount() const {
