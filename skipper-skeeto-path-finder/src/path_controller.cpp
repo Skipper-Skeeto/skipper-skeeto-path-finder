@@ -33,7 +33,7 @@ PathController::~PathController() {
 }
 
 void PathController::start() {
-  Path startPath(data->getItems(), data->getTasks(), data->getStartRoom());
+  Path startPath(data->getStartRoom());
 
   performPossibleActions(&startPath);
 

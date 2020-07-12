@@ -7,7 +7,7 @@
 
 #include <algorithm>
 
-Path::Path(const std::vector<const Item *> &allItems, const std::vector<const Task *> &allTasks, const Room *startRoom) {
+Path::Path(const Room *startRoom) {
   state = getStateWithRoom(state, startRoom);
 }
 

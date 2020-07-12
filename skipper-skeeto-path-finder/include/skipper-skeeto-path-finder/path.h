@@ -14,7 +14,7 @@ class Room;
 
 class Path {
 public:
-  Path(const std::vector<const Item *> &allItems, const std::vector<const Task *> &allTasks, const Room *startRoom);
+  Path(const Room *startRoom);
 
   Path(const Path &path);
 
