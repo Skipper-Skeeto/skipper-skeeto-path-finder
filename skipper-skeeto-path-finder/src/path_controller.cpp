@@ -260,7 +260,7 @@ bool PathController::findNewPath(Path *originPath) {
   return false;
 }
 
-PathController::EnterRoomResult PathController::canEnterRoom(const Path *path, const Room *room) {
+PathController::EnterRoomResult PathController::canEnterRoom(const Path *path, const Room *room) const {
   if (room->taskObstacle == nullptr) {
     return EnterRoomResult::CanEnter;
   }

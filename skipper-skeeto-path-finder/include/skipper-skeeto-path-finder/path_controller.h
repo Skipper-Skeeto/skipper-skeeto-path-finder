@@ -32,7 +32,7 @@ private:
 
   bool findNewPath(Path *originPath);
 
-  EnterRoomResult canEnterRoom(const Path *path, const Room *room);
+  EnterRoomResult canEnterRoom(const Path *path, const Room *room) const;
 
   void performPossibleActions(Path *path);
 
