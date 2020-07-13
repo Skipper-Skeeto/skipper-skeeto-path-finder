@@ -147,7 +147,7 @@ bool PathController::findNewPath(Path *originPath) {
   }
 
   while (originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.size() > 0) {
-    auto subPath = originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.front();
+    auto subPath = originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.back();
     if (originPath->subPathInfo.remaining->nextRoomsForFirstSubPath.empty()) {
       const Room *currentRoom;
       if (subPath.isEmpty()) {
@@ -178,7 +178,7 @@ bool PathController::findNewPath(Path *originPath) {
     if (originPath->subPathInfo.remaining->nextRoomsForFirstSubPath.empty()) {
 
       // After this iteration we should skip to next subPath
-      originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.pop_front();
+      originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.pop_back();
     }
 
     if (originPath->subPathInfo.remaining->unavailableRooms[nextRoom->roomIndex]) {
@@ -260,7 +260,7 @@ bool PathController::findNewPath(Path *originPath) {
       continue;
     }
 
-    originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.push_back(std::move(newSubPath));
+    originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.insert(originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.begin(), std::move(newSubPath));
   }
 
   delete originPath->subPathInfo.remaining;
