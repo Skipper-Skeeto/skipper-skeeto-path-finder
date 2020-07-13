@@ -15,15 +15,15 @@ class Data {
 public:
   Data(const nlohmann::json &jsonData);
 
-  std::vector<const Room *> getRooms() const;
+  const std::array<const Room *, ROOM_COUNT> &getRooms() const;
 
   std::vector<const Item *> getItems() const;
 
   std::vector<const Task *> getTasks() const;
 
-  std::vector<const Item *> getItemsForRoom(const Room *room) const;
+  const std::vector<const Item *> &getItemsForRoom(const Room *room) const;
 
-  std::vector<const Task *> getTasksForRoom(const Room *room) const;
+  const std::vector<const Task *> &getTasksForRoom(const Room *room) const;
 
   const Room *getRoom(int index) const;
 

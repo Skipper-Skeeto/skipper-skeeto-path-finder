@@ -186,11 +186,7 @@ Data::Data(const nlohmann::json &jsonData) {
   }
 }
 
-std::vector<const Room *> Data::getRooms() const {
-  std::vector<const Room *> rooms;
-  for (const auto &room : roomMapping) {
-    rooms.push_back(&room.second);
-  }
+const std::array<const Room*, ROOM_COUNT> &Data::getRooms() const {
   return rooms;
 }
 
@@ -210,11 +206,11 @@ std::vector<const Task *> Data::getTasks() const {
   return tasks;
 }
 
-std::vector<const Item *> Data::getItemsForRoom(const Room *room) const {
+const std::vector<const Item *> &Data::getItemsForRoom(const Room *room) const {
   return roomToItemsMapping.find(room)->second;
 }
 
-std::vector<const Task *> Data::getTasksForRoom(const Room *room) const {
+const std::vector<const Task *> &Data::getTasksForRoom(const Room *room) const {
   return roomToTasksMapping.find(room)->second;
 }
 
