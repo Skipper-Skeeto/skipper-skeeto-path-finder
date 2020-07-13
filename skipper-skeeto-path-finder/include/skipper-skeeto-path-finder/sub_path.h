@@ -1,25 +1,20 @@
 #pragma once
 
-#include <memory>
-#include <vector>
-
 class Room;
 
 class SubPath {
 public:
   SubPath() = default;
 
-  SubPath(const Room *room, const std::shared_ptr<SubPath> &parent);
+  SubPath(const Room *newRoom, const SubPath &parent);
 
   bool isEmpty() const;
 
-  const Room *getRoom() const;
+  const Room *getLastRoom() const;
 
-  std::vector<const Room *> getRooms() const;
-
-  int size() const;
+  int visitedRoomsCount() const;
 
 private:
-  const Room *room = nullptr;
-  std::shared_ptr<SubPath> parent;
+  const Room *lastRoom = nullptr;
+  unsigned char size = 0;
 };

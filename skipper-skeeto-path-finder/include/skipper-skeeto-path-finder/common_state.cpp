@@ -22,7 +22,7 @@ std::vector<std::vector<const Action *>> CommonState::getGoodOnes() const {
 }
 
 bool CommonState::makesSenseToPerformActions(const Path *originPath, const SubPath *subPath) {
-  unsigned char visitedRoomsCount = originPath->getVisitedRoomsCount() + subPath->size();
+  unsigned char visitedRoomsCount = originPath->getVisitedRoomsCount() + subPath->visitedRoomsCount();
 
   // Even if count has reached max, the actions might complete the path and thus we won't exceed max
   if (visitedRoomsCount > getMaxVisitedRoomsCount()) {
@@ -33,7 +33,7 @@ bool CommonState::makesSenseToPerformActions(const Path *originPath, const SubPa
     return false;
   }
 
-  auto newState = Path::getStateWithRoom(originPath->getState(), subPath->getRoom());
+  auto newState = Path::getStateWithRoom(originPath->getState(), subPath->getLastRoom());
   if (!checkForDuplicateState(newState, visitedRoomsCount)) {
     std::lock_guard<std::mutex> guard(statisticsMutex);
     tooManyStateStepsCount += 1;
@@ -68,7 +68,7 @@ bool CommonState::makesSenseToStartNewSubPath(const Path *path) {
 }
 
 bool CommonState::makesSenseToExpandSubPath(const Path *originPath, const SubPath *subPath) {
-  unsigned char visitedRoomsCount = originPath->getVisitedRoomsCount() + subPath->size();
+  unsigned char visitedRoomsCount = originPath->getVisitedRoomsCount() + subPath->visitedRoomsCount();
 
   // If we move on, the count would exceed max - that's why we check for equality too
   if (visitedRoomsCount >= getMaxVisitedRoomsCount()) {
@@ -81,19 +81,6 @@ bool CommonState::makesSenseToExpandSubPath(const Path *originPath, const SubPat
 
   // Note that we don't check for duplicate state, since it has been done in makesSenseToPerformActions().
   // After that check we only get here if no actions was done - and thus it would be the same state!
-
-  return true;
-}
-
-bool CommonState::submitIfDone(const Path *path) {
-  if (!path->isDone()) {
-    return false;
-  }
-
-  addNewGoodOne(path);
-
-  std::lock_guard<std::mutex> guard(printMutex);
-  std::cout << "Found new good with " << int(path->getVisitedRoomsCount()) << " rooms (depth " << int(path->depth) << ")" << std::endl;
 
   return true;
 }
@@ -204,13 +191,18 @@ bool CommonState::checkForDuplicateState(const State &state, unsigned char visit
   return true;
 }
 
-void CommonState::addNewGoodOne(const Path *path) {
-  std::lock_guard<std::mutex> guard(finalStateMutex);
-  if (path->getVisitedRoomsCount() < maxVisitedRoomsCount) {
-    maxVisitedRoomsCount = path->getVisitedRoomsCount();
+void CommonState::addNewGoodOnes(const std::vector<std::vector<const Action *>> &stepsOfSteps, int visitedRoomsCount) {
+  std::lock_guard<std::mutex> guardFinalState(finalStateMutex);
+  if (visitedRoomsCount < maxVisitedRoomsCount) {
+    maxVisitedRoomsCount = visitedRoomsCount;
     goodOnes.clear();
     dumpedGoodOnes = 0;
   }
 
-  goodOnes.push_back(path->getSteps());
+  for (const auto &steps : stepsOfSteps) {
+    goodOnes.push_back(steps);
+  }
+
+  std::lock_guard<std::mutex> guardPrint(printMutex);
+  std::cout << "Found " << stepsOfSteps.size() << " new good one(s) with " << visitedRoomsCount << " rooms" << std::endl;
 }

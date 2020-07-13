@@ -3,9 +3,8 @@
 #include "skipper-skeeto-path-finder/info.h"
 #include "skipper-skeeto-path-finder/item.h"
 #include "skipper-skeeto-path-finder/room.h"
+#include "skipper-skeeto-path-finder/sub_path.h"
 #include "skipper-skeeto-path-finder/task.h"
-
-#include <algorithm>
 
 Path::Path(const Room *startRoom) {
   state = getStateWithRoom(state, startRoom);
@@ -13,7 +12,6 @@ Path::Path(const Room *startRoom) {
 
 Path::Path(const Path &path) {
   previousPath = path.previousPath;
-  steps = path.steps;
   enteredRoomsCount = path.enteredRoomsCount;
   state = path.state;
   foundItems = path.foundItems;
@@ -23,14 +21,14 @@ Path::Path(const Path &path) {
   // Note that we don't copy subPathInfo, since that should be clean
 }
 
-Path Path::createFromSubPath(std::vector<const Room *> subPath) const {
+Path Path::createFromSubPath(const SubPath *subPath) const {
   Path path(*this);
 
-  path.steps.clear();
   path.previousPath = this;
   path.depth++;
 
-  path.enterRooms(subPath);
+  path.enteredRoomsCount += subPath->visitedRoomsCount();
+  path.state = getStateWithRoom(state, subPath->getLastRoom());
 
   return std::move(path);
 }
@@ -42,7 +40,6 @@ void Path::pickUpItem(const Item *item) {
 
   state |= (1ULL << item->stateIndex);
   foundItems |= (1ULL << item->uniqueIndex);
-  steps.push_back(item);
 }
 
 void Path::pickUpItems(const std::vector<const Item *> &items) {
@@ -58,24 +55,11 @@ void Path::completeTask(const Task *task) {
 
   state |= (1ULL << task->stateIndex);
   completedTasks |= (1ULL << task->uniqueIndex);
-  steps.push_back(task);
 }
 
 void Path::completeTasks(const std::vector<const Task *> &tasks) {
   for (const auto &task : tasks) {
     completeTask(task);
-  }
-}
-
-void Path::enterRoom(const Room *room) {
-  steps.push_back(room);
-  ++enteredRoomsCount;
-  state = getStateWithRoom(state, room);
-}
-
-void Path::enterRooms(const std::vector<const Room *> rooms) {
-  for (const auto &room : rooms) {
-    enterRoom(room);
   }
 }
 
@@ -95,25 +79,30 @@ const State &Path::getState() const {
   return state;
 }
 
-std::vector<const Action *> Path::getSteps() const {
-  std::vector<const Action *> combinedSteps;
-
-  if (previousPath != nullptr) {
-    auto firstSteps = previousPath->getSteps();
-    combinedSteps.insert(combinedSteps.end(), firstSteps.begin(), firstSteps.end());
-  }
-
-  combinedSteps.insert(combinedSteps.end(), steps.begin(), steps.end());
-
-  return combinedSteps;
-}
-
 bool Path::hasFoundItem(const Item *item) const {
   return foundItems & (1ULL << item->uniqueIndex);
 }
 
 bool Path::hasCompletedTask(const Task *task) const {
   return completedTasks & (1ULL << task->uniqueIndex);
+}
+
+void Path::setPostRoomState(bool hasPostRoom) {
+  postRoom = hasPostRoom;
+}
+
+bool Path::hasPostRoom() const {
+  return postRoom;
+}
+
+std::vector<const Path *> Path::getRoute() const {
+  if (previousPath != nullptr) {
+    auto route = previousPath->getRoute();
+    route.push_back(this);
+    return route;
+  } else {
+    return std::vector<const Path *>{this};
+  }
 }
 
 State Path::getStateWithRoom(const State &state, const Room *room) {

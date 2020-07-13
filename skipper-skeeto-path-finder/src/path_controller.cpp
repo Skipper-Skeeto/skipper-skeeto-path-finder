@@ -150,14 +150,23 @@ bool PathController::findNewPath(Path *originPath) {
     auto subPath = originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.front();
     if (originPath->subPathInfo.remaining->nextRoomsForFirstSubPath.empty()) {
       const Room *currentRoom;
-      if (subPath->isEmpty()) {
+      if (subPath.isEmpty()) {
         auto currentRoomIndex = originPath->getCurrentRoomIndex();
 
         currentRoom = data->getRoom(currentRoomIndex);
 
+        if (originPath->hasPostRoom()) {
+          auto tasks = data->getTasksForRoom(currentRoom);
+          for (const auto &task : tasks) {
+            if (task->postRoom != nullptr) {
+              currentRoom = task->postRoom;
+            }
+          }
+        }
+
         originPath->subPathInfo.remaining->unavailableRooms[currentRoomIndex] = true;
       } else {
-        currentRoom = subPath->getRoom();
+        currentRoom = subPath.getLastRoom();
       }
 
       originPath->subPathInfo.remaining->nextRoomsForFirstSubPath = currentRoom->getNextRooms();
@@ -185,19 +194,19 @@ bool PathController::findNewPath(Path *originPath) {
       continue;
     }
 
-    auto newSubPath = std::make_shared<SubPath>(nextRoom, subPath);
+    SubPath newSubPath(nextRoom, subPath);
 
-    if (!commonState->makesSenseToPerformActions(originPath, newSubPath.get())) {
+    if (!commonState->makesSenseToPerformActions(originPath, &newSubPath)) {
       continue;
     }
 
     if (enterRoomResult == EnterRoomResult::CanEnterWithTaskObstacle) {
-      Path newPath = originPath->createFromSubPath(newSubPath->getRooms());
+      Path newPath = originPath->createFromSubPath(&newSubPath);
       newPath.completeTask(nextRoom->taskObstacle);
 
       performPossibleActions(&newPath);
 
-      if (commonState->submitIfDone(&newPath)) {
+      if (submitIfDone(&newPath)) {
         continue;
       }
 
@@ -214,11 +223,11 @@ bool PathController::findNewPath(Path *originPath) {
 
     auto possibleTasks = getPossibleTasks(originPath, nextRoom);
     if (!possibleTasks.empty()) {
-      Path newPath = originPath->createFromSubPath(newSubPath->getRooms());
+      Path newPath = originPath->createFromSubPath(&newSubPath);
 
       performPossibleActions(&newPath, possibleTasks);
 
-      if (commonState->submitIfDone(&newPath)) {
+      if (submitIfDone(&newPath)) {
         continue;
       }
 
@@ -232,10 +241,10 @@ bool PathController::findNewPath(Path *originPath) {
 
     auto possibleItems = getPossibleItems(originPath, nextRoom);
     if (!possibleItems.empty()) {
-      Path newPath = originPath->createFromSubPath(newSubPath->getRooms());
+      Path newPath = originPath->createFromSubPath(&newSubPath);
       newPath.pickUpItems(possibleItems);
 
-      if (commonState->submitIfDone(&newPath)) {
+      if (submitIfDone(&newPath)) {
         continue;
       }
 
@@ -247,11 +256,11 @@ bool PathController::findNewPath(Path *originPath) {
       continue;
     }
 
-    if (!commonState->makesSenseToExpandSubPath(originPath, newSubPath.get())) {
+    if (!commonState->makesSenseToExpandSubPath(originPath, &newSubPath)) {
       continue;
     }
 
-    originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.push_back(newSubPath);
+    originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.push_back(std::move(newSubPath));
   }
 
   delete originPath->subPathInfo.remaining;
@@ -296,7 +305,7 @@ void PathController::performPossibleActions(Path *path, const std::vector<const 
 
   for (const auto &task : postRoomTasks) {
     path->completeTask(task);
-    path->enterRoom(task->postRoom);
+    path->setPostRoomState(true);
 
     // We moved room, if there was more than one in postRoomTasks it would be for the wrong room!
     // TODO: To make this more generic, if there could be more than one post room, split into seperate paths
@@ -349,4 +358,135 @@ bool PathController::canPickUpItem(const Path *path, const Item *item) const {
   }
 
   return path->hasCompletedTask(item->taskObstacle);
+}
+
+bool PathController::submitIfDone(const Path *path) {
+  if (!path->isDone()) {
+    return false;
+  }
+
+  auto stepsOfSteps = findFinalSteps(path);
+  commonState->addNewGoodOnes(stepsOfSteps, path->getVisitedRoomsCount());
+
+  return true;
+}
+
+std::vector<std::vector<const Action *>> PathController::findFinalSteps(const Path *finalPath) const {
+  std::vector<std::vector<const Action *>> stepsOfSteps{{}};
+  auto route = finalPath->getRoute();
+  auto lastPath = route.front();
+  auto lastRoom = data->getRoom(lastPath->getCurrentRoomIndex());
+
+  Path startPath(data->getStartRoom());
+  std::tie(stepsOfSteps, lastRoom) = performFinalStepsActions(stepsOfSteps, &startPath, lastRoom);
+
+  for (auto path : route) {
+    if (path->getCurrentRoomIndex() != lastRoom->roomIndex) {
+      auto targetRoom = data->getRoom(path->getCurrentRoomIndex());
+      stepsOfSteps = moveToFinalStepsRoom(stepsOfSteps, lastPath, lastRoom, targetRoom);
+      lastRoom = targetRoom;
+    }
+
+    std::tie(stepsOfSteps, lastRoom) = performFinalStepsActions(stepsOfSteps, lastPath, lastRoom);
+
+    lastPath = path;
+  }
+
+  return stepsOfSteps;
+}
+
+std::vector<std::vector<const Action *>> PathController::moveToFinalStepsRoom(const std::vector<std::vector<const Action *>> &currentStepsOfSteps, const Path *currentPath, const Room *currentRoom, const Room *targetRoom) const {
+  std::vector<std::vector<const Room *>> nextSubRoutes{{}};
+  bool foundRoom = false;
+
+  while (!foundRoom) {
+    auto remaningSubRoutes = nextSubRoutes;
+    nextSubRoutes.clear();
+
+    while (!remaningSubRoutes.empty()) {
+      auto nextRemaningSubRoute = remaningSubRoutes.back();
+      remaningSubRoutes.pop_back();
+
+      std::vector<const Room *> nextPossibleRooms;
+      if (nextRemaningSubRoute.empty()) {
+        nextPossibleRooms = currentRoom->getNextRooms();
+      } else {
+        nextPossibleRooms = nextRemaningSubRoute.back()->getNextRooms();
+      }
+
+      for (const auto &room : nextPossibleRooms) {
+        auto newSubRoute = nextRemaningSubRoute;
+        auto enterRoomResult = canEnterRoom(currentPath, room);
+        if (room == targetRoom) {
+          newSubRoute.push_back(room);
+          nextSubRoutes.push_back(newSubRoute);
+          foundRoom = true;
+        } else if (enterRoomResult == EnterRoomResult::CanEnter) {
+          newSubRoute.push_back(room);
+          nextSubRoutes.push_back(newSubRoute);
+        }
+      }
+    }
+  }
+
+  std::vector<std::vector<const Action *>> newStepsOfSteps;
+
+  for (const auto &subRoute : nextSubRoutes) {
+    if (subRoute.back() != targetRoom) {
+      continue;
+    }
+
+    for (auto newSteps : currentStepsOfSteps) {
+      for (const auto &room : subRoute) {
+        newSteps.push_back(room);
+      }
+
+      newStepsOfSteps.push_back(newSteps);
+    }
+  }
+
+  return newStepsOfSteps;
+}
+
+std::pair<std::vector<std::vector<const Action *>>, const Room *> PathController::performFinalStepsActions(const std::vector<std::vector<const Action *>> &currentStepsOfSteps, const Path *currentPath, const Room *currentRoom) const {
+  auto newStepsOfSteps = currentStepsOfSteps;
+  auto newRoom = currentRoom;
+
+  if (canEnterRoom(currentPath, currentRoom) == EnterRoomResult::CanEnterWithTaskObstacle) {
+    for (auto &steps : newStepsOfSteps) {
+      steps.push_back(currentRoom->taskObstacle);
+    }
+  }
+
+  const Task *postRoomTask = nullptr;
+  for (const auto &task : getPossibleTasks(currentPath, currentRoom)) {
+    if (task == currentRoom->taskObstacle) {
+      continue;
+    }
+
+    if (task->postRoom != nullptr) {
+      postRoomTask = task;
+    } else {
+      for (auto &steps : newStepsOfSteps) {
+        steps.push_back(task);
+      }
+    }
+  }
+
+  for (const auto &item : getPossibleItems(currentPath, currentRoom)) {
+    for (auto &steps : newStepsOfSteps) {
+      steps.push_back(item);
+    }
+  }
+
+  if (postRoomTask != nullptr) {
+    for (auto &steps : newStepsOfSteps) {
+      steps.push_back(postRoomTask);
+      steps.push_back(postRoomTask->postRoom);
+    }
+
+    newRoom = postRoomTask->postRoom;
+  }
+
+  return std::make_pair(newStepsOfSteps, newRoom);
 }

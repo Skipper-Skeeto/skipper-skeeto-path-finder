@@ -21,7 +21,7 @@ public:
 
   bool makesSenseToExpandSubPath(const Path *originPath, const SubPath *subPath);
 
-  bool submitIfDone(const Path *path);
+  void addNewGoodOnes(const std::vector<std::vector<const Action *>> &stepsOfSteps, int visitedRoomsCount);
 
   void stop();
 
@@ -37,8 +37,6 @@ private:
   unsigned char getMaxVisitedRoomsCount() const;
 
   bool checkForDuplicateState(const State &state, unsigned char visitedRoomsCount);
-
-  void addNewGoodOne(const Path *path);
 
   mutable std::mutex finalStateMutex;
   mutable std::mutex stepStageMutex;

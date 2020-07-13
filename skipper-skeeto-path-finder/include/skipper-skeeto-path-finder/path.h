@@ -11,6 +11,7 @@ class Action;
 class Item;
 class Task;
 class Room;
+class SubPath;
 
 class Path {
 public:
@@ -18,7 +19,7 @@ public:
 
   Path(const Path &path);
 
-  Path createFromSubPath(std::vector<const Room *> subPath) const;
+  Path createFromSubPath(const SubPath *subPath) const;
 
   void pickUpItem(const Item *item);
 
@@ -28,10 +29,6 @@ public:
 
   void completeTasks(const std::vector<const Task *> &tasks);
 
-  void enterRoom(const Room *room);
-
-  void enterRooms(const std::vector<const Room *> rooms);
-
   int getCurrentRoomIndex() const;
 
   unsigned char getVisitedRoomsCount() const;
@@ -40,11 +37,15 @@ public:
 
   const State &getState() const;
 
-  std::vector<const Action *> getSteps() const;
-
   bool hasFoundItem(const Item *item) const;
 
   bool hasCompletedTask(const Task *task) const;
+
+  void setPostRoomState(bool hasPostRoom);
+
+  bool hasPostRoom() const;
+
+  std::vector<const Path*> getRoute() const;
 
   unsigned char depth{0};
 
@@ -54,8 +55,8 @@ public:
 
 private:
   const Path *previousPath = nullptr;
-  std::vector<const Action *> steps;
   unsigned char enteredRoomsCount = 0;
+  bool postRoom = false;
   State state{};
   unsigned long long int foundItems{};
   unsigned long long int completedTasks{};

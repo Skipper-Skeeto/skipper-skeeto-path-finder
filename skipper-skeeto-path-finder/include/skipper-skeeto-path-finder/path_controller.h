@@ -46,6 +46,14 @@ private:
 
   bool canPickUpItem(const Path *path, const Item *item) const;
 
+  bool submitIfDone(const Path *path);
+
+  std::vector<std::vector<const Action *>> findFinalSteps(const Path *finalPath) const;
+
+  std::vector<std::vector<const Action *>> moveToFinalStepsRoom(const std::vector<std::vector<const Action *>> &currentStepsOfSteps, const Path *currentPath, const Room *currentRoom, const Room *targetRoom) const;
+
+  std::pair<std::vector<std::vector<const Action *>>, const Room *> performFinalStepsActions(const std::vector<std::vector<const Action *>> &currentStepsOfSteps, const Path *currentPath, const Room *currentRoom) const;
+
   CommonState *commonState;
   const Data *data;
 
