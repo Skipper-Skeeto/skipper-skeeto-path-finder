@@ -167,6 +167,23 @@ Data::Data(const nlohmann::json &jsonData) {
                  << "Found " << nextStateIndex << " unique states";
     throw std::exception(stringStream.str().c_str());
   }
+
+  for (const auto &room : rooms) {
+    bool foundPostRoom = false;
+    for (const auto &task : getTasksForRoom(room)) {
+      if (task->postRoom != nullptr) {
+        if (foundPostRoom) {
+          std::stringstream stringStream;
+          stringStream << "Logic cannot handle more than one task with post-room in a room. "
+                       << "This was the case for the room \"" << room->key << "\"! "
+                       << "Update PathController if it is needed.";
+          throw std::exception(stringStream.str().c_str());
+        }
+
+        foundPostRoom = true;
+      }
+    }
+  }
 }
 
 std::vector<const Room *> Data::getRooms() const {
