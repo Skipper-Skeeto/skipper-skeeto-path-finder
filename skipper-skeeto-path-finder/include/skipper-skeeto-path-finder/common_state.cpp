@@ -85,7 +85,7 @@ bool CommonState::makesSenseToExpandSubPath(const Path *originPath, const SubPat
   return true;
 }
 
-void CommonState::printStatus() {
+void CommonState::printStatus(const std::vector<unsigned char> &runningThreads) {
   std::lock_guard<std::mutex> guardStatistics(statisticsMutex);
   std::lock_guard<std::mutex> guardFinalState(finalStateMutex);
   std::lock_guard<std::mutex> guardStepsStage(stepStageMutex);
@@ -101,7 +101,13 @@ void CommonState::printStatus() {
   }
 
   std::lock_guard<std::mutex> guardPrint(printMutex);
-  std::cout << "good: " << goodOnes.size() << "; max: " << int(maxVisitedRoomsCount)
+  std::cout << "Threads (" << runningThreads.size() << "): ";
+  for (auto identifier : runningThreads) {
+    std::cout << identifier;
+  }
+
+  std::cout << std::endl
+            << "good: " << goodOnes.size() << "; max: " << int(maxVisitedRoomsCount)
             << "; general: " << std::setw(8) << tooManyGeneralStepsCount << "=" << std::fixed << std::setprecision(8) << depthKillGeneralAvg
             << "; state: " << std::setw(8) << tooManyStateStepsCount << "=" << std::fixed << std::setprecision(8) << depthKillStateAvg
             << std::endl;

@@ -23,7 +23,7 @@ public:
 
   void addNewGoodOnes(const std::vector<std::vector<const Action *>> &stepsOfSteps, int visitedRoomsCount);
 
-  void printStatus();
+  void printStatus(const std::vector<unsigned char> &runningThreads);
 
   void dumpGoodOnes(const std::string &dirName);
 

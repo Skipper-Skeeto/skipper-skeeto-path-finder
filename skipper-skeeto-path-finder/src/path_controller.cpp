@@ -118,15 +118,30 @@ void PathController::distributeToThreads(const std::vector<Path *> paths, const 
 
   std::list<ThreadInfo> threadInfos(paths.size());
   auto threadInfoIterator = threadInfos.begin();
+  unsigned char nextIdentifier = '0';
   for (const auto &path : paths) {
-    threadInfoIterator->setThread(std::thread(threadFunction, path, &*threadInfoIterator));
+    threadInfoIterator->init(std::thread(threadFunction, path, &*threadInfoIterator), nextIdentifier);
     std::advance(threadInfoIterator, 1);
+    if (nextIdentifier == '9') {
+      nextIdentifier = 'A';
+    } else if (nextIdentifier == 'Z') {
+      nextIdentifier = 'a';
+    } else if (nextIdentifier == 'z') {
+      nextIdentifier = '*';
+    } else if (nextIdentifier != '*') {
+      ++nextIdentifier;
+    }
   }
 
   while (!threadInfos.empty()) {
     updateThreads(threadInfos);
 
-    commonState->printStatus();
+    std::vector<unsigned char> runningThreads;
+    for (const auto &threadInfo : threadInfos) {
+      runningThreads.push_back(threadInfo.getIdentifier());
+    }
+
+    commonState->printStatus(runningThreads);
 
     commonState->dumpGoodOnes(resultDirName);
 

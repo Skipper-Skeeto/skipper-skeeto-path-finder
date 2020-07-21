@@ -9,14 +9,17 @@ public:
 
   ThreadInfo(ThreadInfo &&) = default;
 
-  void setThread(std::thread &&thread);
+  void init(std::thread &&thread, unsigned char identifier);
 
   void setDone();
 
   bool joinIfDone();
 
+  unsigned char getIdentifier() const;
+
 private:
   std::thread thread;
+  unsigned char identifier = '?';
 
   std::mutex doneMutex;
   bool isDone = false;
