@@ -85,16 +85,6 @@ bool CommonState::makesSenseToExpandSubPath(const Path *originPath, const SubPat
   return true;
 }
 
-void CommonState::stop() {
-  std::lock_guard<std::mutex> guardStatistics(stopMutex);
-  stopNow = true;
-}
-
-bool CommonState::shouldStop() const {
-  std::lock_guard<std::mutex> guardStatistics(stopMutex);
-  return stopNow;
-}
-
 void CommonState::printStatus() {
   std::lock_guard<std::mutex> guardStatistics(statisticsMutex);
   std::lock_guard<std::mutex> guardFinalState(finalStateMutex);

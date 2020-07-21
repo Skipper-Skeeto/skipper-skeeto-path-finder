@@ -23,10 +23,6 @@ public:
 
   void addNewGoodOnes(const std::vector<std::vector<const Action *>> &stepsOfSteps, int visitedRoomsCount);
 
-  void stop();
-
-  bool shouldStop() const;
-
   void printStatus();
 
   void dumpGoodOnes(const std::string &dirName);
@@ -41,7 +37,6 @@ private:
   mutable std::mutex finalStateMutex;
   mutable std::mutex stepStageMutex;
   mutable std::mutex statisticsMutex;
-  mutable std::mutex stopMutex;
   mutable std::mutex printMutex;
 
   unsigned char maxVisitedRoomsCount = 255;
@@ -53,6 +48,4 @@ private:
   int tooManyGeneralStepsDepthTotal = 0;
   int tooManyStateStepsCount = 0;
   int tooManyStateStepsDepthTotal = 0;
-
-  bool stopNow = false;
 };

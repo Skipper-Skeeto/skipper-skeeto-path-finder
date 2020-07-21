@@ -5,8 +5,11 @@
 #include "skipper-skeeto-path-finder/path.h"
 
 #include <functional>
+#include <list>
 #include <queue>
 #include <unordered_map>
+
+class ThreadInfo;
 
 class PathController {
 public:
@@ -28,7 +31,7 @@ private:
 
   bool moveOnDistributed(Path *path);
 
-  void distributeToThreads(const std::vector<Path *> paths, const std::function<void(Path *)> &threadFunction);
+  void distributeToThreads(const std::vector<Path *> paths, const std::function<void(Path *, ThreadInfo *)> &threadFunction);
 
   bool findNewPath(Path *originPath);
 
@@ -53,6 +56,8 @@ private:
   std::vector<std::vector<const Action *>> moveToFinalStepsRoom(const std::vector<std::vector<const Action *>> &currentStepsOfSteps, const Path *currentPath, const Room *currentRoom, const Room *targetRoom) const;
 
   std::pair<std::vector<std::vector<const Action *>>, const Room *> performFinalStepsActions(const std::vector<std::vector<const Action *>> &currentStepsOfSteps, const Path *currentPath, const Room *currentRoom) const;
+
+  void updateThreads(std::list<ThreadInfo> &threadInfos) const;
 
   CommonState *commonState;
   const Data *data;

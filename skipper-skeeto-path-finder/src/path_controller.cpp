@@ -3,6 +3,7 @@
 #include "skipper-skeeto-path-finder/common_state.h"
 #include "skipper-skeeto-path-finder/sub_path.h"
 #include "skipper-skeeto-path-finder/sub_path_info_remaining.h"
+#include "skipper-skeeto-path-finder/thread_info.h"
 
 #include <iostream>
 
@@ -37,10 +38,12 @@ void PathController::start() {
 
   performPossibleActions(&startPath);
 
-  auto threadFunction = [this](Path *path) {
+  auto threadFunction = [this](Path *path, ThreadInfo *threadInfo) {
     //moveOnRecursive(path);
     while (moveOnDistributed(path)) {
     }
+
+    threadInfo->setDone();
   };
 
   distributeToThreads({&startPath}, threadFunction);
@@ -95,50 +98,42 @@ bool PathController::moveOnDistributed(Path *path) {
   return true;
 }
 
-void PathController::distributeToThreads(const std::vector<Path *> paths, const std::function<void(Path *)> &threadFunction) {
-  if (paths.size() > 10) {
-    std::cout << "Spawning " << paths.size() << " threads with paths." << std::endl
-              << std::endl;
+void PathController::distributeToThreads(const std::vector<Path *> paths, const std::function<void(Path *, ThreadInfo *)> &threadFunction) {
+  if (paths.size() < 10) {
+    std::vector<Path *> newPaths;
 
-    std::vector<std::thread> threads;
     for (const auto &path : paths) {
-      std::thread thread(threadFunction, path);
-      threads.push_back(std::move(thread));
-    }
-
-    auto printer = [this]() {
-      while (!commonState->shouldStop()) {
-        commonState->printStatus();
-
-        commonState->dumpGoodOnes(resultDirName);
-
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+      while (findNewPath(path)) {
+        newPaths.push_back(*path->subPathInfo.getNextPath());
       }
-    };
-    std::thread printerThread(printer);
-
-    for (auto &thread : threads) {
-      thread.join();
     }
 
-    commonState->stop();
-
-    printerThread.join();
-
-    commonState->dumpGoodOnes(resultDirName);
+    distributeToThreads(newPaths, threadFunction);
 
     return;
   }
 
-  std::vector<Path *> newPaths;
+  std::cout << "Spawning " << paths.size() << " threads with paths." << std::endl
+            << std::endl;
 
+  std::list<ThreadInfo> threadInfos(paths.size());
+  auto threadInfoIterator = threadInfos.begin();
   for (const auto &path : paths) {
-    while (findNewPath(path)) {
-      newPaths.push_back(*path->subPathInfo.getNextPath());
-    }
+    threadInfoIterator->setThread(std::thread(threadFunction, path, &*threadInfoIterator));
+    std::advance(threadInfoIterator, 1);
   }
 
-  distributeToThreads(newPaths, threadFunction);
+  while (!threadInfos.empty()) {
+    updateThreads(threadInfos);
+
+    commonState->printStatus();
+
+    commonState->dumpGoodOnes(resultDirName);
+
+    std::this_thread::sleep_for(std::chrono::seconds(5));
+  }
+
+  commonState->dumpGoodOnes(resultDirName);
 }
 
 bool PathController::findNewPath(Path *originPath) {
@@ -489,4 +484,10 @@ std::pair<std::vector<std::vector<const Action *>>, const Room *> PathController
   }
 
   return std::make_pair(newStepsOfSteps, newRoom);
+}
+
+void PathController::updateThreads(std::list<ThreadInfo> &threadInfos) const {
+  threadInfos.remove_if([](ThreadInfo &threadInfo) {
+    return threadInfo.joinIfDone();
+  });
 }

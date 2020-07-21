@@ -31,6 +31,7 @@
     <ClInclude Include="include\skipper-skeeto-path-finder\sub_path_info.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\sub_path_info_remaining.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\task.h" />
+    <ClInclude Include="include\skipper-skeeto-path-finder\thread_info.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="include\skipper-skeeto-path-finder\common_state.cpp" />
@@ -43,6 +44,7 @@
     <ClCompile Include="src\sub_path.cpp" />
     <ClCompile Include="src\sub_path_info.cpp" />
     <ClCompile Include="src\task.cpp" />
+    <ClCompile Include="src\thread_info.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\data\ss1.json" />
