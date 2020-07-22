@@ -21,6 +21,10 @@ SubPathInfo::~SubPathInfo() {
   if (remaining != nullptr) {
     delete remaining;
   }
+
+  for (auto path : paths) {
+    delete path;
+  }
 }
 
 std::vector<Path *>::iterator SubPathInfo::getNextPath() {
