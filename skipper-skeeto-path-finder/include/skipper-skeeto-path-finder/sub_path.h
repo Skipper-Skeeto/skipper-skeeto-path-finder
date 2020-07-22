@@ -10,11 +10,11 @@ public:
 
   bool isEmpty() const;
 
-  const Room *getLastRoom() const;
+  int getLastRoomIndex() const;
 
   int visitedRoomsCount() const;
 
 private:
-  const Room *lastRoom = nullptr;
+  unsigned char lastRoomIndex = 0;
   unsigned char size = 0;
 };

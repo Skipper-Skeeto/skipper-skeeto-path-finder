@@ -173,7 +173,7 @@ bool PathController::findNewPath(Path *originPath) {
 
         originPath->subPathInfo.remaining->unavailableRooms[currentRoomIndex] = true;
       } else {
-        currentRoom = subPath.getLastRoom();
+        currentRoom = data->getRoom(subPath.getLastRoomIndex());
       }
 
       originPath->subPathInfo.remaining->nextRoomsForFirstSubPath = currentRoom->getNextRooms();

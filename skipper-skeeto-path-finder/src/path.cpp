@@ -7,7 +7,7 @@
 #include "skipper-skeeto-path-finder/task.h"
 
 Path::Path(const Room *startRoom) {
-  state = getStateWithRoom(state, startRoom);
+  state = getStateWithRoom(state, startRoom->roomIndex);
 }
 
 Path::Path(const Path &path) {
@@ -28,7 +28,7 @@ Path Path::createFromSubPath(const SubPath *subPath) const {
   path.depth++;
 
   path.enteredRoomsCount += subPath->visitedRoomsCount();
-  path.state = getStateWithRoom(state, subPath->getLastRoom());
+  path.state = getStateWithRoom(state, subPath->getLastRoomIndex());
 
   return std::move(path);
 }
@@ -105,6 +105,6 @@ std::vector<const Path *> Path::getRoute() const {
   }
 }
 
-State Path::getStateWithRoom(const State &state, const Room *room) {
-  return ((~((1ULL << STATE_ROOM_INDEX_SIZE) - 1) & state) | room->roomIndex);
+State Path::getStateWithRoom(const State &state, int roomIndex) {
+  return ((~((1ULL << STATE_ROOM_INDEX_SIZE) - 1) & state) | roomIndex);
 }

@@ -34,7 +34,7 @@ bool CommonState::makesSenseToPerformActions(const Path *originPath, const SubPa
     return false;
   }
 
-  auto newState = Path::getStateWithRoom(originPath->getState(), subPath->getLastRoom());
+  auto newState = Path::getStateWithRoom(originPath->getState(), subPath->getLastRoomIndex());
   if (!checkForDuplicateState(newState, visitedRoomsCount)) {
     std::lock_guard<std::mutex> guard(statisticsMutex);
     tooManyStateStepsCount += 1;

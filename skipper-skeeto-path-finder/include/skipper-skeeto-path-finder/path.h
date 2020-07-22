@@ -45,13 +45,13 @@ public:
 
   bool hasPostRoom() const;
 
-  std::vector<const Path*> getRoute() const;
+  std::vector<const Path *> getRoute() const;
 
   unsigned char depth{0};
 
   SubPathInfo subPathInfo;
 
-  static State getStateWithRoom(const State &state, const Room *room);
+  static State getStateWithRoom(const State &state, int roomIndex);
 
 private:
   const Path *previousPath = nullptr;
