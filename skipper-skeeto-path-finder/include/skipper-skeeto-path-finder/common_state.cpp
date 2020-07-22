@@ -85,7 +85,7 @@ bool CommonState::makesSenseToExpandSubPath(const Path *originPath, const SubPat
   return true;
 }
 
-void CommonState::printStatus(const std::vector<unsigned char> &runningThreads) {
+void CommonState::printStatus() {
   std::lock_guard<std::mutex> guardStatistics(statisticsMutex);
   std::lock_guard<std::mutex> guardFinalState(finalStateMutex);
   std::lock_guard<std::mutex> guardStepsStage(stepStageMutex);
@@ -100,10 +100,11 @@ void CommonState::printStatus(const std::vector<unsigned char> &runningThreads) 
     depthKillStateAvg = (double)tooManyStateStepsDepthTotal / tooManyStateStepsCount;
   }
 
+  std::lock_guard<std::mutex> threadInfoGuard(threadInfoMutex);
   std::lock_guard<std::mutex> guardPrint(printMutex);
-  std::cout << "Threads (" << runningThreads.size() << "): ";
-  for (auto identifier : runningThreads) {
-    std::cout << identifier;
+  std::cout << "Threads (" << threadInfos.size() << "): ";
+  for (const auto &threadInfoPair : threadInfos) {
+    std::cout << threadInfoPair.getIdentifier();
   }
 
   std::cout << std::endl
@@ -163,6 +164,38 @@ void CommonState::dumpGoodOnes(const std::string &dirName) {
 
   std::lock_guard<std::mutex> guardPrint(printMutex);
   std::cout << "Dumped " << newDumpedCount << " new good one(s) to " << fileName << std::endl;
+}
+
+void CommonState::addThread(std::thread &&thread, unsigned char identifier) {
+  std::lock_guard<std::mutex> threadInfoGuard(threadInfoMutex);
+  threadInfos.emplace_back(std::move(thread), identifier);
+}
+
+ThreadInfo *CommonState::getCurrentThread() {
+  std::lock_guard<std::mutex> threadInfoGuard(threadInfoMutex);
+  for (auto &threadInfo : threadInfos) {
+    if (threadInfo.getThreadIdentifier() == std::this_thread::get_id()) {
+      return &threadInfo;
+    }
+  }
+
+  std::cout << "Current thread not found" << std::endl;
+
+  return nullptr;
+}
+
+void CommonState::updateThreads() {
+  std::lock_guard<std::mutex> threadInfoGuard(threadInfoMutex);
+
+  threadInfos.remove_if([](auto &threadInfo) {
+    return threadInfo.joinIfDone();
+  });
+}
+
+bool CommonState::hasThreads() const {
+  std::lock_guard<std::mutex> threadInfoGuard(threadInfoMutex);
+
+  return !threadInfos.empty();
 }
 
 unsigned char CommonState::getMaxVisitedRoomsCount() const {

@@ -5,17 +5,17 @@
 
 class ThreadInfo {
 public:
-  ThreadInfo() = default;
+  ThreadInfo(std::thread &&thread, unsigned char identifier);
 
   ThreadInfo(ThreadInfo &&) = default;
-
-  void init(std::thread &&thread, unsigned char identifier);
 
   void setDone();
 
   bool joinIfDone();
 
   unsigned char getIdentifier() const;
+
+  std::thread::id getThreadIdentifier() const;
 
 private:
   std::thread thread;

@@ -1,6 +1,6 @@
 #include "skipper-skeeto-path-finder/thread_info.h"
 
-void ThreadInfo::init(std::thread &&thread, unsigned char identifier) {
+ThreadInfo::ThreadInfo(std::thread &&thread, unsigned char identifier) {
   this->thread = std::move(thread);
   this->identifier = identifier;
 }
@@ -23,4 +23,8 @@ bool ThreadInfo::joinIfDone() {
 
 unsigned char ThreadInfo::getIdentifier() const {
   return identifier;
+}
+
+std::thread::id ThreadInfo::getThreadIdentifier() const {
+  return thread.get_id();
 }

@@ -38,12 +38,12 @@ void PathController::start() {
 
   performPossibleActions(&startPath);
 
-  auto threadFunction = [this](Path *path, ThreadInfo *threadInfo) {
+  auto threadFunction = [this](Path *path) {
     //moveOnRecursive(path);
     while (moveOnDistributed(path)) {
     }
 
-    threadInfo->setDone();
+    commonState->getCurrentThread()->setDone();
   };
 
   distributeToThreads({&startPath}, threadFunction);
@@ -98,7 +98,7 @@ bool PathController::moveOnDistributed(Path *path) {
   return true;
 }
 
-void PathController::distributeToThreads(const std::vector<Path *> paths, const std::function<void(Path *, ThreadInfo *)> &threadFunction) {
+void PathController::distributeToThreads(const std::vector<Path *> paths, const std::function<void(Path *)> &threadFunction) {
   if (paths.size() < 10) {
     std::vector<Path *> newPaths;
 
@@ -116,12 +116,11 @@ void PathController::distributeToThreads(const std::vector<Path *> paths, const 
   std::cout << "Spawning " << paths.size() << " threads with paths." << std::endl
             << std::endl;
 
-  std::list<ThreadInfo> threadInfos(paths.size());
-  auto threadInfoIterator = threadInfos.begin();
   unsigned char nextIdentifier = '0';
   for (const auto &path : paths) {
-    threadInfoIterator->init(std::thread(threadFunction, path, &*threadInfoIterator), nextIdentifier);
-    std::advance(threadInfoIterator, 1);
+    std::thread thread(threadFunction, path);
+    commonState->addThread(std::move(thread), nextIdentifier);
+
     if (nextIdentifier == '9') {
       nextIdentifier = 'A';
     } else if (nextIdentifier == 'Z') {
@@ -133,15 +132,10 @@ void PathController::distributeToThreads(const std::vector<Path *> paths, const 
     }
   }
 
-  while (!threadInfos.empty()) {
-    updateThreads(threadInfos);
+  while (commonState->hasThreads()) {
+    commonState->updateThreads();
 
-    std::vector<unsigned char> runningThreads;
-    for (const auto &threadInfo : threadInfos) {
-      runningThreads.push_back(threadInfo.getIdentifier());
-    }
-
-    commonState->printStatus(runningThreads);
+    commonState->printStatus();
 
     commonState->dumpGoodOnes(resultDirName);
 
@@ -499,10 +493,4 @@ std::pair<std::vector<std::vector<const Action *>>, const Room *> PathController
   }
 
   return std::make_pair(newStepsOfSteps, newRoom);
-}
-
-void PathController::updateThreads(std::list<ThreadInfo> &threadInfos) const {
-  threadInfos.remove_if([](ThreadInfo &threadInfo) {
-    return threadInfo.joinIfDone();
-  });
 }

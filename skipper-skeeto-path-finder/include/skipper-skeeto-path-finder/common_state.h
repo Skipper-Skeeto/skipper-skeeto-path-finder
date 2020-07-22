@@ -1,11 +1,13 @@
 #pragma once
 
 #include "skipper-skeeto-path-finder/path.h"
+#include "skipper-skeeto-path-finder/thread_info.h"
 
 #include <parallel_hashmap/phmap.h>
 
 #include <array>
 #include <chrono>
+#include <list>
 #include <mutex>
 #include <vector>
 
@@ -23,9 +25,17 @@ public:
 
   void addNewGoodOnes(const std::vector<std::vector<const Action *>> &stepsOfSteps, int visitedRoomsCount);
 
-  void printStatus(const std::vector<unsigned char> &runningThreads);
+  void printStatus();
 
   void dumpGoodOnes(const std::string &dirName);
+
+  void addThread(std::thread &&thread, unsigned char identifier);
+
+  ThreadInfo *getCurrentThread();
+
+  void updateThreads();
+
+  bool hasThreads() const;
 
 private:
   static const char *DUMPED_GOOD_ONES_BASE_DIR;
@@ -36,6 +46,7 @@ private:
 
   mutable std::mutex finalStateMutex;
   mutable std::mutex stepStageMutex;
+  mutable std::mutex threadInfoMutex;
   mutable std::mutex statisticsMutex;
   mutable std::mutex printMutex;
 
@@ -43,6 +54,8 @@ private:
   phmap::parallel_flat_hash_map<State, unsigned char> stepsForState{};
   std::vector<std::vector<const Action *>> goodOnes;
   int dumpedGoodOnes = 0;
+
+  std::list<ThreadInfo> threadInfos;
 
   int tooManyGeneralStepsCount = 0;
   int tooManyGeneralStepsDepthTotal = 0;
