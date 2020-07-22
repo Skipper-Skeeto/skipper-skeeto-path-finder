@@ -233,5 +233,5 @@ void CommonState::addNewGoodOnes(const std::vector<std::vector<const Action *>> 
   }
 
   std::lock_guard<std::mutex> guardPrint(printMutex);
-  std::cout << "Found " << stepsOfSteps.size() << " new good one(s) with " << visitedRoomsCount << " rooms" << std::endl;
+  std::cout << "Found " << stepsOfSteps.size() << " new good one(s) with " << visitedRoomsCount << " rooms in thread " << getCurrentThread()->getIdentifier() << std::endl;
 }
