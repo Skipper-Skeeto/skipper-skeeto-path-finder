@@ -12,6 +12,7 @@
 
 #ifdef _WIN32
 #include <Windows.h>
+#include <psapi.h>
 #endif
 
 const char *CommonState::DUMPED_GOOD_ONES_BASE_DIR = "results";
@@ -101,16 +102,33 @@ void CommonState::printStatus() {
   }
 
   std::lock_guard<std::mutex> threadInfoGuard(threadInfoMutex);
+  std::vector<unsigned char> runningThreads;
+  std::vector<unsigned char> pausedThreads;
+
+  for (const auto &threadInfo : threadInfos) {
+    if (threadInfo.isPaused()) {
+      pausedThreads.push_back(threadInfo.getIdentifier());
+    } else {
+      runningThreads.push_back(threadInfo.getIdentifier());
+    }
+  }
+
   std::lock_guard<std::mutex> guardPrint(printMutex);
-  std::cout << "Threads (" << threadInfos.size() << "): ";
-  for (const auto &threadInfoPair : threadInfos) {
-    std::cout << threadInfoPair.getIdentifier();
+
+  std::cout << "Threads; Running (" << runningThreads.size() << "): ";
+  for (auto threadIdentifier : runningThreads) {
+    std::cout << threadIdentifier;
+  }
+  std::cout << " --- Paused (" << pausedThreads.size() << "): ";
+  for (auto threadIdentifier : pausedThreads) {
+    std::cout << threadIdentifier;
   }
 
   std::cout << std::endl
             << "good: " << goodOnes.size() << "; max: " << int(maxVisitedRoomsCount)
             << "; general: " << std::setw(8) << tooManyGeneralStepsCount << "=" << std::fixed << std::setprecision(8) << depthKillGeneralAvg
             << "; state: " << std::setw(8) << tooManyStateStepsCount << "=" << std::fixed << std::setprecision(8) << depthKillStateAvg
+            << "; memeory: " << getWorkingSetBytes()
             << std::endl;
 
   std::cout << "Paths for depths (1/2): ";
@@ -190,6 +208,22 @@ void CommonState::updateThreads() {
   threadInfos.remove_if([](auto &threadInfo) {
     return threadInfo.joinIfDone();
   });
+
+  bool exceededMemory = (getWorkingSetBytes() > 4000000000);
+  for (auto &threadInfo : threadInfos) {
+    bool shouldPause = (exceededMemory && threadInfo.getVisitedRoomsCount() == 255);
+    if (shouldPause) {
+      if (!threadInfo.isPaused()) {
+        threadInfo.threadMutex.lock();
+        threadInfo.setPaused(true);
+      }
+    } else {
+      if (threadInfo.isPaused()) {
+        threadInfo.setPaused(false);
+        threadInfo.threadMutex.unlock();
+      }
+    }
+  }
 }
 
 bool CommonState::hasThreads() const {
@@ -232,6 +266,24 @@ void CommonState::addNewGoodOnes(const std::vector<std::vector<const Action *>> 
     goodOnes.push_back(steps);
   }
 
+  auto threadInfo = getCurrentThread();
+
+  threadInfo->setVisitedRoomsCount(visitedRoomsCount);
+
   std::lock_guard<std::mutex> guardPrint(printMutex);
-  std::cout << "Found " << stepsOfSteps.size() << " new good one(s) with " << visitedRoomsCount << " rooms in thread " << getCurrentThread()->getIdentifier() << std::endl;
+  std::cout << "Found " << stepsOfSteps.size() << " new good one(s) with " << visitedRoomsCount << " rooms in thread " << threadInfo->getIdentifier() << std::endl;
+}
+
+size_t CommonState::getWorkingSetBytes() {
+#ifdef _WIN32
+  PROCESS_MEMORY_COUNTERS_EX pMemCountr;
+  if (GetProcessMemoryInfo(GetCurrentProcess(),
+                           (PPROCESS_MEMORY_COUNTERS)&pMemCountr,
+                           sizeof(PROCESS_MEMORY_COUNTERS))) {
+
+    return pMemCountr.WorkingSetSize;
+  }
+#endif
+
+  return 0;
 }

@@ -44,16 +44,20 @@ private:
 
   bool checkForDuplicateState(const State &state, unsigned char visitedRoomsCount);
 
+  size_t getWorkingSetBytes();
+
   mutable std::mutex finalStateMutex;
   mutable std::mutex stepStageMutex;
   mutable std::mutex threadInfoMutex;
   mutable std::mutex statisticsMutex;
   mutable std::mutex printMutex;
+  mutable std::mutex memoryMutex;
 
   unsigned char maxVisitedRoomsCount = 255;
   phmap::parallel_flat_hash_map<State, unsigned char> stepsForState{};
   std::vector<std::vector<const Action *>> goodOnes;
   int dumpedGoodOnes = 0;
+  bool memoryUsageIsLow = true;
 
   std::list<ThreadInfo> threadInfos;
 

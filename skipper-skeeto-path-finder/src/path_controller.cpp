@@ -39,11 +39,14 @@ void PathController::start() {
   performPossibleActions(&startPath);
 
   auto threadFunction = [this](Path *path) {
+    auto threadInfo = commonState->getCurrentThread();
+
     //moveOnRecursive(path);
     while (moveOnDistributed(path)) {
+      std::lock_guard<std::mutex> guard(threadInfo->threadMutex);
     }
 
-    commonState->getCurrentThread()->setDone();
+    threadInfo->setDone();
   };
 
   distributeToThreads({&startPath}, threadFunction);

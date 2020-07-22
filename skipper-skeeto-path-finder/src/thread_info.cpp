@@ -21,6 +21,30 @@ bool ThreadInfo::joinIfDone() {
   return isDone;
 }
 
+void ThreadInfo::setVisitedRoomsCount(unsigned char count) {
+  std::lock_guard<std::mutex> visitedRoomsCountGuard(visitedRoomsCountMutex);
+
+  visitedRoomsCount = count;
+}
+
+unsigned char ThreadInfo::getVisitedRoomsCount() const {
+  std::lock_guard<std::mutex> visitedRoomsCountGuard(visitedRoomsCountMutex);
+
+  return visitedRoomsCount;
+}
+
+void ThreadInfo::setPaused(bool isPaused) {
+  std::lock_guard<std::mutex> isPausedGuard(isPausedMutex);
+
+  paused = isPaused;
+}
+
+bool ThreadInfo::isPaused() const {
+  std::lock_guard<std::mutex> isPausedGuard(isPausedMutex);
+
+  return paused;
+}
+
 unsigned char ThreadInfo::getIdentifier() const {
   return identifier;
 }
