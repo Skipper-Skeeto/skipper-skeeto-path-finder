@@ -22,8 +22,17 @@ void Room::setupNextRooms(Room *left, Room *right, Room *up, Room *down) {
   if (down != nullptr) {
     rooms.push_back(down);
   }
+
+  roomIndexes.clear();
+  for (auto room : rooms) {
+    roomIndexes.push_back(room->roomIndex);
+  }
 }
 
 std::vector<const Room *> Room::getNextRooms() const {
   return rooms;
+}
+
+std::vector<unsigned char> Room::getNextRoomIndexes() const {
+  return roomIndexes;
 }

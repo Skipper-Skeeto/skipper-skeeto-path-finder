@@ -17,7 +17,9 @@ public:
 
   void setupNextRooms(Room *left, Room *right, Room *up, Room *down);
   std::vector<const Room *> getNextRooms() const;
+  std::vector<unsigned char> getNextRoomIndexes() const;
 
 private:
   std::vector<const Room *> rooms;
+  std::vector<unsigned char> roomIndexes;
 };

@@ -11,6 +11,6 @@ class Room;
 class SubPathInfoRemaining {
 public:
   std::vector<SubPath> remainingUnfinishedSubPaths{{}};
-  std::vector<const Room *> nextRoomsForFirstSubPath;
+  std::vector<unsigned char> nextRoomIndexesForFirstSubPath;
   std::array<bool, ROOM_COUNT> unavailableRooms{};
 };

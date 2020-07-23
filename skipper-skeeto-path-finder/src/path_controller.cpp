@@ -155,7 +155,7 @@ bool PathController::findNewPath(Path *originPath) {
 
   while (originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.size() > 0) {
     auto subPath = originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.back();
-    if (originPath->subPathInfo.remaining->nextRoomsForFirstSubPath.empty()) {
+    if (originPath->subPathInfo.remaining->nextRoomIndexesForFirstSubPath.empty()) {
       const Room *currentRoom;
       if (subPath.isEmpty()) {
         auto currentRoomIndex = originPath->getCurrentRoomIndex();
@@ -176,13 +176,14 @@ bool PathController::findNewPath(Path *originPath) {
         currentRoom = data->getRoom(subPath.getLastRoomIndex());
       }
 
-      originPath->subPathInfo.remaining->nextRoomsForFirstSubPath = currentRoom->getNextRooms();
+      originPath->subPathInfo.remaining->nextRoomIndexesForFirstSubPath = currentRoom->getNextRoomIndexes();
     }
 
-    const Room *nextRoom = originPath->subPathInfo.remaining->nextRoomsForFirstSubPath.front();
-    originPath->subPathInfo.remaining->nextRoomsForFirstSubPath.erase(originPath->subPathInfo.remaining->nextRoomsForFirstSubPath.begin());
+    auto nextRoomIndexIterator = originPath->subPathInfo.remaining->nextRoomIndexesForFirstSubPath.begin();
+    const Room *nextRoom = data->getRoom(*nextRoomIndexIterator);
+    originPath->subPathInfo.remaining->nextRoomIndexesForFirstSubPath.erase(nextRoomIndexIterator);
 
-    if (originPath->subPathInfo.remaining->nextRoomsForFirstSubPath.empty()) {
+    if (originPath->subPathInfo.remaining->nextRoomIndexesForFirstSubPath.empty()) {
 
       // After this iteration we should skip to next subPath
       originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.pop_back();
