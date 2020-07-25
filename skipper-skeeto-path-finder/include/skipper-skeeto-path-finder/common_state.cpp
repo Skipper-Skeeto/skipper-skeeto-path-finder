@@ -206,19 +206,54 @@ void CommonState::updateThreads() {
     return threadInfo.joinIfDone();
   });
 
-  bool exceededMemory = (getWorkingSetBytes() > 4000000000);
+  // Note that from a start all threads has the same score so all will be added
+  std::list<ThreadInfo *> pickedThreads;
+  int worstScore = 0;
   for (auto &threadInfo : threadInfos) {
-    bool shouldPause = (exceededMemory && threadInfo.getVisitedRoomsCount() == 255);
-    if (shouldPause) {
-      if (!threadInfo.isPaused()) {
-        threadInfo.threadMutex.lock();
-        threadInfo.setPaused(true);
+    auto visitedRoomsCount = threadInfo.getVisitedRoomsCount();
+    if (pickedThreads.size() < 4) {
+      pickedThreads.push_back(&threadInfo);
+      if (visitedRoomsCount > worstScore) {
+        worstScore = visitedRoomsCount;
       }
+    } else if (visitedRoomsCount == worstScore) {
+      pickedThreads.push_back(&threadInfo);
+    } else if (visitedRoomsCount < worstScore) {
+      pickedThreads.remove_if([worstScore](ThreadInfo *threadInfo) {
+        return threadInfo->getVisitedRoomsCount() == worstScore;
+      });
+
+      pickedThreads.push_back(&threadInfo);
+      worstScore = 0;
+      for (auto threadInfo : pickedThreads) {
+        if (threadInfo->getVisitedRoomsCount() > worstScore) {
+          worstScore = threadInfo->getVisitedRoomsCount();
+        }
+      }
+    }
+  }
+
+  if (++lastRunningExtraThread >= threadInfos.size()) {
+    lastRunningExtraThread = 0;
+  }
+
+  auto extraIndex = lastRunningExtraThread;
+  while (pickedThreads.size() < 8 && pickedThreads.size() < threadInfos.size()) {
+    auto threadInfo = &(*std::next(threadInfos.begin(), extraIndex));
+    if (std::find(pickedThreads.begin(), pickedThreads.end(), threadInfo) == pickedThreads.end()) {
+      pickedThreads.push_back(threadInfo);
+    }
+
+    if (++extraIndex >= threadInfos.size()) {
+      extraIndex = 0;
+    }
+  }
+
+  for (auto &threadInfo : threadInfos) {
+    if (std::find(pickedThreads.begin(), pickedThreads.end(), &threadInfo) != pickedThreads.end()) {
+      threadInfo.setPaused(false);
     } else {
-      if (threadInfo.isPaused()) {
-        threadInfo.setPaused(false);
-        threadInfo.threadMutex.unlock();
-      }
+      threadInfo.setPaused(true);
     }
   }
 }

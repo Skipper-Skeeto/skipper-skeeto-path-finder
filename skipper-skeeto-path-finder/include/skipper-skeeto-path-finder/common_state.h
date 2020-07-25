@@ -57,7 +57,7 @@ private:
   phmap::parallel_flat_hash_map<State, unsigned char> stepsForState{};
   std::vector<std::vector<const Action *>> goodOnes;
   int dumpedGoodOnes = 0;
-  bool memoryUsageIsLow = true;
+  int lastRunningExtraThread = -1;
 
   std::list<ThreadInfo> threadInfos;
 

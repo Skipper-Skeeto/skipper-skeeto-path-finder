@@ -21,6 +21,14 @@ public:
 
   Path createFromSubPath(const SubPath *subPath) const;
 
+  Path(std::istream &instream, const Path *previousPath);
+
+  void deserialize(std::istream &instream);
+
+  void serialize(std::ostream &outstream) const;
+
+  void cleanUp();
+
   void pickUpItem(const Item *item);
 
   void pickUpItems(const std::vector<const Item *> &items);

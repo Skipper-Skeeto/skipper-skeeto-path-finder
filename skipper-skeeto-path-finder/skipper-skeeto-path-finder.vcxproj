@@ -45,6 +45,7 @@
     <ClCompile Include="src\room.cpp" />
     <ClCompile Include="src\sub_path.cpp" />
     <ClCompile Include="src\sub_path_info.cpp" />
+    <ClCompile Include="src\sub_path_info_remaining.cpp" />
     <ClCompile Include="src\task.cpp" />
     <ClCompile Include="src\thread_info.cpp" />
   </ItemGroup>

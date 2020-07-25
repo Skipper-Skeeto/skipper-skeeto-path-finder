@@ -6,6 +6,16 @@ SubPath::SubPath(const Room *newRoom, const SubPath &parent) {
   size = parent.visitedRoomsCount() + 1;
 }
 
+SubPath::SubPath(std::istream &instream) {
+  instream.read(reinterpret_cast<char *>(&lastRoomIndex), sizeof(lastRoomIndex));
+  instream.read(reinterpret_cast<char *>(&size), sizeof(size));
+}
+
+void SubPath::serialize(std::ostream &outstream) const {
+  outstream.write(reinterpret_cast<const char *>(&lastRoomIndex), sizeof(lastRoomIndex));
+  outstream.write(reinterpret_cast<const char *>(&size), sizeof(size));
+}
+
 bool SubPath::isEmpty() const {
   return size == 0;
 }

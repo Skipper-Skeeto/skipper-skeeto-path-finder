@@ -19,15 +19,23 @@ public:
 
   ~SubPathInfo();
 
+  void deserialize(std::istream &instream, const Path *parent);
+
+  void serialize(std::ostream &outstream) const;
+
   std::vector<Path *>::iterator getNextPath();
 
   void erase(const std::vector<Path *>::iterator &iterator);
+
+  bool erase(const Path *path);
 
   void push_back(Path &&path);
 
   bool empty();
 
-  SubPathInfoRemaining *remaining;
+  void cleanUp();
+
+  SubPathInfoRemaining *remaining = nullptr;
 
   static std::array<std::pair<int, int>, MAX_DEPTH + 1> getTotalAndFinishedPathsCount();
 

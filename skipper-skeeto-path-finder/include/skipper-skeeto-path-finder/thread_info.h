@@ -21,15 +21,16 @@ public:
 
   bool isPaused() const;
 
+  void waitForUnpaused() const;
+
   unsigned char getIdentifier() const;
 
   std::thread::id getThreadIdentifier() const;
 
-  std::mutex threadMutex;
-
 private:
   std::thread thread;
   unsigned char identifier = '?';
+  mutable std::mutex threadMutex;
 
   mutable std::mutex visitedRoomsCountMutex;
   unsigned char visitedRoomsCount = 255;

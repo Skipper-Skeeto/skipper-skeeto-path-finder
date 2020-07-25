@@ -92,6 +92,9 @@
     <ClCompile Include="src\thread_info.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\sub_path_info_remaining.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\file_helper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

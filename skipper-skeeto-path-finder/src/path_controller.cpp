@@ -1,6 +1,7 @@
 #include "skipper-skeeto-path-finder/path_controller.h"
 
 #include "skipper-skeeto-path-finder/common_state.h"
+#include "skipper-skeeto-path-finder/file_helper.h"
 #include "skipper-skeeto-path-finder/sub_path.h"
 #include "skipper-skeeto-path-finder/sub_path_info_remaining.h"
 #include "skipper-skeeto-path-finder/thread_info.h"
@@ -8,10 +9,13 @@
 #include <iostream>
 
 #include <ctime>
+#include <fstream>
 #include <iomanip>
 #include <mutex>
 #include <sstream>
 #include <thread>
+
+const char *PathController::MEMORY_DUMP_DIR = "temp_memory_dump";
 
 PathController::PathController(const Data *data) {
   this->data = data;
@@ -34,6 +38,8 @@ PathController::~PathController() {
 }
 
 void PathController::start() {
+  FileHelper::createDir(MEMORY_DUMP_DIR);
+
   Path startPath(data->getStartRoom());
 
   performPossibleActions(&startPath);
@@ -43,13 +49,23 @@ void PathController::start() {
 
     //moveOnRecursive(path);
     while (moveOnDistributed(path)) {
-      std::lock_guard<std::mutex> guard(threadInfo->threadMutex);
+      if (threadInfo->isPaused()) {
+        std::string fileName = std::string(MEMORY_DUMP_DIR) + "/" + std::to_string(threadInfo->getIdentifier()) + ".dat";
+        {
+          std::ofstream dumpFile(fileName, std::ios::binary | std::ios::trunc);
+          path->serialize(dumpFile);
+          path->cleanUp();
+        }
+        threadInfo->waitForUnpaused();
+        {
+          std::ifstream dumpFile(fileName, std::ios::binary);
+          path->deserialize(dumpFile);
+        }
+      }
     }
-
-    threadInfo->setDone();
   };
 
-  distributeToThreads({&startPath}, threadFunction);
+  distributeToThreads({&startPath}, {}, threadFunction);
 }
 
 void PathController::printResult() const {
@@ -101,17 +117,19 @@ bool PathController::moveOnDistributed(Path *path) {
   return true;
 }
 
-void PathController::distributeToThreads(const std::vector<Path *> paths, const std::function<void(Path *)> &threadFunction) {
-  if (paths.size() < 10) {
+void PathController::distributeToThreads(const std::vector<Path *> paths, std::vector<Path *> parentPaths, const std::function<void(Path *)> &threadFunction) {
+  if (paths.size() < 20) {
     std::vector<Path *> newPaths;
 
     for (const auto &path : paths) {
       while (findNewPath(path)) {
         newPaths.push_back(*path->subPathInfo.getNextPath());
       }
+
+      parentPaths.push_back(path);
     }
 
-    distributeToThreads(newPaths, threadFunction);
+    distributeToThreads(newPaths, parentPaths, threadFunction);
 
     return;
   }
@@ -119,9 +137,32 @@ void PathController::distributeToThreads(const std::vector<Path *> paths, const 
   std::cout << "Spawning " << paths.size() << " threads with paths." << std::endl
             << std::endl;
 
+  std::mutex controllerMutex;
+  auto handleParentThreadFunction = [this, threadFunction, &parentPaths, &controllerMutex](Path *path) {
+    threadFunction(path);
+
+    std::lock_guard<std::mutex> parentGuard(controllerMutex);
+    auto nodePath = path;
+    while (!parentPaths.empty() && nodePath->subPathInfo.empty()) {
+      auto parentIterator = std::find(parentPaths.begin(), parentPaths.end(), nodePath);
+      if (parentIterator != parentPaths.end()) {
+        parentPaths.erase(parentIterator);
+      }
+      for (auto potentialParent : parentPaths) {
+        bool erased = potentialParent->subPathInfo.erase(nodePath);
+        if (erased) {
+          nodePath = potentialParent;
+          break;
+        }
+      }
+    }
+
+    commonState->getCurrentThread()->setDone();
+  };
+
   unsigned char nextIdentifier = '0';
   for (const auto &path : paths) {
-    std::thread thread(threadFunction, path);
+    std::thread thread(handleParentThreadFunction, path);
     commonState->addThread(std::move(thread), nextIdentifier);
 
     if (nextIdentifier == '9') {
@@ -129,7 +170,13 @@ void PathController::distributeToThreads(const std::vector<Path *> paths, const 
     } else if (nextIdentifier == 'Z') {
       nextIdentifier = 'a';
     } else if (nextIdentifier == 'z') {
-      nextIdentifier = '*';
+      nextIdentifier = '!';
+    } else if (nextIdentifier == '/') {
+      nextIdentifier = ':';
+    } else if (nextIdentifier == '>') {
+      std::cout << "There wasn't enough identifiers for the threads..." << std::endl
+                << std::endl;
+      return;
     } else if (nextIdentifier != '*') {
       ++nextIdentifier;
     }

@@ -33,6 +33,38 @@ Path Path::createFromSubPath(const SubPath *subPath) const {
   return std::move(path);
 }
 
+Path::Path(std::istream &instream, const Path *previousPath) {
+  this->previousPath = previousPath;
+
+  deserialize(instream);
+}
+
+void Path::deserialize(std::istream &instream) {
+  instream.read(reinterpret_cast<char *>(&depth), sizeof(depth));
+  instream.read(reinterpret_cast<char *>(&enteredRoomsCount), sizeof(enteredRoomsCount));
+  instream.read(reinterpret_cast<char *>(&postRoom), sizeof(postRoom));
+  instream.read(reinterpret_cast<char *>(&state), sizeof(state));
+  instream.read(reinterpret_cast<char *>(&foundItems), sizeof(foundItems));
+  instream.read(reinterpret_cast<char *>(&completedTasks), sizeof(completedTasks));
+
+  subPathInfo.deserialize(instream, this);
+}
+
+void Path::serialize(std::ostream &outstream) const {
+  outstream.write(reinterpret_cast<const char *>(&depth), sizeof(depth));
+  outstream.write(reinterpret_cast<const char *>(&enteredRoomsCount), sizeof(enteredRoomsCount));
+  outstream.write(reinterpret_cast<const char *>(&postRoom), sizeof(postRoom));
+  outstream.write(reinterpret_cast<const char *>(&state), sizeof(state));
+  outstream.write(reinterpret_cast<const char *>(&foundItems), sizeof(foundItems));
+  outstream.write(reinterpret_cast<const char *>(&completedTasks), sizeof(completedTasks));
+
+  subPathInfo.serialize(outstream);
+}
+
+void Path::cleanUp() {
+  subPathInfo.cleanUp();
+}
+
 void Path::pickUpItem(const Item *item) {
   if (hasFoundItem(item)) {
     throw std::exception("Item was already picked up");

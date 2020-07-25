@@ -36,13 +36,27 @@ unsigned char ThreadInfo::getVisitedRoomsCount() const {
 void ThreadInfo::setPaused(bool isPaused) {
   std::lock_guard<std::mutex> isPausedGuard(isPausedMutex);
 
+  if (paused == isPaused) {
+    return;
+  }
+
   paused = isPaused;
+
+  if (isPaused) {
+    threadMutex.lock();
+  } else {
+    threadMutex.unlock();
+  }
 }
 
 bool ThreadInfo::isPaused() const {
   std::lock_guard<std::mutex> isPausedGuard(isPausedMutex);
 
   return paused;
+}
+
+void ThreadInfo::waitForUnpaused() const {
+  std::lock_guard<std::mutex> guard(threadMutex);
 }
 
 unsigned char ThreadInfo::getIdentifier() const {

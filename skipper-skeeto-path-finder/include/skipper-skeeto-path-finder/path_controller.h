@@ -18,6 +18,8 @@ public:
   void printResult() const;
 
 private:
+  static const char *MEMORY_DUMP_DIR;
+
   enum class EnterRoomResult {
     CannotEnter,
     CanEnter,
@@ -28,7 +30,7 @@ private:
 
   bool moveOnDistributed(Path *path);
 
-  void distributeToThreads(const std::vector<Path *> paths, const std::function<void(Path *)> &threadFunction);
+  void distributeToThreads(const std::vector<Path *> paths, std::vector<Path *> parentPaths, const std::function<void(Path *)> &threadFunction);
 
   bool findNewPath(Path *originPath);
 
