@@ -253,6 +253,10 @@ bool CommonState::checkForDuplicateState(const State &state, unsigned char visit
 
 void CommonState::addNewGoodOnes(const std::vector<std::vector<const Action *>> &stepsOfSteps, int visitedRoomsCount) {
   std::lock_guard<std::mutex> guardFinalState(finalStateMutex);
+  if (visitedRoomsCount > maxVisitedRoomsCount) {
+    return;
+  }
+
   if (visitedRoomsCount < maxVisitedRoomsCount) {
     maxVisitedRoomsCount = visitedRoomsCount;
     goodOnes.clear();
