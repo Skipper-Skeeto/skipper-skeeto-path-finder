@@ -1,6 +1,7 @@
 #include "skipper-skeeto-path-finder/common_state.h"
 
 #include "skipper-skeeto-path-finder/action.h"
+#include "skipper-skeeto-path-finder/file_helper.h"
 #include "skipper-skeeto-path-finder/path.h"
 #include "skipper-skeeto-path-finder/room.h"
 #include "skipper-skeeto-path-finder/sub_path.h"
@@ -160,12 +161,8 @@ void CommonState::dumpGoodOnes(const std::string &dirName) {
   std::string dirPath = std::string(DUMPED_GOOD_ONES_BASE_DIR) + "/" + dirName;
   std::string fileName = dirPath + "/" + std::to_string(maxVisitedRoomsCount) + ".txt";
 
-#ifdef _WIN32
-  CreateDirectoryA(DUMPED_GOOD_ONES_BASE_DIR, nullptr);
-  CreateDirectoryA(dirPath.c_str(), nullptr);
-#else
-#error "Creating directory was not implemented for this platform"
-#endif
+  FileHelper::createDir(DUMPED_GOOD_ONES_BASE_DIR);
+  FileHelper::createDir(dirPath.c_str());
 
   std::ofstream dumpFile(fileName);
   for (int index = 0; index < goodOnes.size(); ++index) {

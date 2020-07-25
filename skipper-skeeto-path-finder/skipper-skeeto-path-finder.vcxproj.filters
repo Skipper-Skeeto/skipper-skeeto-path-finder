@@ -54,6 +54,9 @@
     <ClInclude Include="include\skipper-skeeto-path-finder\thread_info.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\skipper-skeeto-path-finder\file_helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -87,6 +90,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\thread_info.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\file_helper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
