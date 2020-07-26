@@ -140,7 +140,7 @@ void CommonState::printStatus() {
             << "good: " << goodOnes.size() << "; max: " << int(maxVisitedRoomsCount)
             << "; general: " << std::setw(8) << tooManyGeneralStepsCount << "=" << std::fixed << std::setprecision(8) << depthKillGeneralAvg
             << "; state: " << std::setw(8) << tooManyStateStepsCount << "=" << std::fixed << std::setprecision(8) << depthKillStateAvg
-            << "; memeory: " << getWorkingSetBytes()
+            << "; memory: " << getWorkingSetBytes()
             << std::endl;
 
   std::cout << "Paths for depths (1/2): ";
@@ -217,12 +217,27 @@ void CommonState::updateThreads() {
     return threadInfo.joinIfDone();
   });
 
+  auto memory = getWorkingSetBytes();
+
+  if (memory < 1000000000) {
+    return;
+  }
+
+  int allowedThreads = 8;
+  if (memory > 8000000000) {
+    allowedThreads = 4;
+  } else if (memory > 4000000000) {
+    allowedThreads = 6;
+  }
+
+  int allowedBestThreads = allowedThreads / 2;
+
   // Note that from a start all threads has the same score so all will be added
   std::list<ThreadInfo *> pickedThreads;
   int worstScore = 0;
   for (auto &threadInfo : threadInfos) {
     auto visitedRoomsCount = threadInfo.getVisitedRoomsCount();
-    if (pickedThreads.size() < 4) {
+    if (pickedThreads.size() < allowedBestThreads) {
       pickedThreads.push_back(&threadInfo);
       if (visitedRoomsCount > worstScore) {
         worstScore = visitedRoomsCount;
@@ -249,7 +264,7 @@ void CommonState::updateThreads() {
   }
 
   auto extraIndex = lastRunningExtraThread;
-  while (pickedThreads.size() < 8 && pickedThreads.size() < threadInfos.size()) {
+  while (pickedThreads.size() < allowedThreads && pickedThreads.size() < threadInfos.size()) {
     auto threadInfo = &(*std::next(threadInfos.begin(), extraIndex));
     if (std::find(pickedThreads.begin(), pickedThreads.end(), threadInfo) == pickedThreads.end()) {
       pickedThreads.push_back(threadInfo);
