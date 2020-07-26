@@ -36,7 +36,7 @@ bool CommonState::makesSenseToPerformActions(const Path *originPath, const SubPa
   }
 
   auto newState = Path::getStateWithRoom(originPath->getState(), subPath->getLastRoomIndex());
-  if (!checkForDuplicateState(newState, visitedRoomsCount)) {
+  if (checkForDuplicateState(newState, visitedRoomsCount) >= 0) {
     std::lock_guard<std::mutex> guard(statisticsMutex);
     tooManyStateStepsCount += 1;
     tooManyStateStepsDepthTotal += originPath->depth;
@@ -58,7 +58,7 @@ bool CommonState::makesSenseToStartNewSubPath(const Path *path) {
     return false;
   }
 
-  if (!checkForDuplicateState(path->getState(), path->getVisitedRoomsCount())) {
+  if (checkForDuplicateState(path->getState(), path->getVisitedRoomsCount()) >= 0) {
     std::lock_guard<std::mutex> guard(statisticsMutex);
     tooManyStateStepsCount += 1;
     tooManyStateStepsDepthTotal += path->depth;
@@ -83,6 +83,17 @@ bool CommonState::makesSenseToExpandSubPath(const Path *originPath, const SubPat
 
   // Note that we don't check for duplicate state, since it has been done in makesSenseToPerformActions().
   // After that check we only get here if no actions was done - and thus it would be the same state!
+
+  return true;
+}
+
+bool CommonState::makesSenseToContinueExistingPath(const Path *path) {
+  if (checkForDuplicateState(path->getState(), path->getVisitedRoomsCount()) > 0) {
+    std::lock_guard<std::mutex> guard(statisticsMutex);
+    tooManyStateStepsCount += 1;
+    tooManyStateStepsDepthTotal += path->depth;
+    return false;
+  }
 
   return true;
 }
@@ -269,21 +280,22 @@ unsigned char CommonState::getMaxVisitedRoomsCount() const {
   return maxVisitedRoomsCount;
 }
 
-bool CommonState::checkForDuplicateState(const State &state, unsigned char visitedRoomsCount) {
+int CommonState::checkForDuplicateState(const State &state, unsigned char visitedRoomsCount) {
   std::lock_guard<std::mutex> guard(stepStageMutex);
+  int result = -1;
+
   auto stepsIterator = stepsForState.find(state);
   if (stepsIterator != stepsForState.end()) {
+    result = visitedRoomsCount - stepsIterator->second;
 
-    // TODO: If directions etc. ever gets to be weighted (e.g. left->left vs. left->up), this should maybe be count < count
-    if (stepsIterator->second <= visitedRoomsCount) {
-      return false;
+    if (result >= 0) {
+      return result;
     }
   }
 
-  // TODO: Doesn't need to be set if count == count
   stepsForState[state] = visitedRoomsCount;
 
-  return true;
+  return result;
 }
 
 void CommonState::addNewGoodOnes(const std::vector<std::vector<const Action *>> &stepsOfSteps, int visitedRoomsCount) {

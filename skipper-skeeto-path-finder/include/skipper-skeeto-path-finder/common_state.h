@@ -23,6 +23,8 @@ public:
 
   bool makesSenseToExpandSubPath(const Path *originPath, const SubPath *subPath);
 
+  bool makesSenseToContinueExistingPath(const Path *path);
+
   void addNewGoodOnes(const std::vector<std::vector<const Action *>> &stepsOfSteps, int visitedRoomsCount);
 
   void printStatus();
@@ -42,7 +44,7 @@ private:
 
   unsigned char getMaxVisitedRoomsCount() const;
 
-  bool checkForDuplicateState(const State &state, unsigned char visitedRoomsCount);
+  int checkForDuplicateState(const State &state, unsigned char visitedRoomsCount);
 
   size_t getWorkingSetBytes();
 

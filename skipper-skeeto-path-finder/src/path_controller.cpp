@@ -90,6 +90,10 @@ void PathController::moveOnRecursive(Path *path) {
 }
 
 bool PathController::moveOnDistributed(Path *path) {
+  if (!path->subPathInfo.empty() && !commonState->makesSenseToContinueExistingPath(path)) {
+    return false;
+  }
+
   bool foundNew = findNewPath(path);
 
   if (foundNew && path->depth <= SubPathInfo::MAX_DEPTH) {
