@@ -21,13 +21,14 @@ PathController::PathController(const Data *data) {
   this->data = data;
   this->commonState = new CommonState();
 
+  // Do not use localtime(), see https://stackoverflow.com/a/38034148/2761541
   std::time_t currentTime = std::time(nullptr);
   std::ostringstream stringStream;
   std::tm localTime{};
 #ifdef _WIN32
   localtime_s(&localTime, &currentTime);
 #else
-#error "Converting to locale time was not implemented for this platform"
+  localtime_r(&currentTime, &localTime);
 #endif
   stringStream << std::put_time(&localTime, "%Y%m%d-%H%M%S");
   resultDirName = stringStream.str();
