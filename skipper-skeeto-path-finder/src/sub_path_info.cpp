@@ -1,5 +1,7 @@
 #include "skipper-skeeto-path-finder/sub_path_info.h"
 
+#include <algorithm>
+
 #include "skipper-skeeto-path-finder/path.h"
 #include "skipper-skeeto-path-finder/sub_path_info_remaining.h"
 
