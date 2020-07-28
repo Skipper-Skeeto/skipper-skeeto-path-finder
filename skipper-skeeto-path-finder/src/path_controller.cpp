@@ -144,6 +144,11 @@ void PathController::distributeToThreads(const std::vector<Path *> paths, std::v
 
   std::mutex controllerMutex;
   auto handleParentThreadFunction = [this, threadFunction, &parentPaths, &controllerMutex](Path *path) {
+
+    // Make sure everything is set up correctly before we start computing
+    controllerMutex.lock();
+    controllerMutex.unlock();
+
     threadFunction(path);
 
     std::lock_guard<std::mutex> parentGuard(controllerMutex);
@@ -164,6 +169,8 @@ void PathController::distributeToThreads(const std::vector<Path *> paths, std::v
 
     commonState->getCurrentThread()->setDone();
   };
+
+  controllerMutex.lock();
 
   unsigned char nextIdentifier = '0';
   for (const auto &path : paths) {
@@ -186,6 +193,8 @@ void PathController::distributeToThreads(const std::vector<Path *> paths, std::v
       ++nextIdentifier;
     }
   }
+
+  controllerMutex.unlock();
 
   while (commonState->hasThreads()) {
     commonState->updateThreads();
