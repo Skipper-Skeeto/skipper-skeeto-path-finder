@@ -35,7 +35,7 @@
     <ClInclude Include="include\skipper-skeeto-path-finder\thread_info.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="include\skipper-skeeto-path-finder\common_state.cpp" />
+    <ClCompile Include="src\common_state.cpp" />
     <ClCompile Include="src\data.cpp" />
     <ClCompile Include="src\file_helper.cpp" />
     <ClCompile Include="src\item.cpp" />
