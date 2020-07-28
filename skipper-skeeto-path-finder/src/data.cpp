@@ -134,7 +134,7 @@ Data::Data(const nlohmann::json &jsonData) {
   if (ROOM_COUNT != roomMapping.size()) {
     std::stringstream stringStream;
     stringStream << "Predefined room count (" << ROOM_COUNT << ") did not match the actual (" << roomMapping.size() << ")";
-    throw std::exception(stringStream.str().c_str());
+    throw std::runtime_error(stringStream.str());
   } else {
     for (const auto &roomInfo : roomMapping) {
       rooms[roomInfo.second.roomIndex] = &roomInfo.second;
@@ -144,20 +144,20 @@ Data::Data(const nlohmann::json &jsonData) {
   if (ITEM_COUNT != itemMapping.size()) {
     std::stringstream stringStream;
     stringStream << "Predefined item count (" << ITEM_COUNT << ") did not match the actual (" << itemMapping.size() << ")";
-    throw std::exception(stringStream.str().c_str());
+    throw std::runtime_error(stringStream.str());
   }
 
   if (TASK_COUNT != taskMapping.size()) {
     std::stringstream stringStream;
     stringStream << "Predefined task count (" << TASK_COUNT << ") did not match the actual (" << taskMapping.size() << ")";
-    throw std::exception(stringStream.str().c_str());
+    throw std::runtime_error(stringStream.str());
   }
 
   auto actualStateTaskItemSize = nextStateIndex - STATE_TASK_ITEM_START;
   if (STATE_TASK_ITEM_SIZE != actualStateTaskItemSize) {
     std::stringstream stringStream;
     stringStream << "Predefined state count (" << STATE_TASK_ITEM_SIZE << ") did not match the actual (" << actualStateTaskItemSize << ")";
-    throw std::exception(stringStream.str().c_str());
+    throw std::runtime_error(stringStream.str());
   }
 
   if (nextStateIndex > 64) {
@@ -165,7 +165,7 @@ Data::Data(const nlohmann::json &jsonData) {
     stringStream << "Too many different states to be able to optimize state key. "
                  << "Optimize the state-grouping or roll-back that use list of bools as state key. "
                  << "Found " << nextStateIndex << " unique states";
-    throw std::exception(stringStream.str().c_str());
+    throw std::runtime_error(stringStream.str());
   }
 
   for (const auto &room : rooms) {
@@ -177,7 +177,7 @@ Data::Data(const nlohmann::json &jsonData) {
           stringStream << "Logic cannot handle more than one task with post-room in a room. "
                        << "This was the case for the room \"" << room->key << "\"! "
                        << "Update PathController if it is needed.";
-          throw std::exception(stringStream.str().c_str());
+          throw std::runtime_error(stringStream.str());
         }
 
         foundPostRoom = true;
@@ -186,7 +186,7 @@ Data::Data(const nlohmann::json &jsonData) {
   }
 }
 
-const std::array<const Room*, ROOM_COUNT> &Data::getRooms() const {
+const std::array<const Room *, ROOM_COUNT> &Data::getRooms() const {
   return rooms;
 }
 
@@ -221,7 +221,7 @@ const Room *Data::getRoom(int index) const {
 const Room *Data::getStartRoom() const {
   auto roomIterator = roomMapping.find(std::string("Home"));
   if (roomIterator == roomMapping.end()) {
-    throw std::exception("Could not find start room");
+    throw std::runtime_error("Could not find start room");
   }
   return &roomIterator->second;
 }

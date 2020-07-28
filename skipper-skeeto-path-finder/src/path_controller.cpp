@@ -277,7 +277,7 @@ bool PathController::findNewPath(Path *originPath) {
       continue;
 
     } else if (enterRoomResult != EnterRoomResult::CanEnter) {
-      throw std::exception("Unknown enter room result!");
+      throw std::runtime_error("Unknown enter room result!");
     }
 
     auto possibleTasks = getPossibleTasks(originPath, nextRoom);

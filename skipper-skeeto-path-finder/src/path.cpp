@@ -67,7 +67,7 @@ void Path::cleanUp() {
 
 void Path::pickUpItem(const Item *item) {
   if (hasFoundItem(item)) {
-    throw std::exception("Item was already picked up");
+    throw std::runtime_error("Item was already picked up");
   }
 
   state |= (1ULL << item->stateIndex);
@@ -82,7 +82,7 @@ void Path::pickUpItems(const std::vector<const Item *> &items) {
 
 void Path::completeTask(const Task *task) {
   if (hasCompletedTask(task)) {
-    throw std::exception("Task was already completed");
+    throw std::runtime_error("Task was already completed");
   }
 
   state |= (1ULL << task->stateIndex);
