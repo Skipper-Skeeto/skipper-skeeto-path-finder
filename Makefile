@@ -10,7 +10,7 @@ DEPS := $(OBJS:.o=.d)
 
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-CPPFLAGS ?= $(INC_FLAGS) -MMD -MP
+CPPFLAGS ?= $(INC_FLAGS) -MMD -MP -O3 -march=native
 
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 	$(CXX) -pthread $(OBJS) -o $@ $(LDFLAGS)
