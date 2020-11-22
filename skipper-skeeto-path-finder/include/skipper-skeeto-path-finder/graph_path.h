@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <vector>
 
 using State = unsigned long long int;
@@ -34,10 +35,20 @@ public:
 
   void bumpFocusedNextPath();
 
+  int getNextPathsCount() const;
+
   std::vector<char> getRoute() const;
+
+  void serialize(std::ostream &outstream) const;
+
+  void deserialize(std::istream &instream, const GraphPath *previousPath);
+
+  void cleanUp();
 
 private:
   static const State ALL_VERTICES_STATE_MASK;
+
+  GraphPath() = default;
 
   void setCurrentVertex(char vertexIndex);
 

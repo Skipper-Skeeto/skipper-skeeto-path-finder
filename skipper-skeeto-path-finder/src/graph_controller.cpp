@@ -35,6 +35,93 @@ void GraphController::start() {
 
   GraphPath startPath(0);
 
+  std::vector<GraphPath *> nextPaths{&startPath};
+  while (nextPaths.size() < 20) {
+    auto parentPaths = nextPaths;
+    nextPaths.clear();
+
+    for (const auto &path : parentPaths) {
+      initializePath(path);
+
+      if (path->isExhausted() || !commonState.makesSenseToKeep(path)) {
+        continue;
+      }
+
+      for (int index = 0; index < path->getNextPathsCount(); ++index) {
+        nextPaths.push_back(&(*path->getFocusedNextPath()));
+        path->bumpFocusedNextPath();
+      }
+    }
+  }
+
+  std::cout << "Spawning " << nextPaths.size() << " threads with paths." << std::endl
+            << std::endl;
+
+  std::mutex controllerMutex;
+  controllerMutex.lock();
+
+  auto threadFunction = [this, &controllerMutex](GraphPath *path) {
+    // Make sure everything is set up correctly before we start computing
+    controllerMutex.lock();
+    controllerMutex.unlock();
+
+    auto threadInfo = commonState.getCurrentThread();
+
+    while (moveOnDistributed(path)) {
+      if (threadInfo->isPaused()) {
+        std::string fileName = std::string(MEMORY_DUMP_DIR) + "/" + std::to_string(threadInfo->getIdentifier()) + ".dat";
+        {
+          std::ofstream dumpFile(fileName, std::ios::binary | std::ios::trunc);
+          path->serialize(dumpFile);
+          path->cleanUp();
+        }
+        threadInfo->waitForUnpaused();
+        {
+          std::ifstream dumpFile(fileName, std::ios::binary);
+          path->deserialize(dumpFile, nullptr);
+        }
+      }
+    }
+
+    commonState.getCurrentThread()->setDone();
+  };
+
+  unsigned char nextIdentifier = '0';
+  for (const auto &path : nextPaths) {
+    std::thread thread(threadFunction, path);
+    commonState.addThread(std::move(thread), nextIdentifier);
+
+    if (nextIdentifier == '9') {
+      nextIdentifier = 'A';
+    } else if (nextIdentifier == 'Z') {
+      nextIdentifier = 'a';
+    } else if (nextIdentifier == 'z') {
+      nextIdentifier = '!';
+    } else if (nextIdentifier == '/') {
+      nextIdentifier = ':';
+    } else if (nextIdentifier == '>') {
+      std::cout << "There wasn't enough identifiers for the threads..." << std::endl
+                << std::endl;
+      return;
+    } else if (nextIdentifier != '*') {
+      ++nextIdentifier;
+    }
+  }
+
+  controllerMutex.unlock();
+
+  while (commonState.hasThreads()) {
+    commonState.updateThreads();
+
+    commonState.printStatus();
+
+    commonState.dumpGoodOnes(resultDirName);
+
+    std::this_thread::sleep_for(std::chrono::seconds(5));
+  }
+
+  commonState.dumpGoodOnes(resultDirName);
+
   while (moveOnDistributed(&startPath)) {
   }
 }
@@ -42,9 +129,7 @@ void GraphController::start() {
 bool GraphController::moveOnDistributed(GraphPath *path) {
   if (!path->isInitialized()) {
     if (path->isFinished()) {
-      if (commonState.maybeAddNewGoodOne(path)) {
-        commonState.dumpGoodOnes(resultDirName);
-      }
+      commonState.maybeAddNewGoodOne(path);
 
       return false;
     }

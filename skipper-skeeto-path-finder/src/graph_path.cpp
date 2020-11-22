@@ -70,6 +70,10 @@ void GraphPath::bumpFocusedNextPath() {
   }
 }
 
+int GraphPath::getNextPathsCount() const {
+  return nextPaths.size();
+}
+
 std::vector<char> GraphPath::getRoute() const {
   if (previousPath == nullptr) {
     return std::vector<char>{getCurrentVertex()};
@@ -78,6 +82,40 @@ std::vector<char> GraphPath::getRoute() const {
     partialRoute.push_back(getCurrentVertex());
     return partialRoute;
   }
+}
+
+void GraphPath::serialize(std::ostream &outstream) const {
+  outstream.write(reinterpret_cast<const char *>(&distance), sizeof(distance));
+  outstream.write(reinterpret_cast<const char *>(&state), sizeof(state));
+  outstream.write(reinterpret_cast<const char *>(&focusedNextPathIndex), sizeof(focusedNextPathIndex));
+
+  int pathCount = nextPaths.size();
+  outstream.write(reinterpret_cast<const char *>(&pathCount), sizeof(pathCount));
+  for (auto path : nextPaths) {
+    path.serialize(outstream);
+  }
+}
+
+void GraphPath::deserialize(std::istream &instream, const GraphPath *previousPath) {
+  if (previousPath != nullptr) {
+    this->previousPath = previousPath;
+  }
+
+  instream.read(reinterpret_cast<char *>(&distance), sizeof(distance));
+  instream.read(reinterpret_cast<char *>(&state), sizeof(state));
+  instream.read(reinterpret_cast<char *>(&focusedNextPathIndex), sizeof(focusedNextPathIndex));
+
+  int pathCount = 0;
+  instream.read(reinterpret_cast<char *>(&pathCount), sizeof(pathCount));
+  for (int index = 0; index < pathCount; ++index) {
+    GraphPath path;
+    path.deserialize(instream, this);
+    nextPaths.push_back(path);
+  }
+}
+
+void GraphPath::cleanUp() {
+  nextPaths.clear();
 }
 
 void GraphPath::setCurrentVertex(char vertexIndex) {

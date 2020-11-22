@@ -33,12 +33,12 @@ bool GraphCommonState::makesSenseToKeep(const GraphPath *path) {
   return true;
 }
 
-bool GraphCommonState::maybeAddNewGoodOne(const GraphPath *path) {
+void GraphCommonState::maybeAddNewGoodOne(const GraphPath *path) {
   auto distance = path->getDistance();
 
   std::lock_guard<std::mutex> guardFinalState(finalStateMutex);
   if (distance > maxDistance) {
-    return false;
+    return;
   }
 
   if (distance < maxDistance) {
@@ -56,10 +56,12 @@ bool GraphCommonState::maybeAddNewGoodOne(const GraphPath *path) {
 
   goodOnes.push_back(route);
 
-  std::lock_guard<std::mutex> guardPrint(printMutex);
-  std::cout << "Found " << 1 << " new good one(s) with distance " << +distance << std::endl;
+  auto threadInfo = getCurrentThread();
 
-  return true;
+  threadInfo->setVisitedRoomsCount(distance);
+
+  std::lock_guard<std::mutex> guardPrint(printMutex);
+  std::cout << "Found new good one with distance " << +distance << " in thread " << threadInfo->getIdentifier() << std::endl;
 }
 
 void GraphCommonState::dumpGoodOnes(const std::string &dirName) {
@@ -91,6 +93,108 @@ void GraphCommonState::dumpGoodOnes(const std::string &dirName) {
 
   std::lock_guard<std::mutex> guardPrint(printMutex);
   std::cout << "Dumped " << newDumpedCount << " new good one(s) to " << fileName << std::endl;
+}
+
+void GraphCommonState::printStatus() {
+  std::lock_guard<std::mutex> threadInfoGuard(threadInfoMutex);
+  std::lock_guard<std::mutex> guardFinalState(finalStateMutex);
+  std::lock_guard<std::mutex> guardPrint(printMutex);
+
+  std::cout << "Status: " << threadInfos.size() << " threads, found " << goodOnes.size() << " at distance " << +maxDistance << std::endl;
+
+  std::cout << "Running threads: ";
+  for (const auto &info : threadInfos) {
+    if (!info.isPaused()) {
+      std::cout << info.getIdentifier();
+    }
+  }
+  std::cout << std::endl;
+}
+
+void GraphCommonState::addThread(std::thread &&thread, unsigned char identifier) {
+  std::lock_guard<std::mutex> threadInfoGuard(threadInfoMutex);
+  threadInfos.emplace_back(std::move(thread), identifier);
+}
+
+ThreadInfo *GraphCommonState::getCurrentThread() {
+  std::lock_guard<std::mutex> threadInfoGuard(threadInfoMutex);
+  for (auto &threadInfo : threadInfos) {
+    if (threadInfo.getThreadIdentifier() == std::this_thread::get_id()) {
+      return &threadInfo;
+    }
+  }
+
+  std::cout << "Current thread not found" << std::endl;
+
+  return nullptr;
+}
+
+void GraphCommonState::updateThreads() {
+  std::lock_guard<std::mutex> threadInfoGuard(threadInfoMutex);
+
+  threadInfos.remove_if([](auto &threadInfo) {
+    return threadInfo.joinIfDone();
+  });
+
+  int allowedThreads = 8;
+  int allowedBestThreads = allowedThreads / 2;
+
+  // Note that from a start all threads has the same score so all will be added
+  std::list<ThreadInfo *> pickedThreads;
+  int worstScore = 0;
+  for (auto &threadInfo : threadInfos) {
+    auto distance = threadInfo.getVisitedRoomsCount();
+    if (pickedThreads.size() < allowedBestThreads) {
+      pickedThreads.push_back(&threadInfo);
+      if (distance > worstScore) {
+        worstScore = distance;
+      }
+    } else if (distance == worstScore) {
+      pickedThreads.push_back(&threadInfo);
+    } else if (distance < worstScore) {
+      pickedThreads.remove_if([worstScore](ThreadInfo *threadInfo) {
+        return threadInfo->getVisitedRoomsCount() == worstScore;
+      });
+
+      pickedThreads.push_back(&threadInfo);
+      worstScore = 0;
+      for (auto threadInfo : pickedThreads) {
+        if (threadInfo->getVisitedRoomsCount() > worstScore) {
+          worstScore = threadInfo->getVisitedRoomsCount();
+        }
+      }
+    }
+  }
+
+  if (++lastRunningExtraThread >= threadInfos.size()) {
+    lastRunningExtraThread = 0;
+  }
+
+  auto extraIndex = lastRunningExtraThread;
+  while (pickedThreads.size() < allowedThreads && pickedThreads.size() < threadInfos.size()) {
+    auto threadInfo = &(*std::next(threadInfos.begin(), extraIndex));
+    if (std::find(pickedThreads.begin(), pickedThreads.end(), threadInfo) == pickedThreads.end()) {
+      pickedThreads.push_back(threadInfo);
+    }
+
+    if (++extraIndex >= threadInfos.size()) {
+      extraIndex = 0;
+    }
+  }
+
+  for (auto &threadInfo : threadInfos) {
+    if (std::find(pickedThreads.begin(), pickedThreads.end(), &threadInfo) != pickedThreads.end()) {
+      threadInfo.setPaused(false);
+    } else {
+      threadInfo.setPaused(true);
+    }
+  }
+}
+
+bool GraphCommonState::hasThreads() const {
+  std::lock_guard<std::mutex> threadInfoGuard(threadInfoMutex);
+
+  return !threadInfos.empty();
 }
 
 unsigned char GraphCommonState::getMaxDistance() const {
