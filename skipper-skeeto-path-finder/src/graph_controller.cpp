@@ -10,6 +10,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <sstream>
 
 const char *GraphController::MEMORY_DUMP_DIR = "temp_memory_dump";
@@ -89,26 +90,16 @@ void GraphController::start() {
     commonState.getCurrentThread()->setDone();
   };
 
-  unsigned char nextIdentifier = '0';
+  unsigned char nextIdentifier = 0;
+  if (nextPaths.size() > std::numeric_limits<unsigned char>::max()) {
+    std::cout << "There wasn't enough identifiers for the number of threads: " << nextPaths.size() << std::endl;
+    return;
+  }
+
   for (const auto &path : nextPaths) {
     std::thread thread(threadFunction, path);
     commonState.addThread(std::move(thread), nextIdentifier);
-
-    if (nextIdentifier == '9') {
-      nextIdentifier = 'A';
-    } else if (nextIdentifier == 'Z') {
-      nextIdentifier = 'a';
-    } else if (nextIdentifier == 'z') {
-      nextIdentifier = '!';
-    } else if (nextIdentifier == '/') {
-      nextIdentifier = ':';
-    } else if (nextIdentifier == '>') {
-      std::cout << "There wasn't enough identifiers for the threads..." << std::endl
-                << std::endl;
-      return;
-    } else if (nextIdentifier != '*') {
-      ++nextIdentifier;
-    }
+    ++nextIdentifier;
   }
 
   controllerMutex.unlock();

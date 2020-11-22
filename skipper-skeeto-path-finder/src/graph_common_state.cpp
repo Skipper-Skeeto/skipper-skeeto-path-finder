@@ -61,7 +61,7 @@ void GraphCommonState::maybeAddNewGoodOne(const GraphPath *path) {
   threadInfo->setHighScore(distance);
 
   std::lock_guard<std::mutex> guardPrint(printMutex);
-  std::cout << "Found new good one with distance " << +distance << " in thread " << threadInfo->getIdentifier() << std::endl;
+  std::cout << "Found new good one with distance " << +distance << " in thread " << +threadInfo->getIdentifier() << std::endl;
 }
 
 void GraphCommonState::dumpGoodOnes(const std::string &dirName) {
@@ -107,14 +107,14 @@ void GraphCommonState::printStatus() {
     auto isPaused = info.isPaused();
     auto isWaiting = info.isWaiting();
     if (!isPaused) {
-      isSupposedToRunThreads += info.getIdentifier();
+      isSupposedToRunThreads += std::to_string(info.getIdentifier()) + " ";
     }
 
     if (isPaused != isWaiting) {
       if (isPaused) {
-        notYetStoppedThreads += info.getIdentifier();
+        notYetStoppedThreads += std::to_string(info.getIdentifier()) + " ";
       } else {
-        notYetStartedThreads += info.getIdentifier();
+        notYetStartedThreads += std::to_string(info.getIdentifier()) + " ";
       }
     }
   }
