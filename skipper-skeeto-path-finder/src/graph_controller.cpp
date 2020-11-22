@@ -121,9 +121,6 @@ void GraphController::start() {
   }
 
   commonState.dumpGoodOnes(resultDirName);
-
-  while (moveOnDistributed(&startPath)) {
-  }
 }
 
 bool GraphController::moveOnDistributed(GraphPath *path) {
