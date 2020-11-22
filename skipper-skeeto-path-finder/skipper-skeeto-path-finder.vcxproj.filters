@@ -57,6 +57,21 @@
     <ClInclude Include="include\skipper-skeeto-path-finder\file_helper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\skipper-skeeto-path-finder\edge.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skipper-skeeto-path-finder\graph_data.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skipper-skeeto-path-finder\graph_controller.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skipper-skeeto-path-finder\graph_common_state.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skipper-skeeto-path-finder\graph_path.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -98,9 +113,24 @@
     <ClCompile Include="src\common_state.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\graph_data.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graph_controller.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graph_common_state.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graph_path.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\data\ss1.json">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\data\ss1_graph.json">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

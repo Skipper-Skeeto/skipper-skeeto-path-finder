@@ -22,7 +22,12 @@
     <ClInclude Include="include\skipper-skeeto-path-finder\action.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\common_state.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\data.h" />
+    <ClInclude Include="include\skipper-skeeto-path-finder\edge.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\file_helper.h" />
+    <ClInclude Include="include\skipper-skeeto-path-finder\graph_common_state.h" />
+    <ClInclude Include="include\skipper-skeeto-path-finder\graph_controller.h" />
+    <ClInclude Include="include\skipper-skeeto-path-finder\graph_data.h" />
+    <ClInclude Include="include\skipper-skeeto-path-finder\graph_path.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\info.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\item.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\path.h" />
@@ -38,6 +43,10 @@
     <ClCompile Include="src\common_state.cpp" />
     <ClCompile Include="src\data.cpp" />
     <ClCompile Include="src\file_helper.cpp" />
+    <ClCompile Include="src\graph_common_state.cpp" />
+    <ClCompile Include="src\graph_controller.cpp" />
+    <ClCompile Include="src\graph_data.cpp" />
+    <ClCompile Include="src\graph_path.cpp" />
     <ClCompile Include="src\item.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\path.cpp" />
@@ -51,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\data\ss1.json" />
+    <None Include="..\data\ss1_graph.json" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
