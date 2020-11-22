@@ -13,7 +13,7 @@ public:
 private:
   static const char *MEMORY_DUMP_DIR;
 
-  bool moveOnDistributed(GraphPath *path);
+  bool moveOnDistributed(GraphPath *path, unsigned char visitedVertices);
 
   void initializePath(GraphPath *path);
 

@@ -34,9 +34,10 @@ void GraphController::start() {
   FileHelper::createDir(MEMORY_DUMP_DIR);
 
   GraphPath startPath(0);
+  unsigned char visitedVertices = 1;
 
   std::vector<GraphPath *> nextPaths{&startPath};
-  while (nextPaths.size() < 20) {
+  while (visitedVertices < THREAD_DISTRIBUTE_LEVEL) {
     auto parentPaths = nextPaths;
     nextPaths.clear();
 
@@ -52,6 +53,8 @@ void GraphController::start() {
         path->bumpFocusedNextPath();
       }
     }
+
+    ++visitedVertices;
   }
 
   std::cout << "Spawning " << nextPaths.size() << " threads with paths." << std::endl
@@ -60,14 +63,14 @@ void GraphController::start() {
   std::mutex controllerMutex;
   controllerMutex.lock();
 
-  auto threadFunction = [this, &controllerMutex](GraphPath *path) {
+  auto threadFunction = [this, &controllerMutex, visitedVertices](GraphPath *path) {
     // Make sure everything is set up correctly before we start computing
     controllerMutex.lock();
     controllerMutex.unlock();
 
     auto threadInfo = commonState.getCurrentThread();
 
-    while (moveOnDistributed(path)) {
+    while (moveOnDistributed(path, visitedVertices)) {
       if (threadInfo->isPaused()) {
         std::string fileName = std::string(MEMORY_DUMP_DIR) + "/" + std::to_string(threadInfo->getIdentifier()) + ".dat";
         {
@@ -123,7 +126,7 @@ void GraphController::start() {
   commonState.dumpGoodOnes(resultDirName);
 }
 
-bool GraphController::moveOnDistributed(GraphPath *path) {
+bool GraphController::moveOnDistributed(GraphPath *path, unsigned char visitedVertices) {
   if (!path->isInitialized()) {
     if (path->isFinished()) {
       commonState.maybeAddNewGoodOne(path);
@@ -142,10 +145,14 @@ bool GraphController::moveOnDistributed(GraphPath *path) {
     return false;
   }
 
+  auto nextVisitedVertices = visitedVertices + 1;
+
   auto nextPathIterator = path->getFocusedNextPath();
-  bool continueWork = moveOnDistributed(&(*nextPathIterator));
+  bool continueWork = moveOnDistributed(&(*nextPathIterator), nextVisitedVertices);
   if (continueWork) {
-    path->bumpFocusedNextPath();
+    if (visitedVertices < DISTRIBUTION_LEVEL_LIMIT) {
+      path->bumpFocusedNextPath();
+    }
 
     return true;
   } else {

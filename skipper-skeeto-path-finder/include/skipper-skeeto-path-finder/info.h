@@ -13,3 +13,5 @@
 
 #define VERTICES_COUNT 46
 #define EDGES_COUNT 176
+#define THREAD_DISTRIBUTE_LEVEL 4   // At what level we start distributing to threads
+#define DISTRIBUTION_LEVEL_LIMIT 15 // At what level we stop distributing but always finish first non-exhausted thread first
