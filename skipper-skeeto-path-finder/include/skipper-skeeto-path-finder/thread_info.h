@@ -13,9 +13,9 @@ public:
 
   bool joinIfDone();
 
-  void setVisitedRoomsCount(unsigned char count);
+  void setHighScore(unsigned char score);
 
-  unsigned char getVisitedRoomsCount() const;
+  unsigned char getHighScore() const;
 
   void setPaused(bool isPaused);
 
@@ -32,8 +32,8 @@ private:
   unsigned char identifier = '?';
   mutable std::mutex threadMutex;
 
-  mutable std::mutex visitedRoomsCountMutex;
-  unsigned char visitedRoomsCount = 255;
+  mutable std::mutex highScoreMutex;
+  unsigned char highScore = 255;
 
   mutable std::mutex isPausedMutex;
   bool paused = false;

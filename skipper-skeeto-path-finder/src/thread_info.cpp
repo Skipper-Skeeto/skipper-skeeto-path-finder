@@ -21,16 +21,16 @@ bool ThreadInfo::joinIfDone() {
   return isDone;
 }
 
-void ThreadInfo::setVisitedRoomsCount(unsigned char count) {
-  std::lock_guard<std::mutex> visitedRoomsCountGuard(visitedRoomsCountMutex);
+void ThreadInfo::setHighScore(unsigned char score) {
+  std::lock_guard<std::mutex> highScoreGuard(highScoreMutex);
 
-  visitedRoomsCount = count;
+  highScore = score;
 }
 
-unsigned char ThreadInfo::getVisitedRoomsCount() const {
-  std::lock_guard<std::mutex> visitedRoomsCountGuard(visitedRoomsCountMutex);
+unsigned char ThreadInfo::getHighScore() const {
+  std::lock_guard<std::mutex> highScoreGuard(highScoreMutex);
 
-  return visitedRoomsCount;
+  return highScore;
 }
 
 void ThreadInfo::setPaused(bool isPaused) {

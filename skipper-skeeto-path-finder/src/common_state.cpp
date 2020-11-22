@@ -236,7 +236,7 @@ void CommonState::updateThreads() {
   std::list<ThreadInfo *> pickedThreads;
   int worstScore = 0;
   for (auto &threadInfo : threadInfos) {
-    auto visitedRoomsCount = threadInfo.getVisitedRoomsCount();
+    auto visitedRoomsCount = threadInfo.getHighScore();
     if (pickedThreads.size() < allowedBestThreads) {
       pickedThreads.push_back(&threadInfo);
       if (visitedRoomsCount > worstScore) {
@@ -246,14 +246,14 @@ void CommonState::updateThreads() {
       pickedThreads.push_back(&threadInfo);
     } else if (visitedRoomsCount < worstScore) {
       pickedThreads.remove_if([worstScore](ThreadInfo *threadInfo) {
-        return threadInfo->getVisitedRoomsCount() == worstScore;
+        return threadInfo->getHighScore() == worstScore;
       });
 
       pickedThreads.push_back(&threadInfo);
       worstScore = 0;
       for (auto threadInfo : pickedThreads) {
-        if (threadInfo->getVisitedRoomsCount() > worstScore) {
-          worstScore = threadInfo->getVisitedRoomsCount();
+        if (threadInfo->getHighScore() > worstScore) {
+          worstScore = threadInfo->getHighScore();
         }
       }
     }
@@ -331,7 +331,7 @@ void CommonState::addNewGoodOnes(const std::vector<std::vector<const Action *>> 
 
   auto threadInfo = getCurrentThread();
 
-  threadInfo->setVisitedRoomsCount(visitedRoomsCount);
+  threadInfo->setHighScore(visitedRoomsCount);
 
   std::lock_guard<std::mutex> guardPrint(printMutex);
   std::cout << "Found " << stepsOfSteps.size() << " new good one(s) with " << visitedRoomsCount << " rooms in thread " << threadInfo->getIdentifier() << std::endl;

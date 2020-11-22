@@ -58,7 +58,7 @@ void GraphCommonState::maybeAddNewGoodOne(const GraphPath *path) {
 
   auto threadInfo = getCurrentThread();
 
-  threadInfo->setVisitedRoomsCount(distance);
+  threadInfo->setHighScore(distance);
 
   std::lock_guard<std::mutex> guardPrint(printMutex);
   std::cout << "Found new good one with distance " << +distance << " in thread " << threadInfo->getIdentifier() << std::endl;
@@ -143,7 +143,7 @@ void GraphCommonState::updateThreads() {
   std::list<ThreadInfo *> pickedThreads;
   int worstScore = 0;
   for (auto &threadInfo : threadInfos) {
-    auto distance = threadInfo.getVisitedRoomsCount();
+    auto distance = threadInfo.getHighScore();
     if (pickedThreads.size() < allowedBestThreads) {
       pickedThreads.push_back(&threadInfo);
       if (distance > worstScore) {
@@ -153,14 +153,14 @@ void GraphCommonState::updateThreads() {
       pickedThreads.push_back(&threadInfo);
     } else if (distance < worstScore) {
       pickedThreads.remove_if([worstScore](ThreadInfo *threadInfo) {
-        return threadInfo->getVisitedRoomsCount() == worstScore;
+        return threadInfo->getHighScore() == worstScore;
       });
 
       pickedThreads.push_back(&threadInfo);
       worstScore = 0;
       for (auto threadInfo : pickedThreads) {
-        if (threadInfo->getVisitedRoomsCount() > worstScore) {
-          worstScore = threadInfo->getVisitedRoomsCount();
+        if (threadInfo->getHighScore() > worstScore) {
+          worstScore = threadInfo->getHighScore();
         }
       }
     }
