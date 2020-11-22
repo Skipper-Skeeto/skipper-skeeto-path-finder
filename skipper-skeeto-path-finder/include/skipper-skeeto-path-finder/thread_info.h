@@ -21,13 +21,17 @@ public:
 
   bool isPaused() const;
 
-  void waitForUnpaused() const;
+  void waitForUnpaused();
+
+  bool isWaiting() const;
 
   unsigned char getIdentifier() const;
 
   std::thread::id getThreadIdentifier() const;
 
 private:
+  void setIsWaiting(bool waiting);
+
   std::thread thread;
   unsigned char identifier = '?';
   mutable std::mutex threadMutex;
@@ -37,6 +41,9 @@ private:
 
   mutable std::mutex isPausedMutex;
   bool paused = false;
+
+  mutable std::mutex isWaitingMutex;
+  bool waiting = false;
 
   std::mutex doneMutex;
   bool isDone = false;

@@ -100,15 +100,27 @@ void GraphCommonState::printStatus() {
   std::lock_guard<std::mutex> guardFinalState(finalStateMutex);
   std::lock_guard<std::mutex> guardPrint(printMutex);
 
-  std::cout << "Status: " << threadInfos.size() << " threads, found " << goodOnes.size() << " at distance " << +maxDistance << std::endl;
-
-  std::cout << "Running threads: ";
+  std::string isSupposedToRunThreads;
+  std::string notYetStartedThreads;
+  std::string notYetStoppedThreads;
   for (const auto &info : threadInfos) {
-    if (!info.isPaused()) {
-      std::cout << info.getIdentifier();
+    auto isPaused = info.isPaused();
+    auto isWaiting = info.isWaiting();
+    if (!isPaused) {
+      isSupposedToRunThreads += info.getIdentifier();
+    }
+
+    if (isPaused != isWaiting) {
+      if (isPaused) {
+        notYetStoppedThreads += info.getIdentifier();
+      } else {
+        notYetStartedThreads += info.getIdentifier();
+      }
     }
   }
-  std::cout << std::endl;
+
+  std::cout << "Status: " << threadInfos.size() << " threads, found " << goodOnes.size() << " at distance " << +maxDistance << std::endl;
+  std::cout << "Expected to run threads: " << isSupposedToRunThreads << "; Not yet started: " << notYetStartedThreads << "; Not yet stopped: " << notYetStoppedThreads << std::endl;
 }
 
 void GraphCommonState::addThread(std::thread &&thread, unsigned char identifier) {

@@ -55,8 +55,16 @@ bool ThreadInfo::isPaused() const {
   return paused;
 }
 
-void ThreadInfo::waitForUnpaused() const {
+void ThreadInfo::waitForUnpaused() {
+  setIsWaiting(true);
   std::lock_guard<std::mutex> guard(threadMutex);
+  setIsWaiting(false);
+}
+
+bool ThreadInfo::isWaiting() const {
+  std::lock_guard<std::mutex> isWaitingGuard(isWaitingMutex);
+
+  return waiting;
 }
 
 unsigned char ThreadInfo::getIdentifier() const {
@@ -65,4 +73,10 @@ unsigned char ThreadInfo::getIdentifier() const {
 
 std::thread::id ThreadInfo::getThreadIdentifier() const {
   return thread.get_id();
+}
+
+void ThreadInfo::setIsWaiting(bool waiting) {
+  std::lock_guard<std::mutex> isWaitingGuard(isWaitingMutex);
+
+  this->waiting = waiting;
 }
