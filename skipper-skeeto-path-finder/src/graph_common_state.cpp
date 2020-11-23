@@ -25,7 +25,7 @@ bool GraphCommonState::makesSenseToKeep(const GraphPath *path) {
     return false;
   }
 
-  if (checkForDuplicateState(path->getState(), path->getDistance()) > 0) {
+  if (checkForDuplicateState(path->getUniqueState(), path->getDistance()) > 0) {
     // If larger than zero, another path was shorter. Note that we could be checking up against our own state
     return false;
   }

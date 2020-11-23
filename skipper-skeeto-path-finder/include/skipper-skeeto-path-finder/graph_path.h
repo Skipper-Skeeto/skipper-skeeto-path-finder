@@ -21,9 +21,11 @@ public:
 
   bool isFinished() const;
 
+  State getUniqueState() const;
+
   unsigned char getDistance() const;
 
-  State getState() const;
+  State getVisitedVertices() const;
 
   bool meetsCondition(const State &condition) const;
 
@@ -46,16 +48,23 @@ public:
   void cleanUp();
 
 private:
-  static const State ALL_VERTICES_STATE_MASK;
-
   GraphPath() = default;
 
   void setCurrentVertex(char vertexIndex);
 
-  unsigned char distance = 0;
+  template <size_t StartIndex, size_t Count>
+  void setState(State newState) {
+    state &= (~(((1ULL << Count) - 1) << StartIndex));
+    state |= (newState << StartIndex);
+  };
+
+  template <size_t StartIndex, size_t Count>
+  State getState() const {
+    return (state >> StartIndex) & ((1ULL << Count) - 1);
+  };
+
   State state{};
 
   const GraphPath *previousPath = nullptr;
   std::vector<GraphPath> nextPaths;
-  char focusedNextPathIndex = -1; // -1 means not initialized
 };

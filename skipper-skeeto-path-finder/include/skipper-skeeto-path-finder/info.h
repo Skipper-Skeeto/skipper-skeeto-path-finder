@@ -12,6 +12,9 @@
 #define STATE_TASK_ITEM_SIZE 58
 
 #define VERTICES_COUNT 46
+#define CURRENT_VERTEX_BITS 6
+#define DISTANCE_BITS 7
+#define FOCUSED_NEXT_PATH_BITS 5
 #define EDGES_COUNT 176
 #define THREAD_DISTRIBUTE_LEVEL 4   // At what level we start distributing to threads
 #define DISTRIBUTION_LEVEL_LIMIT 15 // At what level we stop distributing but always finish first non-exhausted thread first
