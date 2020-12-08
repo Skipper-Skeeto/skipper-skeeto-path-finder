@@ -4,8 +4,11 @@
 #include "skipper-skeeto-path-finder/graph_common_state.h"
 #include "skipper-skeeto-path-finder/graph_data.h"
 #include "skipper-skeeto-path-finder/graph_path.h"
+#include "skipper-skeeto-path-finder/graph_path_pool.h"
 #include "skipper-skeeto-path-finder/info.h"
+#include "skipper-skeeto-path-finder/runner_info.h"
 
+#include <chrono>
 #include <ctime>
 #include <fstream>
 #include <iomanip>
@@ -32,81 +35,64 @@ GraphController::GraphController(const GraphData *data) {
 }
 
 void GraphController::start() {
+  std::cout << "Starting with thread count " << THREAD_COUNT << " and pool size " << POOL_COUNT << std::endl;
+
   FileHelper::createDir(MEMORY_DUMP_DIR);
 
-  GraphPath startPath(0);
-  unsigned char visitedVertices = 1;
+  auto threadFunction = [this](bool preferBest) {
+    GraphPathPool pool;
 
-  std::vector<GraphPath *> nextPaths{&startPath};
-  while (visitedVertices < THREAD_DISTRIBUTE_LEVEL) {
-    auto parentPaths = nextPaths;
-    nextPaths.clear();
-
-    for (const auto &path : parentPaths) {
-      initializePath(path);
-
-      if (path->isExhausted() || !commonState.makesSenseToKeep(path)) {
-        continue;
+    RunnerInfo *runnerInfo = nullptr;
+    while (true) {
+      int oldRunnerInfoIdentifier = -1;
+      if (runnerInfo != nullptr) {
+        oldRunnerInfoIdentifier = runnerInfo->getIdentifier();
       }
 
-      for (int index = 0; index < path->getNextPathsCount(); ++index) {
-        nextPaths.push_back(&(*path->getFocusedNextPath()));
-        path->bumpFocusedNextPath();
-      }
-    }
-
-    ++visitedVertices;
-  }
-
-  std::cout << "Spawning " << nextPaths.size() << " threads with paths." << std::endl
-            << std::endl;
-
-  std::mutex controllerMutex;
-  controllerMutex.lock();
-
-  auto threadFunction = [this, &controllerMutex, visitedVertices](GraphPath *path) {
-    // Make sure everything is set up correctly before we start computing
-    controllerMutex.lock();
-    controllerMutex.unlock();
-
-    auto threadInfo = commonState.getCurrentThread();
-
-    while (moveOnDistributed(path, visitedVertices)) {
-      if (threadInfo->isPaused()) {
-        std::string fileName = std::string(MEMORY_DUMP_DIR) + "/" + std::to_string(threadInfo->getIdentifier()) + ".dat";
-        {
-          std::ofstream dumpFile(fileName, std::ios::binary | std::ios::trunc);
-          path->serialize(dumpFile);
-          path->cleanUp();
-        }
-        threadInfo->waitForUnpaused();
-        {
-          std::ifstream dumpFile(fileName, std::ios::binary);
-          path->deserialize(dumpFile, nullptr);
+      runnerInfo = commonState.getNextRunnerInfo(runnerInfo, preferBest);
+      if (runnerInfo == nullptr) {
+        if (commonState.runnerInfoCount() == 0) {
+          break;
+        } else {
+          std::this_thread::sleep_for(std::chrono::seconds(10));
+          continue;
         }
       }
-    }
 
-    commonState.getCurrentThread()->setDone();
+      if (runnerInfo->getIdentifier() != oldRunnerInfoIdentifier) {
+        if (oldRunnerInfoIdentifier != -1) {
+          serializePool(&pool, oldRunnerInfoIdentifier);
+        }
+
+        deserializePool(&pool, runnerInfo);
+      }
+
+      auto pathIndex = 1; // This should always be the root
+      while (!pool.isFull()) {
+        bool continueWork = moveOnDistributed(&pool, runnerInfo, pathIndex, pool.getGraphPath(pathIndex), runnerInfo->getVisitedVertices());
+        if (!continueWork) {
+          commonState.removeActiveRunnerInfo(runnerInfo);
+          runnerInfo = nullptr;
+          break;
+        }
+      }
+
+      if (runnerInfo != nullptr && (pool.isFull() || commonState.runnerInfoCount() < THREAD_COUNT)) {
+        splitAndRemove(&pool, runnerInfo);
+        runnerInfo = nullptr;
+      }
+    }
   };
 
-  unsigned char nextIdentifier = 0;
-  if (nextPaths.size() > std::numeric_limits<unsigned char>::max()) {
-    std::cout << "There wasn't enough identifiers for the number of threads: " << nextPaths.size() << std::endl;
-    return;
+  setupStartRunner();
+
+  std::array<std::thread, THREAD_COUNT> threads;
+  for (int index = 0; index < threads.size(); ++index) {
+    bool preferBest = (index < (threads.size() / 2));
+    threads[index] = std::thread(threadFunction, preferBest);
   }
 
-  for (const auto &path : nextPaths) {
-    std::thread thread(threadFunction, path);
-    commonState.addThread(std::move(thread), nextIdentifier);
-    ++nextIdentifier;
-  }
-
-  controllerMutex.unlock();
-
-  while (commonState.hasThreads()) {
-    commonState.updateThreads();
-
+  while (commonState.runnerInfoCount() > 0) {
     commonState.printStatus();
 
     commonState.dumpGoodOnes(resultDirName);
@@ -114,13 +100,39 @@ void GraphController::start() {
     std::this_thread::sleep_for(std::chrono::seconds(5));
   }
 
+  for (int index = 0; index < threads.size(); ++index) {
+    threads[index].join();
+  }
+
   commonState.dumpGoodOnes(resultDirName);
+
+  commonState.printStatus();
 }
 
-bool GraphController::moveOnDistributed(GraphPath *path, unsigned char visitedVertices) {
-  if (!path->isInitialized()) {
+void GraphController::setupStartRunner() {
+  GraphPathPool tempPool;
+
+  auto startPathIndex = tempPool.generateNewIndex();
+  auto startPath = tempPool.getGraphPath(startPathIndex);
+
+  startPath->initialize(0, 0, nullptr, 0);
+
+  // This shouldn't make a difference, but just to be sure
+  startPath->setPreviousPath(startPathIndex);
+  startPath->setNextPath(startPathIndex);
+
+  RunnerInfo startRunnerInfo(std::vector<char>{});
+
+  serializePool(&tempPool, &startRunnerInfo);
+
+  std::vector<RunnerInfo> runnerInfos{startRunnerInfo};
+  commonState.addRunnerInfos(runnerInfos);
+}
+
+bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerInfo, unsigned long int pathIndex, GraphPath *path, unsigned char visitedVertices) {
+  if (!path->hasSetSubPath()) {
     if (path->isFinished()) {
-      commonState.maybeAddNewGoodOne(path);
+      commonState.maybeAddNewGoodOne(pool, runnerInfo, path);
 
       return false;
     }
@@ -129,7 +141,9 @@ bool GraphController::moveOnDistributed(GraphPath *path, unsigned char visitedVe
       return false;
     }
 
-    initializePath(path);
+    if (!initializePath(pool, pathIndex, path)) {
+      return true; // Should just be because of full pool, so we want to continue
+    }
   }
 
   if (path->isExhausted() || !commonState.makesSenseToKeep(path)) {
@@ -138,22 +152,43 @@ bool GraphController::moveOnDistributed(GraphPath *path, unsigned char visitedVe
 
   auto nextVisitedVertices = visitedVertices + 1;
 
-  auto nextPathIterator = path->getFocusedNextPath();
-  bool continueWork = moveOnDistributed(&(*nextPathIterator), nextVisitedVertices);
+  auto focusedSubPathIndex = path->getFocusedSubPath();
+  auto focusedSubPath = pool->getGraphPath(focusedSubPathIndex);
+
+  bool continueWork = moveOnDistributed(pool, runnerInfo, focusedSubPathIndex, focusedSubPath, nextVisitedVertices);
   if (continueWork) {
+    if (pool->isFull()) {
+      // We want to continue with the same focus next time. It just didn't finish becasue pool was full
+      return true;
+    }
+
     if (visitedVertices < DISTRIBUTION_LEVEL_LIMIT) {
-      path->bumpFocusedNextPath();
+      path->setFocusedSubPath(focusedSubPath->getNextPath());
     }
 
     return true;
   } else {
-    path->eraseNextPath(nextPathIterator);
+    auto nextSubPathIndex = focusedSubPath->getNextPath();
+    auto nextSubPath = pool->getGraphPath(nextSubPathIndex);
+    if (nextSubPath == focusedSubPath) {
+      path->setFocusedSubPath(0);
+    } else {
+      auto previousSubPathIndex = focusedSubPath->getPreviousPath();
+      auto previousSubPath = pool->getGraphPath(previousSubPathIndex);
+
+      previousSubPath->setNextPath(nextSubPathIndex);
+      nextSubPath->setPreviousPath(previousSubPathIndex);
+
+      path->setFocusedSubPath(nextSubPathIndex);
+    }
+
+    focusedSubPath->cleanUp();
 
     return !path->isExhausted();
   }
 }
 
-void GraphController::initializePath(GraphPath *path) {
+bool GraphController::initializePath(GraphPathPool *pool, unsigned long int pathIndex, GraphPath *path) {
   std::array<char, VERTICES_COUNT> nextVertices{};
   nextVertices.fill(-1);
 
@@ -193,25 +228,139 @@ void GraphController::initializePath(GraphPath *path) {
     }
   }
 
-  // Insert vertices into list - note that we sort the shortest first
-  std::vector<GraphPath> nextVerticesSorted;
+  // Insert sub paths into list - note that we sort the shortest first
+  std::vector<std::pair<unsigned long int, GraphPath *>> subPathsSorted;
   for (char vertexIndex = 0; vertexIndex < VERTICES_COUNT; ++vertexIndex) {
     auto distance = nextVertices[vertexIndex];
     if (distance < 0) {
       continue;
     }
 
-    GraphPath newPath(vertexIndex, path, distance);
+    if (pool->isFull()) {
+      return false;
+    }
+
+    auto newPathIndex = pool->generateNewIndex();
+    auto newPath = pool->getGraphPath(newPathIndex);
+
+    newPath->initialize(vertexIndex, pathIndex, path, distance);
 
     const auto &longerLengthIterator = std::upper_bound(
-        nextVerticesSorted.begin(),
-        nextVerticesSorted.end(),
+        subPathsSorted.begin(),
+        subPathsSorted.end(),
         newPath,
-        [](const auto &path, const auto &otherPath) {
-          return path.getDistance() < otherPath.getDistance();
+        [](const auto &subPath, const auto &otherPathPair) {
+          return subPath->getDistance() < otherPathPair.second->getDistance();
         });
-    nextVerticesSorted.insert(longerLengthIterator, newPath);
+    subPathsSorted.insert(longerLengthIterator, std::make_pair(newPathIndex, newPath));
   }
 
-  path->initialize(nextVerticesSorted);
+  for (auto iterator = subPathsSorted.begin(); iterator != subPathsSorted.end(); ++iterator) {
+    if (iterator == subPathsSorted.begin()) {
+      iterator->second->setPreviousPath(subPathsSorted.back().first);
+    } else {
+      iterator->second->setPreviousPath((iterator - 1)->first);
+    }
+
+    auto nextPathIterator = iterator + 1;
+    if (nextPathIterator == subPathsSorted.end()) {
+      iterator->second->setNextPath(subPathsSorted.front().first);
+    } else {
+      iterator->second->setNextPath(nextPathIterator->first);
+    }
+  }
+
+  if (subPathsSorted.empty()) {
+    path->setFocusedSubPath(0);
+  } else {
+    path->setFocusedSubPath(subPathsSorted.front().first);
+  }
+
+  return true;
+}
+
+void GraphController::splitAndRemove(GraphPathPool *pool, RunnerInfo *runnerInfo) {
+  auto rootPath = pool->getGraphPath(1);
+
+  std::vector<RunnerInfo> runnerInfos;
+  auto subRootPathIndex = rootPath->getFocusedSubPath();
+  while (true) {
+    GraphPathPool tempPool; // TODO: Use common
+
+    movePathData(pool, &tempPool, subRootPathIndex, 0);
+
+    auto subRunnerInfo = runnerInfo->makeSubRunner(rootPath->getCurrentVertex());
+    runnerInfos.push_back(subRunnerInfo);
+    serializePool(&tempPool, &subRunnerInfo);
+
+    subRootPathIndex = pool->getGraphPath(subRootPathIndex)->getNextPath();
+    if (subRootPathIndex == rootPath->getFocusedSubPath()) {
+      break;
+    }
+  }
+
+  // Wait until here, since the runnerInfos are available to all threads after this
+  commonState.splitAndRemoveActiveRunnerInfo(runnerInfo, runnerInfos);
+}
+
+std::pair<unsigned long int, GraphPath *> GraphController::movePathData(GraphPathPool *sourcePool, GraphPathPool *destinationPool, unsigned long int sourcePathIndex, unsigned long int destinationParentPathIndex) {
+  auto sourcePath = sourcePool->getGraphPath(sourcePathIndex);
+
+  auto destinationPathIndex = destinationPool->generateNewIndex();
+  auto destinationPath = destinationPool->getGraphPath(destinationPathIndex);
+
+  destinationPath->initializeAsCopy(sourcePath, destinationParentPathIndex);
+
+  if (sourcePath->hasSetSubPath()) {
+
+    auto sourceSubPathStartIndex = sourcePath->getFocusedSubPath();
+
+    auto sourceSubPathIndex = sourceSubPathStartIndex;
+    unsigned long int destinationSubPathStartIndex, destinationSubPathPreviousIndex, destinationSubPathCurrentIndex;
+    GraphPath *destinationSubPathStart = nullptr, *destinationSubPathPrevious = nullptr, *destinationSubPathCurrent;
+    while (true) {
+      std::tie(destinationSubPathCurrentIndex, destinationSubPathCurrent) = movePathData(sourcePool, destinationPool, sourceSubPathIndex, destinationPathIndex);
+
+      if (destinationSubPathStart == nullptr) {
+        destinationSubPathStart = destinationSubPathCurrent;
+        destinationSubPathStartIndex = destinationSubPathCurrentIndex;
+
+        destinationPath->setFocusedSubPath(destinationSubPathCurrentIndex);
+      }
+
+      if (destinationSubPathPrevious != nullptr) {
+        destinationSubPathCurrent->setPreviousPath(destinationSubPathPreviousIndex);
+        destinationSubPathPrevious->setNextPath(destinationSubPathCurrentIndex);
+      }
+
+      destinationSubPathPrevious = destinationSubPathCurrent;
+      destinationSubPathPreviousIndex = destinationSubPathCurrentIndex;
+
+      // Note: If there's only one subpath next and previous will be the same as current - that's why we don't check in the while-condition
+      sourceSubPathIndex = sourcePool->getGraphPath(sourceSubPathIndex)->getNextPath();
+      if (sourceSubPathStartIndex == sourceSubPathIndex) {
+        destinationSubPathCurrent->setNextPath(destinationSubPathStartIndex);
+        destinationSubPathStart->setPreviousPath(destinationSubPathCurrentIndex);
+        break;
+      }
+    }
+  }
+
+  return std::make_pair(destinationPathIndex, destinationPath);
+}
+
+void GraphController::serializePool(GraphPathPool *pool, RunnerInfo *runnerInfo) {
+  serializePool(pool, runnerInfo->getIdentifier());
+}
+
+void GraphController::serializePool(GraphPathPool *pool, unsigned int runnerInfoIdentifier) {
+  std::string fileName = std::string(MEMORY_DUMP_DIR) + "/" + std::to_string(runnerInfoIdentifier) + ".dat";
+  std::ofstream dumpFile(fileName, std::ios::binary | std::ios::trunc);
+  pool->serialize(dumpFile);
+}
+
+void GraphController::deserializePool(GraphPathPool *pool, RunnerInfo *runnerInfo) {
+  std::string fileName = std::string(MEMORY_DUMP_DIR) + "/" + std::to_string(runnerInfo->getIdentifier()) + ".dat";
+  std::ifstream dumpFile(fileName, std::ios::binary);
+  pool->deserialize(dumpFile);
 }

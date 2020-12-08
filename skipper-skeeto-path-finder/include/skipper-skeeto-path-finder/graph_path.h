@@ -5,17 +5,33 @@
 
 using State = unsigned long long int;
 
+class GraphPathPool;
+
 class GraphPath {
 public:
-  GraphPath(char startVertexIndex);
+  void initialize(char vertexIndex, unsigned long int parentPathIndex, const GraphPath *parentPath, char extraDistance);
 
-  GraphPath(char vertexIndex, GraphPath *previousPath, char extraDistance);
-
-  void initialize(const std::vector<GraphPath> &paths);
+  void initializeAsCopy(const GraphPath *sourcePath, unsigned long int parentPathIndex);
 
   char getCurrentVertex() const;
 
-  bool isInitialized() const;
+  void setFocusedSubPath(unsigned long int index);
+
+  unsigned long int getFocusedSubPath() const;
+
+  bool hasSetSubPath() const;
+
+  void setNextPath(unsigned long int index);
+
+  unsigned long int getNextPath() const;
+
+  void setPreviousPath(unsigned long int index);
+
+  unsigned long int getPreviousPath() const;
+
+  void setHasStateMax(bool hasMax);
+
+  bool hasStateMax() const;
 
   bool isExhausted() const;
 
@@ -31,25 +47,17 @@ public:
 
   bool hasVisitedVertex(char vertexIndex) const;
 
-  std::vector<GraphPath>::iterator getFocusedNextPath();
-
-  void eraseNextPath(const std::vector<GraphPath>::iterator &pathIterator);
-
-  void bumpFocusedNextPath();
-
-  int getNextPathsCount() const;
-
-  std::vector<char> getRoute() const;
+  std::vector<char> getRoute(const GraphPathPool *pool) const;
 
   void serialize(std::ostream &outstream) const;
 
-  void deserialize(std::istream &instream, const GraphPath *previousPath);
+  void deserialize(std::istream &instream);
 
   void cleanUp();
 
-private:
   GraphPath() = default;
 
+private:
   void setCurrentVertex(char vertexIndex);
 
   template <size_t StartIndex, size_t Count>
@@ -64,7 +72,8 @@ private:
   };
 
   State state{};
-
-  const GraphPath *previousPath = nullptr;
-  std::vector<GraphPath> nextPaths;
+  unsigned long int parentPathIndex = 0;
+  unsigned long int previousPathIndex = 0;
+  unsigned long int nextPathIndex = 0;
+  unsigned long int focusedSubPathIndex = 0;
 };

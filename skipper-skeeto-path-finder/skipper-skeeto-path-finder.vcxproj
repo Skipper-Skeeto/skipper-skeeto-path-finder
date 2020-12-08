@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -28,11 +28,13 @@
     <ClInclude Include="include\skipper-skeeto-path-finder\graph_controller.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\graph_data.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\graph_path.h" />
+    <ClInclude Include="include\skipper-skeeto-path-finder\graph_path_pool.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\info.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\item.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\path.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\path_controller.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\room.h" />
+    <ClInclude Include="include\skipper-skeeto-path-finder\runner_info.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\sub_path.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\sub_path_info.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\sub_path_info_remaining.h" />
@@ -47,11 +49,13 @@
     <ClCompile Include="src\graph_controller.cpp" />
     <ClCompile Include="src\graph_data.cpp" />
     <ClCompile Include="src\graph_path.cpp" />
+    <ClCompile Include="src\graph_path_pool.cpp" />
     <ClCompile Include="src\item.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\path.cpp" />
     <ClCompile Include="src\path_controller.cpp" />
     <ClCompile Include="src\room.cpp" />
+    <ClCompile Include="src\runner_info.cpp" />
     <ClCompile Include="src\sub_path.cpp" />
     <ClCompile Include="src\sub_path_info.cpp" />
     <ClCompile Include="src\sub_path_info_remaining.cpp" />

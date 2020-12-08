@@ -19,21 +19,16 @@ bool GraphCommonState::makesSenseToInitialize(const GraphPath *path) const {
   return path->getDistance() <= getMaxDistance();
 }
 
-bool GraphCommonState::makesSenseToKeep(const GraphPath *path) {
+bool GraphCommonState::makesSenseToKeep(GraphPath *path) {
   if (path->getDistance() > getMaxDistance()) {
     // We won't get to here if it's finished so only chance we have is if the missing edges are with zero distance
     return false;
   }
 
-  if (checkForDuplicateState(path->getUniqueState(), path->getDistance()) > 0) {
-    // If larger than zero, another path was shorter. Note that we could be checking up against our own state
-    return false;
-  }
-
-  return true;
+  return checkForDuplicateState(path);
 }
 
-void GraphCommonState::maybeAddNewGoodOne(const GraphPath *path) {
+void GraphCommonState::maybeAddNewGoodOne(const GraphPathPool *pool, RunnerInfo *runnerInfo, const GraphPath *path) {
   auto distance = path->getDistance();
 
   std::lock_guard<std::mutex> guardFinalState(finalStateMutex);
@@ -47,21 +42,24 @@ void GraphCommonState::maybeAddNewGoodOne(const GraphPath *path) {
     dumpedGoodOnes = 0;
   }
 
-  auto rawRoute = path->getRoute();
+  auto runnerRoute = runnerInfo->getRoute();
+  auto pathRoute = path->getRoute(pool);
 
   std::array<char, VERTICES_COUNT> route;
-  for (unsigned char index = 0; index < rawRoute.size(); ++index) {
-    route[index] = rawRoute[index];
+  for (unsigned char index = 0; index < route.size(); ++index) {
+    if (index < runnerRoute.size()) {
+      route[index] = runnerRoute[index];
+    } else {
+      route[index] = pathRoute[index - runnerRoute.size()];
+    }
   }
 
   goodOnes.push_back(route);
 
-  auto threadInfo = getCurrentThread();
-
-  threadInfo->setHighScore(distance);
+  runnerInfo->setHighScore(distance);
 
   std::lock_guard<std::mutex> guardPrint(printMutex);
-  std::cout << "Found new good one with distance " << +distance << " in thread " << +threadInfo->getIdentifier() << std::endl;
+  std::cout << "Found new good one with distance " << +distance << " in runner " << runnerInfo->getIdentifier() << std::endl;
 }
 
 void GraphCommonState::dumpGoodOnes(const std::string &dirName) {
@@ -96,117 +94,103 @@ void GraphCommonState::dumpGoodOnes(const std::string &dirName) {
 }
 
 void GraphCommonState::printStatus() {
-  std::lock_guard<std::mutex> threadInfoGuard(threadInfoMutex);
+  std::lock_guard<std::mutex> runnerInfoGuard(runnerInfoMutex);
   std::lock_guard<std::mutex> guardFinalState(finalStateMutex);
   std::lock_guard<std::mutex> guardPrint(printMutex);
 
-  std::string isSupposedToRunThreads;
-  std::string notYetStartedThreads;
-  std::string notYetStoppedThreads;
-  for (const auto &info : threadInfos) {
-    auto isPaused = info.isPaused();
-    auto isWaiting = info.isWaiting();
-    if (!isPaused) {
-      isSupposedToRunThreads += std::to_string(info.getIdentifier()) + " ";
-    }
+  std::cout << "Status: " << (passiveRunners.size() + activeRunners.size()) << " runners, found " << goodOnes.size() << " at distance " << +maxDistance << std::endl;
 
-    if (isPaused != isWaiting) {
-      if (isPaused) {
-        notYetStoppedThreads += std::to_string(info.getIdentifier()) + " ";
+  std::cout << "Active runners:";
+  for (const auto &info : activeRunners) {
+    std::cout << " " << info.getIdentifier() << " (" << +info.getHighScore() << ")";
+  }
+  std::cout << std::endl;
+}
+
+void GraphCommonState::addRunnerInfos(std::vector<RunnerInfo> runnerInfos) {
+  std::lock_guard<std::mutex> runnerInfoGuard(runnerInfoMutex);
+  std::lock_guard<std::mutex> guardPrint(printMutex);
+
+  std::cout << "Adding runners:";
+  for (const auto &info : runnerInfos) {
+    std::cout << " " << info.getIdentifier();
+  }
+  std::cout << std::endl;
+
+  for (const auto &info : runnerInfos) {
+    passiveRunners.push_back(info);
+  }
+}
+
+RunnerInfo *GraphCommonState::getNextRunnerInfo(RunnerInfo *currentInfo, bool preferBest) {
+  std::lock_guard<std::mutex> runnerInfoGuard(runnerInfoMutex);
+
+  if (passiveRunners.empty()) {
+    return currentInfo;
+  }
+
+  auto newRunnerIterator = passiveRunners.begin();
+  if (preferBest) {
+    auto minIterator = std::min_element(passiveRunners.begin(), passiveRunners.end(), [](const RunnerInfo &a, const RunnerInfo &b) {
+      return a.getHighScore() < b.getHighScore();
+    });
+
+    if (minIterator != passiveRunners.end()) {
+      if (currentInfo == nullptr || minIterator->getHighScore() <= currentInfo->getHighScore()) {
+        newRunnerIterator = minIterator;
       } else {
-        notYetStartedThreads += std::to_string(info.getIdentifier()) + " ";
+        return currentInfo;
       }
     }
   }
 
-  std::cout << "Status: " << threadInfos.size() << " threads, found " << goodOnes.size() << " at distance " << +maxDistance << std::endl;
-  std::cout << "Expected to run threads: " << isSupposedToRunThreads << "; Not yet started: " << notYetStartedThreads << "; Not yet stopped: " << notYetStoppedThreads << std::endl;
-}
-
-void GraphCommonState::addThread(std::thread &&thread, unsigned char identifier) {
-  std::lock_guard<std::mutex> threadInfoGuard(threadInfoMutex);
-  threadInfos.emplace_back(std::move(thread), identifier);
-}
-
-ThreadInfo *GraphCommonState::getCurrentThread() {
-  std::lock_guard<std::mutex> threadInfoGuard(threadInfoMutex);
-  for (auto &threadInfo : threadInfos) {
-    if (threadInfo.getThreadIdentifier() == std::this_thread::get_id()) {
-      return &threadInfo;
-    }
+  if (currentInfo != nullptr) {
+    passiveRunners.push_back(*currentInfo);
+    activeRunners.remove_if([currentInfo](auto &runnerInfo) {
+      return currentInfo == &runnerInfo;
+    });
   }
 
-  std::cout << "Current thread not found" << std::endl;
+  activeRunners.push_back(*newRunnerIterator);
+  passiveRunners.erase(newRunnerIterator);
 
-  return nullptr;
+  return &activeRunners.back();
 }
 
-void GraphCommonState::updateThreads() {
-  std::lock_guard<std::mutex> threadInfoGuard(threadInfoMutex);
+void GraphCommonState::removeActiveRunnerInfo(RunnerInfo *runnerInfo) {
+  std::lock_guard<std::mutex> runnerInfoGuard(runnerInfoMutex);
+  std::lock_guard<std::mutex> guardPrint(printMutex);
 
-  threadInfos.remove_if([](auto &threadInfo) {
-    return threadInfo.joinIfDone();
+  std::cout << "Removing runner " << runnerInfo->getIdentifier() << std::endl;
+
+  activeRunners.remove_if([runnerInfo](auto &activeRunnerInfo) {
+    return runnerInfo == &activeRunnerInfo;
   });
-
-  int allowedThreads = 8;
-  int allowedBestThreads = allowedThreads / 2;
-
-  // Note that from a start all threads has the same score so all will be added
-  std::list<ThreadInfo *> pickedThreads;
-  int worstScore = 0;
-  for (auto &threadInfo : threadInfos) {
-    auto distance = threadInfo.getHighScore();
-    if (pickedThreads.size() < allowedBestThreads) {
-      pickedThreads.push_back(&threadInfo);
-      if (distance > worstScore) {
-        worstScore = distance;
-      }
-    } else if (distance == worstScore) {
-      pickedThreads.push_back(&threadInfo);
-    } else if (distance < worstScore) {
-      pickedThreads.remove_if([worstScore](ThreadInfo *threadInfo) {
-        return threadInfo->getHighScore() == worstScore;
-      });
-
-      pickedThreads.push_back(&threadInfo);
-      worstScore = 0;
-      for (auto threadInfo : pickedThreads) {
-        if (threadInfo->getHighScore() > worstScore) {
-          worstScore = threadInfo->getHighScore();
-        }
-      }
-    }
-  }
-
-  if (++lastRunningExtraThread >= threadInfos.size()) {
-    lastRunningExtraThread = 0;
-  }
-
-  auto extraIndex = lastRunningExtraThread;
-  while (pickedThreads.size() < allowedThreads && pickedThreads.size() < threadInfos.size()) {
-    auto threadInfo = &(*std::next(threadInfos.begin(), extraIndex));
-    if (std::find(pickedThreads.begin(), pickedThreads.end(), threadInfo) == pickedThreads.end()) {
-      pickedThreads.push_back(threadInfo);
-    }
-
-    if (++extraIndex >= threadInfos.size()) {
-      extraIndex = 0;
-    }
-  }
-
-  for (auto &threadInfo : threadInfos) {
-    if (std::find(pickedThreads.begin(), pickedThreads.end(), &threadInfo) != pickedThreads.end()) {
-      threadInfo.setPaused(false);
-    } else {
-      threadInfo.setPaused(true);
-    }
-  }
 }
 
-bool GraphCommonState::hasThreads() const {
-  std::lock_guard<std::mutex> threadInfoGuard(threadInfoMutex);
+void GraphCommonState::splitAndRemoveActiveRunnerInfo(RunnerInfo *parentRunnerInfo, std::vector<RunnerInfo> childRunnerInfos) {
+  std::lock_guard<std::mutex> runnerInfoGuard(runnerInfoMutex);
+  std::lock_guard<std::mutex> guardPrint(printMutex);
 
-  return !threadInfos.empty();
+  std::cout << "Splitting and removing runner " << parentRunnerInfo->getIdentifier() << " into runners:";
+  for (const auto &info : childRunnerInfos) {
+    std::cout << " " << info.getIdentifier();
+  }
+  std::cout << std::endl;
+
+  for (const auto &info : childRunnerInfos) {
+    passiveRunners.push_back(info);
+  }
+
+  activeRunners.remove_if([parentRunnerInfo](auto &activeRunnerInfo) {
+    return parentRunnerInfo == &activeRunnerInfo;
+  });
+}
+
+int GraphCommonState::runnerInfoCount() const {
+  std::lock_guard<std::mutex> runnerInfoGuard(runnerInfoMutex);
+
+  return activeRunners.size() + passiveRunners.size();
 }
 
 unsigned char GraphCommonState::getMaxDistance() const {
@@ -214,20 +198,27 @@ unsigned char GraphCommonState::getMaxDistance() const {
   return maxDistance;
 }
 
-int GraphCommonState::checkForDuplicateState(const State &state, unsigned char distance) {
+bool GraphCommonState::checkForDuplicateState(GraphPath *path) {
   std::lock_guard<std::mutex> guard(distanceStateMutex);
-  int result = -1;
+
+  auto state = path->getUniqueState();
+  auto distance = path->getDistance();
 
   auto distanceIterator = distanceForState.find(state);
   if (distanceIterator != distanceForState.end()) {
-    result = distance - distanceIterator->second;
+    int result = distance - distanceIterator->second;
 
-    if (result >= 0) {
-      return result;
+    if (result > 0) {
+      path->setHasStateMax(false);
+      return false;
+    } else if (result == 0) {
+      return path->hasStateMax();
     }
   }
 
   distanceForState[state] = distance;
 
-  return result;
+  path->setHasStateMax(true);
+
+  return true;
 }

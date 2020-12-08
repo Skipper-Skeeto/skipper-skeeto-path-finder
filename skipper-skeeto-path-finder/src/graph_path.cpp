@@ -1,44 +1,84 @@
 #include "skipper-skeeto-path-finder/graph_path.h"
 
+#include "skipper-skeeto-path-finder/graph_path_pool.h"
 #include "skipper-skeeto-path-finder/info.h"
+
+#define FOCUSED_SUB_PATH_SET_BITS 1
+#define HAS_STATE_MAX_BITS 1
 
 #define VISITED_VERTICES_INDEX 0
 #define CURRENT_VERTEX_INDEX (VISITED_VERTICES_INDEX + VERTICES_COUNT)
 #define DISTANCE_INDEX (CURRENT_VERTEX_INDEX + CURRENT_VERTEX_BITS)
-#define FOCUSED_NEXT_PATH_INDEX (DISTANCE_INDEX + DISTANCE_BITS)
-static_assert(sizeof(State) < (FOCUSED_NEXT_PATH_INDEX + FOCUSED_NEXT_PATH_BITS), "Bits does not fit in state");
+#define FOCUSED_SUB_PATH_SET_INDEX (DISTANCE_INDEX + DISTANCE_BITS)
+#define HAS_STATE_MAX_INDEX (FOCUSED_SUB_PATH_SET_INDEX + FOCUSED_SUB_PATH_SET_BITS)
+static_assert(sizeof(State) < (HAS_STATE_MAX_INDEX + HAS_STATE_MAX_BITS), "Bits does not fit in state");
 
 #define ALL_VERTICES_STATE_MASK ((1ULL << VERTICES_COUNT) - 1)
-#define NOT_INITIALIZED_FOCUSED_MASK ((1ULL << FOCUSED_NEXT_PATH_BITS) - 1)
 
-GraphPath::GraphPath(char startVertexIndex) {
-  setCurrentVertex(startVertexIndex);
-  setState<FOCUSED_NEXT_PATH_INDEX, FOCUSED_NEXT_PATH_BITS>(NOT_INITIALIZED_FOCUSED_MASK);
-}
+void GraphPath::initialize(char vertexIndex, unsigned long int parentPathIndex, const GraphPath *parentPath, char extraDistance) {
+  this->parentPathIndex = parentPathIndex;
+  state = 0;
 
-GraphPath::GraphPath(char vertexIndex, GraphPath *previousPath, char extraDistance) {
-  this->previousPath = previousPath;
-  setState<VISITED_VERTICES_INDEX, VERTICES_COUNT>(previousPath->getVisitedVertices()); // Has to be before setting current vertex
-  setState<DISTANCE_INDEX, DISTANCE_BITS>(previousPath->getDistance() + extraDistance);
+  State parentVisitedVertices = 0;
+  State parentDistance = 0;
+  if (parentPath != nullptr) {
+    parentVisitedVertices = parentPath->getVisitedVertices();
+    parentDistance = parentPath->getDistance();
+  }
+
+  setState<VISITED_VERTICES_INDEX, VERTICES_COUNT>(parentVisitedVertices); // Has to be before setting current vertex
+  setState<DISTANCE_INDEX, DISTANCE_BITS>(parentDistance + extraDistance);
   setCurrentVertex(vertexIndex);
-  setState<FOCUSED_NEXT_PATH_INDEX, FOCUSED_NEXT_PATH_BITS>(NOT_INITIALIZED_FOCUSED_MASK);
 }
 
-void GraphPath::initialize(const std::vector<GraphPath> &nextPaths) {
-  this->nextPaths = nextPaths;
-  setState<FOCUSED_NEXT_PATH_INDEX, FOCUSED_NEXT_PATH_BITS>(0);
+void GraphPath::initializeAsCopy(const GraphPath *sourcePath, unsigned long int parentPathIndex) {
+  this->parentPathIndex = parentPathIndex;
+  state = sourcePath->state;
+}
+
+void GraphPath::setFocusedSubPath(unsigned long int index) {
+  this->focusedSubPathIndex = index;
+  setState<FOCUSED_SUB_PATH_SET_INDEX, FOCUSED_SUB_PATH_SET_BITS>(1);
+}
+
+unsigned long int GraphPath::getFocusedSubPath() const {
+  return focusedSubPathIndex;
+}
+
+bool GraphPath::hasSetSubPath() const {
+  return getState<FOCUSED_SUB_PATH_SET_INDEX, FOCUSED_SUB_PATH_SET_BITS>() > 0;
+}
+
+void GraphPath::setNextPath(unsigned long int index) {
+  nextPathIndex = index;
+}
+
+unsigned long int GraphPath::getNextPath() const {
+  return nextPathIndex;
+}
+
+void GraphPath::setPreviousPath(unsigned long int index) {
+  previousPathIndex = index;
+}
+
+unsigned long int GraphPath::getPreviousPath() const {
+  return previousPathIndex;
+}
+
+void GraphPath::setHasStateMax(bool hasMax) {
+  setState<HAS_STATE_MAX_INDEX, HAS_STATE_MAX_BITS>(hasMax ? 1 : 0);
+}
+
+bool GraphPath::hasStateMax() const {
+  return getState<HAS_STATE_MAX_INDEX, HAS_STATE_MAX_BITS>() > 0;
 }
 
 char GraphPath::getCurrentVertex() const {
   return getState<CURRENT_VERTEX_INDEX, CURRENT_VERTEX_BITS>();
 }
 
-bool GraphPath::isInitialized() const {
-  return getState<FOCUSED_NEXT_PATH_INDEX, FOCUSED_NEXT_PATH_BITS>() != NOT_INITIALIZED_FOCUSED_MASK;
-}
-
 bool GraphPath::isExhausted() const {
-  return nextPaths.empty();
+  return focusedSubPathIndex == 0;
 }
 
 bool GraphPath::isFinished() const {
@@ -65,38 +105,11 @@ bool GraphPath::hasVisitedVertex(char vertexIndex) const {
   return meetsCondition(1ULL << vertexIndex);
 }
 
-std::vector<GraphPath>::iterator GraphPath::getFocusedNextPath() {
-  return nextPaths.begin() + getState<FOCUSED_NEXT_PATH_INDEX, FOCUSED_NEXT_PATH_BITS>();
-}
-
-void GraphPath::eraseNextPath(const std::vector<GraphPath>::iterator &pathIterator) {
-  nextPaths.erase(pathIterator);
-
-  auto focusedNextPathIndex = getState<FOCUSED_NEXT_PATH_INDEX, FOCUSED_NEXT_PATH_BITS>();
-  if (focusedNextPathIndex >= nextPaths.size()) {
-    setState<FOCUSED_NEXT_PATH_INDEX, FOCUSED_NEXT_PATH_BITS>(0);
-  }
-}
-
-void GraphPath::bumpFocusedNextPath() {
-  auto focusedNextPathIndex = getState<FOCUSED_NEXT_PATH_INDEX, FOCUSED_NEXT_PATH_BITS>();
-
-  if (++focusedNextPathIndex >= nextPaths.size()) {
-    focusedNextPathIndex = 0;
-  }
-
-  setState<FOCUSED_NEXT_PATH_INDEX, FOCUSED_NEXT_PATH_BITS>(focusedNextPathIndex);
-}
-
-int GraphPath::getNextPathsCount() const {
-  return nextPaths.size();
-}
-
-std::vector<char> GraphPath::getRoute() const {
-  if (previousPath == nullptr) {
+std::vector<char> GraphPath::getRoute(const GraphPathPool *pool) const {
+  if (parentPathIndex == 0) {
     return std::vector<char>{getCurrentVertex()};
   } else {
-    auto partialRoute = previousPath->getRoute();
+    auto partialRoute = pool->getGraphPath(parentPathIndex)->getRoute(pool);
     partialRoute.push_back(getCurrentVertex());
     return partialRoute;
   }
@@ -104,32 +117,22 @@ std::vector<char> GraphPath::getRoute() const {
 
 void GraphPath::serialize(std::ostream &outstream) const {
   outstream.write(reinterpret_cast<const char *>(&state), sizeof(state));
-
-  int pathCount = nextPaths.size();
-  outstream.write(reinterpret_cast<const char *>(&pathCount), sizeof(pathCount));
-  for (auto path : nextPaths) {
-    path.serialize(outstream);
-  }
+  outstream.write(reinterpret_cast<const char *>(&parentPathIndex), sizeof(parentPathIndex));
+  outstream.write(reinterpret_cast<const char *>(&previousPathIndex), sizeof(previousPathIndex));
+  outstream.write(reinterpret_cast<const char *>(&nextPathIndex), sizeof(nextPathIndex));
+  outstream.write(reinterpret_cast<const char *>(&focusedSubPathIndex), sizeof(focusedSubPathIndex));
 }
 
-void GraphPath::deserialize(std::istream &instream, const GraphPath *previousPath) {
-  if (previousPath != nullptr) {
-    this->previousPath = previousPath;
-  }
-
+void GraphPath::deserialize(std::istream &instream) {
   instream.read(reinterpret_cast<char *>(&state), sizeof(state));
-
-  int pathCount = 0;
-  instream.read(reinterpret_cast<char *>(&pathCount), sizeof(pathCount));
-  for (int index = 0; index < pathCount; ++index) {
-    GraphPath path;
-    path.deserialize(instream, this);
-    nextPaths.push_back(path);
-  }
+  instream.read(reinterpret_cast<char *>(&parentPathIndex), sizeof(parentPathIndex));
+  instream.read(reinterpret_cast<char *>(&previousPathIndex), sizeof(previousPathIndex));
+  instream.read(reinterpret_cast<char *>(&nextPathIndex), sizeof(nextPathIndex));
+  instream.read(reinterpret_cast<char *>(&focusedSubPathIndex), sizeof(focusedSubPathIndex));
 }
 
 void GraphPath::cleanUp() {
-  nextPaths.clear();
+  state = 0;
 }
 
 void GraphPath::setCurrentVertex(char vertexIndex) {
