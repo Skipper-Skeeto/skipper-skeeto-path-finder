@@ -162,9 +162,7 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
       return true;
     }
 
-    if (visitedVertices < DISTRIBUTION_LEVEL_LIMIT) {
-      path->setFocusedSubPath(focusedSubPath->getNextPath());
-    }
+    path->setFocusedSubPath(focusedSubPath->getNextPath());
 
     return true;
   } else {
