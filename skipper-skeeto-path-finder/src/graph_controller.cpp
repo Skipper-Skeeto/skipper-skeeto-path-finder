@@ -15,6 +15,7 @@
 #include <iostream>
 #include <limits>
 #include <sstream>
+#include <thread>
 
 const char *GraphController::MEMORY_DUMP_DIR = "temp_memory_dump";
 
