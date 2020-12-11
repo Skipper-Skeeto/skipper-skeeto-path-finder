@@ -9,14 +9,14 @@ GraphData::GraphData(const nlohmann::json &jsonData) {
   for (auto const &edgeData : jsonData) {
     auto &edge = edges[edgeIndex];
 
-    edge.endVertexIndex = edgeData["to"] - 1;
+    edge.endVertexIndex = edgeData["to"].get<int>() - 1;
     edge.length = edgeData["length"];
     for (auto const &conditionNumber : edgeData["conditions"]) {
-      edge.condition |= (1ULL << (conditionNumber - 1));
+      edge.condition |= (1ULL << (conditionNumber.get<int>() - 1));
     }
 
     // Insert edge into vertices map - note that we sort the shortest first
-    auto &edgesFromVertex = verticesMap[edgeData["from"] - 1];
+    auto &edgesFromVertex = verticesMap[edgeData["from"].get<int>() - 1];
     const auto &longerLengthIterator = std::upper_bound(
         edgesFromVertex.begin(),
         edgesFromVertex.end(),
