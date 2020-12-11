@@ -112,6 +112,8 @@ void GraphController::start() {
 void GraphController::setupStartRunner() {
   GraphPathPool tempPool;
 
+  commonState.logAddedPaths(0, 1);
+
   auto startPathIndex = tempPool.generateNewIndex();
   auto startPath = tempPool.getGraphPath(startPathIndex);
 
@@ -129,7 +131,7 @@ void GraphController::setupStartRunner() {
   commonState.addRunnerInfos(runnerInfos);
 }
 
-bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerInfo, unsigned long int pathIndex, GraphPath *path, unsigned char visitedVertices) {
+bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerInfo, unsigned long int pathIndex, GraphPath *path, unsigned char depth) {
   if (!path->hasSetSubPath()) {
     if (path->isFinished()) {
       commonState.maybeAddNewGoodOne(pool, runnerInfo, path);
@@ -138,24 +140,31 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
     }
 
     if (!commonState.makesSenseToInitialize(path)) {
+      commonState.logStartedPath(depth);
+
       return false;
     }
 
-    if (!initializePath(pool, pathIndex, path)) {
+    if (!initializePath(pool, pathIndex, path, depth)) {
       return true; // Should just be because of full pool, so we want to continue
     }
   }
 
-  if (path->isExhausted() || !commonState.makesSenseToKeep(path)) {
+  if (path->isExhausted()) {
     return false;
   }
 
-  auto nextVisitedVertices = visitedVertices + 1;
+  if (!commonState.makesSenseToKeep(path)) {
+    logRemovedSubPaths(pool, path, depth);
+
+    return false;
+  }
 
   auto focusedSubPathIndex = path->getFocusedSubPath();
   auto focusedSubPath = pool->getGraphPath(focusedSubPathIndex);
+  auto subDepth = depth + 1;
 
-  bool continueWork = moveOnDistributed(pool, runnerInfo, focusedSubPathIndex, focusedSubPath, nextVisitedVertices);
+  bool continueWork = moveOnDistributed(pool, runnerInfo, focusedSubPathIndex, focusedSubPath, subDepth);
   if (continueWork) {
     if (pool->isFull()) {
       // We want to continue with the same focus next time. It just didn't finish becasue pool was full
@@ -180,13 +189,15 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
       path->setFocusedSubPath(nextSubPathIndex);
     }
 
+    commonState.logRemovePath(subDepth);
+
     focusedSubPath->cleanUp();
 
     return !path->isExhausted();
   }
 }
 
-bool GraphController::initializePath(GraphPathPool *pool, unsigned long int pathIndex, GraphPath *path) {
+bool GraphController::initializePath(GraphPathPool *pool, unsigned long int pathIndex, GraphPath *path, char depth) {
   std::array<char, VERTICES_COUNT> nextVertices{};
   nextVertices.fill(-1);
 
@@ -268,13 +279,43 @@ bool GraphController::initializePath(GraphPathPool *pool, unsigned long int path
     }
   }
 
+  commonState.logStartedPath(depth);
+
   if (subPathsSorted.empty()) {
     path->setFocusedSubPath(0);
   } else {
     path->setFocusedSubPath(subPathsSorted.front().first);
+    commonState.logAddedPaths(depth + 1, subPathsSorted.size());
   }
 
   return true;
+}
+
+void GraphController::logRemovedSubPaths(GraphPathPool *pool, GraphPath *path, char depth) {
+  auto subDepth = depth + 1;
+
+  if (!commonState.appliesForLogging(subDepth)) {
+    return;
+  }
+
+  auto initialSubPathIndex = path->getFocusedSubPath();
+  auto nextSubPathIndex = initialSubPathIndex;
+  while (true) {
+
+    auto subPath = pool->getGraphPath(nextSubPathIndex);
+    if (subPath->hasSetSubPath()) {
+      logRemovedSubPaths(pool, subPath, subDepth);
+    } else {
+      commonState.logStartedPath(subDepth);
+    }
+
+    commonState.logRemovePath(subDepth);
+
+    nextSubPathIndex = subPath->getNextPath();
+    if (nextSubPathIndex == initialSubPathIndex) {
+      break;
+    }
+  }
 }
 
 void GraphController::splitAndRemove(GraphPathPool *pool, RunnerInfo *runnerInfo) {

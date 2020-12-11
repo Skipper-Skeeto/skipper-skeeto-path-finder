@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+#define LOG_PATH_COUNT_MAX 10
+
 class GraphPathPool;
 
 class GraphCommonState {
@@ -35,6 +37,14 @@ public:
 
   int runnerInfoCount() const;
 
+  void logAddedPaths(int depth, int count);
+
+  void logStartedPath(int depth);
+
+  void logRemovePath(int depth);
+
+  bool appliesForLogging(int depth) const;
+
 private:
   static const char *DUMPED_GOOD_ONES_BASE_DIR;
 
@@ -45,6 +55,7 @@ private:
   mutable std::mutex finalStateMutex;
   mutable std::mutex distanceStateMutex;
   mutable std::mutex runnerInfoMutex;
+  mutable std::mutex pathCountMutex;
   mutable std::mutex printMutex;
 
   unsigned char maxDistance = (1 << DISTANCE_BITS) - 1;
@@ -54,4 +65,9 @@ private:
 
   std::list<RunnerInfo> activeRunners;
   std::list<RunnerInfo> passiveRunners;
+
+  std::array<int, LOG_PATH_COUNT_MAX> addedPathsCount{};
+  std::array<int, LOG_PATH_COUNT_MAX> startedPathsCount{};
+  std::array<int, LOG_PATH_COUNT_MAX> splittedPathsCount{};
+  std::array<int, LOG_PATH_COUNT_MAX> removedPathsCount{};
 };

@@ -96,7 +96,10 @@ void GraphCommonState::dumpGoodOnes(const std::string &dirName) {
 void GraphCommonState::printStatus() {
   std::lock_guard<std::mutex> runnerInfoGuard(runnerInfoMutex);
   std::lock_guard<std::mutex> guardFinalState(finalStateMutex);
+  std::lock_guard<std::mutex> guardPathCount(pathCountMutex);
   std::lock_guard<std::mutex> guardPrint(printMutex);
+
+  std::cout << std::endl;
 
   std::cout << "Status: " << (passiveRunners.size() + activeRunners.size()) << " runners, found " << goodOnes.size() << " at distance " << +maxDistance << std::endl;
 
@@ -104,6 +107,18 @@ void GraphCommonState::printStatus() {
   for (const auto &info : activeRunners) {
     std::cout << " " << info.getIdentifier() << " (" << +info.getHighScore() << ")";
   }
+  std::cout << std::endl;
+
+  std::cout << "Paths [ Removed" << std::setw(25) << "| Splitted" << std::setw(24) << "| Started" << std::setw(23) << "| Added" << std::setw(6) << "]" << std::endl;
+
+  for (int index = 0; index < LOG_PATH_COUNT_MAX; ++index) {
+    std::cout << " - " << std::setw(2) << index << std::fixed << std::setprecision(2) << " ["
+              << std::setw(12) << removedPathsCount[index] << " (" << std::setw(6) << (addedPathsCount[index] > 0 ? (double)removedPathsCount[index] * 100 / addedPathsCount[index] : 0) << "%) | "
+              << std::setw(12) << splittedPathsCount[index] << " (" << std::setw(6) << (addedPathsCount[index] > 0 ? (double)splittedPathsCount[index] * 100 / addedPathsCount[index] : 0) << "%) | "
+              << std::setw(12) << startedPathsCount[index] << " (" << std::setw(6) << (addedPathsCount[index] > 0 ? (double)startedPathsCount[index] * 100 / addedPathsCount[index] : 0) << "%) | "
+              << std::setw(10) << addedPathsCount[index] << "]" << std::endl;
+  }
+
   std::cout << std::endl;
 }
 
@@ -170,9 +185,12 @@ void GraphCommonState::removeActiveRunnerInfo(RunnerInfo *runnerInfo) {
 
 void GraphCommonState::splitAndRemoveActiveRunnerInfo(RunnerInfo *parentRunnerInfo, std::vector<RunnerInfo> childRunnerInfos) {
   std::lock_guard<std::mutex> runnerInfoGuard(runnerInfoMutex);
+  std::lock_guard<std::mutex> guardPathCount(pathCountMutex);
   std::lock_guard<std::mutex> guardPrint(printMutex);
 
-  std::cout << "Splitting and removing runner " << parentRunnerInfo->getIdentifier() << " into runners:";
+  auto depth = parentRunnerInfo->getVisitedVertices();
+
+  std::cout << "Splitting and removing runner " << parentRunnerInfo->getIdentifier() << " into runners at depth " << depth << ":";
   for (const auto &info : childRunnerInfos) {
     std::cout << " " << info.getIdentifier();
   }
@@ -185,12 +203,48 @@ void GraphCommonState::splitAndRemoveActiveRunnerInfo(RunnerInfo *parentRunnerIn
   activeRunners.remove_if([parentRunnerInfo](auto &activeRunnerInfo) {
     return parentRunnerInfo == &activeRunnerInfo;
   });
+
+  ++splittedPathsCount[depth];
 }
 
 int GraphCommonState::runnerInfoCount() const {
   std::lock_guard<std::mutex> runnerInfoGuard(runnerInfoMutex);
 
   return activeRunners.size() + passiveRunners.size();
+}
+
+void GraphCommonState::logAddedPaths(int depth, int number) {
+  if (!appliesForLogging(depth)) {
+    return;
+  }
+
+  std::lock_guard<std::mutex> pathCountGuard(pathCountMutex);
+
+  addedPathsCount[depth] += number;
+}
+
+void GraphCommonState::logStartedPath(int depth) {
+  if (!appliesForLogging(depth)) {
+    return;
+  }
+
+  std::lock_guard<std::mutex> pathCountGuard(pathCountMutex);
+
+  ++startedPathsCount[depth];
+}
+
+void GraphCommonState::logRemovePath(int depth) {
+  if (!appliesForLogging(depth)) {
+    return;
+  }
+
+  std::lock_guard<std::mutex> pathCountGuard(pathCountMutex);
+
+  ++removedPathsCount[depth];
+}
+
+bool GraphCommonState::appliesForLogging(int depth) const {
+  return depth < LOG_PATH_COUNT_MAX;
 }
 
 unsigned char GraphCommonState::getMaxDistance() const {

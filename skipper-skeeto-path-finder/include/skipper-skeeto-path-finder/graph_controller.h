@@ -15,9 +15,11 @@ private:
 
   void setupStartRunner();
 
-  bool moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerInfo, unsigned long int pathIndex, GraphPath *path, unsigned char visitedVertices);
+  bool moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerInfo, unsigned long int pathIndex, GraphPath *path, unsigned char depth);
 
-  bool initializePath(GraphPathPool *pool, unsigned long int pathIndex, GraphPath *path);
+  bool initializePath(GraphPathPool *pool, unsigned long int pathIndex, GraphPath *path, char depth);
+
+  void logRemovedSubPaths(GraphPathPool *pool, GraphPath *path, char depth);
 
   void splitAndRemove(GraphPathPool *pool, RunnerInfo *runnerInfo);
 
