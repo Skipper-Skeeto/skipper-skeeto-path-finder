@@ -9,6 +9,7 @@
 #include "skipper-skeeto-path-finder/runner_info.h"
 
 #include <chrono>
+#include <cstdio>
 #include <ctime>
 #include <fstream>
 #include <iomanip>
@@ -72,6 +73,7 @@ void GraphController::start() {
       while (!pool.isFull()) {
         bool continueWork = moveOnDistributed(&pool, runnerInfo, pathIndex, pool.getGraphPath(pathIndex), runnerInfo->getVisitedVerticesCount());
         if (!continueWork) {
+          deletePoolFile(runnerInfo);
           commonState.removeActiveRunnerInfo(runnerInfo);
           runnerInfo = nullptr;
           break;
@@ -79,6 +81,7 @@ void GraphController::start() {
       }
 
       if (runnerInfo != nullptr && (pool.isFull() || commonState.runnerInfoCount() < THREAD_COUNT)) {
+        deletePoolFile(runnerInfo);
         splitAndRemove(&pool, runnerInfo);
         runnerInfo = nullptr;
       }
@@ -389,18 +392,27 @@ std::pair<unsigned long int, GraphPath *> GraphController::movePathData(GraphPat
   return std::make_pair(destinationPathIndex, destinationPath);
 }
 
+std::string GraphController::getPoolFileName(unsigned int runnerInfoIdentifier) const {
+  return std::string(MEMORY_DUMP_DIR) + "/" + std::to_string(runnerInfoIdentifier) + ".dat";
+}
+
 void GraphController::serializePool(GraphPathPool *pool, RunnerInfo *runnerInfo) {
   serializePool(pool, runnerInfo->getIdentifier());
 }
 
 void GraphController::serializePool(GraphPathPool *pool, unsigned int runnerInfoIdentifier) {
-  std::string fileName = std::string(MEMORY_DUMP_DIR) + "/" + std::to_string(runnerInfoIdentifier) + ".dat";
+  std::string fileName = getPoolFileName(runnerInfoIdentifier);
   std::ofstream dumpFile(fileName, std::ios::binary | std::ios::trunc);
   pool->serialize(dumpFile);
 }
 
 void GraphController::deserializePool(GraphPathPool *pool, RunnerInfo *runnerInfo) {
-  std::string fileName = std::string(MEMORY_DUMP_DIR) + "/" + std::to_string(runnerInfo->getIdentifier()) + ".dat";
+  std::string fileName = getPoolFileName(runnerInfo->getIdentifier());
   std::ifstream dumpFile(fileName, std::ios::binary);
   pool->deserialize(dumpFile);
+}
+
+void GraphController::deletePoolFile(const RunnerInfo *runnerInfo) const {
+  std::string fileName = getPoolFileName(runnerInfo->getIdentifier());
+  std::remove(fileName.c_str());
 }
