@@ -19,7 +19,7 @@ unsigned char RunnerInfo::getHighScore() const {
   return highscore;
 }
 
-int RunnerInfo::getVisitedVertices() const {
+int RunnerInfo::getVisitedVerticesCount() const {
   return parentPath.size();
 }
 

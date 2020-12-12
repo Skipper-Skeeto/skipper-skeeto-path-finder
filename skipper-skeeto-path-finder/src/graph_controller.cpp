@@ -70,7 +70,7 @@ void GraphController::start() {
 
       auto pathIndex = 1; // This should always be the root
       while (!pool.isFull()) {
-        bool continueWork = moveOnDistributed(&pool, runnerInfo, pathIndex, pool.getGraphPath(pathIndex), runnerInfo->getVisitedVertices());
+        bool continueWork = moveOnDistributed(&pool, runnerInfo, pathIndex, pool.getGraphPath(pathIndex), runnerInfo->getVisitedVerticesCount());
         if (!continueWork) {
           commonState.removeActiveRunnerInfo(runnerInfo);
           runnerInfo = nullptr;

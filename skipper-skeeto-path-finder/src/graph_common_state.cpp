@@ -188,7 +188,7 @@ void GraphCommonState::splitAndRemoveActiveRunnerInfo(RunnerInfo *parentRunnerIn
   std::lock_guard<std::mutex> guardPathCount(pathCountMutex);
   std::lock_guard<std::mutex> guardPrint(printMutex);
 
-  auto depth = parentRunnerInfo->getVisitedVertices();
+  auto depth = parentRunnerInfo->getVisitedVerticesCount();
 
   std::cout << "Splitting and removing runner " << parentRunnerInfo->getIdentifier() << " into runners at depth " << depth << ":";
   for (const auto &info : childRunnerInfos) {

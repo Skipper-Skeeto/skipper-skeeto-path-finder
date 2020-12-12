@@ -13,7 +13,7 @@ public:
 
   unsigned char getHighScore() const;
 
-  int getVisitedVertices() const;
+  int getVisitedVerticesCount() const;
 
   std::vector<char> getRoute() const;
 
