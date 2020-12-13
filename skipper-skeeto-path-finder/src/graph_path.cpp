@@ -5,15 +5,16 @@
 
 #define FOCUSED_SUB_PATH_SET_BITS 1
 #define HAS_STATE_MAX_BITS 1
+#define VISITED_VERTICES_BITS (VERTICES_COUNT - 1) // We always reached start, so we shift the visited vertices state bits
 
 #define VISITED_VERTICES_INDEX 0
-#define CURRENT_VERTEX_INDEX (VISITED_VERTICES_INDEX + VERTICES_COUNT)
+#define CURRENT_VERTEX_INDEX (VISITED_VERTICES_INDEX + VISITED_VERTICES_BITS)
 #define DISTANCE_INDEX (CURRENT_VERTEX_INDEX + CURRENT_VERTEX_BITS)
 #define FOCUSED_SUB_PATH_SET_INDEX (DISTANCE_INDEX + DISTANCE_BITS)
 #define HAS_STATE_MAX_INDEX (FOCUSED_SUB_PATH_SET_INDEX + FOCUSED_SUB_PATH_SET_BITS)
 static_assert(sizeof(State) < (HAS_STATE_MAX_INDEX + HAS_STATE_MAX_BITS), "Bits does not fit in state");
 
-#define ALL_VERTICES_STATE_MASK ((1ULL << VERTICES_COUNT) - 1)
+#define ALL_VERTICES_STATE_MASK ((1ULL << VISITED_VERTICES_BITS) - 1)
 
 void GraphPath::initialize(char vertexIndex, unsigned long int parentPathIndex, const GraphPath *parentPath, char extraDistance) {
   this->parentPathIndex = parentPathIndex;
@@ -22,11 +23,11 @@ void GraphPath::initialize(char vertexIndex, unsigned long int parentPathIndex, 
   State parentVisitedVertices = 0;
   State parentDistance = 0;
   if (parentPath != nullptr) {
-    parentVisitedVertices = parentPath->getVisitedVertices();
+    parentVisitedVertices = parentPath->getVisitedVerticesState();
     parentDistance = parentPath->getDistance();
   }
 
-  setState<VISITED_VERTICES_INDEX, VERTICES_COUNT>(parentVisitedVertices); // Has to be before setting current vertex
+  setState<VISITED_VERTICES_INDEX, VISITED_VERTICES_BITS>(parentVisitedVertices); // Has to be before setting current vertex
   setState<DISTANCE_INDEX, DISTANCE_BITS>(parentDistance + extraDistance);
   setCurrentVertex(vertexIndex);
 }
@@ -86,23 +87,28 @@ bool GraphPath::isFinished() const {
 }
 
 State GraphPath::getUniqueState() const {
-  return getState<VISITED_VERTICES_INDEX, VERTICES_COUNT>() | (getState<CURRENT_VERTEX_INDEX, CURRENT_VERTEX_BITS>() << VERTICES_COUNT);
+  return getState<VISITED_VERTICES_INDEX, VISITED_VERTICES_BITS>() | (getState<CURRENT_VERTEX_INDEX, CURRENT_VERTEX_BITS>() << VISITED_VERTICES_BITS);
 }
 
 unsigned char GraphPath::getDistance() const {
   return getState<DISTANCE_INDEX, DISTANCE_BITS>();
 }
 
-State GraphPath::getVisitedVertices() const {
-  return getState<VISITED_VERTICES_INDEX, VERTICES_COUNT>();
+State GraphPath::getVisitedVerticesState() const {
+  return getState<VISITED_VERTICES_INDEX, VISITED_VERTICES_BITS>();
 }
 
 bool GraphPath::meetsCondition(const State &condition) const {
-  return (getState<VISITED_VERTICES_INDEX, VERTICES_COUNT>() & condition) == condition;
+  return (getState<VISITED_VERTICES_INDEX, VISITED_VERTICES_BITS>() & condition) == condition;
 }
 
 bool GraphPath::hasVisitedVertex(char vertexIndex) const {
-  return meetsCondition(1ULL << vertexIndex);
+  if (vertexIndex == 0) {
+    return true;
+  }
+
+  // We always reached start, so the visited vertices state bits have been shifted
+  return meetsCondition(1ULL << (vertexIndex - 1));
 }
 
 std::vector<char> GraphPath::getRoute(const GraphPathPool *pool) const {
@@ -137,5 +143,9 @@ void GraphPath::cleanUp() {
 
 void GraphPath::setCurrentVertex(char vertexIndex) {
   setState<CURRENT_VERTEX_INDEX, CURRENT_VERTEX_BITS>(vertexIndex);
-  state |= (1ULL << vertexIndex);
+
+  if (vertexIndex > 0) {
+    // We always reached start, so the visited vertices state bits have been shifted
+    state |= (1ULL << (vertexIndex - 1));
+  }
 }

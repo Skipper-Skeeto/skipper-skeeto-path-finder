@@ -41,7 +41,7 @@ public:
 
   unsigned char getDistance() const;
 
-  State getVisitedVertices() const;
+  State getVisitedVerticesState() const;
 
   bool meetsCondition(const State &condition) const;
 

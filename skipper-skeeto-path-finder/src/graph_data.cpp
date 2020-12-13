@@ -12,7 +12,8 @@ GraphData::GraphData(const nlohmann::json &jsonData) {
     edge.endVertexIndex = edgeData["to"].get<int>() - 1;
     edge.length = edgeData["length"];
     for (auto const &conditionNumber : edgeData["conditions"]) {
-      edge.condition |= (1ULL << (conditionNumber.get<int>() - 1));
+      // Minus 2 because the vertices are 1-indexed and 1st (start) is always reached (so it's all shifted)
+      edge.condition |= (1ULL << (conditionNumber.get<int>() - 2));
     }
 
     // Insert edge into vertices map - note that we sort the shortest first
