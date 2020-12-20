@@ -31,10 +31,7 @@ RunnerInfo RunnerInfo::makeSubRunner(char vertex) {
   auto newParentPath = parentPath;
   newParentPath.push_back(vertex);
 
-  RunnerInfo subRunner(newParentPath);
-  subRunner.setHighScore(highscore);
-
-  return subRunner;
+  return RunnerInfo(newParentPath);
 }
 
 unsigned int RunnerInfo::createIdentifier() {

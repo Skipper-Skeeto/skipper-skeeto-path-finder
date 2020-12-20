@@ -192,7 +192,7 @@ void GraphCommonState::splitAndRemoveActiveRunnerInfo(RunnerInfo *parentRunnerIn
 
   std::cout << "Splitting and removing runner " << parentRunnerInfo->getIdentifier() << " into runners at depth " << depth << ":";
   for (const auto &info : childRunnerInfos) {
-    std::cout << " " << info.getIdentifier();
+    std::cout << " " << info.getIdentifier() << " (" << +info.getHighScore() << ")";
   }
   std::cout << std::endl;
 

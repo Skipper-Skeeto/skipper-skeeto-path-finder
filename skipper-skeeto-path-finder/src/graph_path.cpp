@@ -19,6 +19,7 @@ static_assert(sizeof(State) < (HAS_STATE_MAX_INDEX + HAS_STATE_MAX_BITS), "Bits 
 void GraphPath::initialize(char vertexIndex, unsigned long int parentPathIndex, const GraphPath *parentPath, char extraDistance) {
   this->parentPathIndex = parentPathIndex;
   state = 0;
+  bestEndDistance = 255;
 
   State parentVisitedVertices = 0;
   State parentDistance = 0;
@@ -35,6 +36,7 @@ void GraphPath::initialize(char vertexIndex, unsigned long int parentPathIndex, 
 void GraphPath::initializeAsCopy(const GraphPath *sourcePath, unsigned long int parentPathIndex) {
   this->parentPathIndex = parentPathIndex;
   state = sourcePath->state;
+  bestEndDistance = sourcePath->bestEndDistance;
 }
 
 void GraphPath::setFocusedSubPath(unsigned long int index) {
@@ -111,6 +113,20 @@ bool GraphPath::hasVisitedVertex(char vertexIndex) const {
   return meetsCondition(1ULL << (vertexIndex - 1));
 }
 
+void GraphPath::maybeSetBestEndDistance(GraphPathPool *pool, unsigned char distance) {
+  if (distance < bestEndDistance) {
+    bestEndDistance = distance;
+
+    if (parentPathIndex > 0) {
+      pool->getGraphPath(parentPathIndex)->maybeSetBestEndDistance(pool, distance);
+    }
+  }
+}
+
+unsigned char GraphPath::getBestEndDistance() const {
+  return bestEndDistance;
+}
+
 std::vector<char> GraphPath::getRoute(const GraphPathPool *pool) const {
   if (parentPathIndex == 0) {
     return std::vector<char>{getCurrentVertex()};
@@ -123,6 +139,7 @@ std::vector<char> GraphPath::getRoute(const GraphPathPool *pool) const {
 
 void GraphPath::serialize(std::ostream &outstream) const {
   outstream.write(reinterpret_cast<const char *>(&state), sizeof(state));
+  outstream.write(reinterpret_cast<const char *>(&bestEndDistance), sizeof(bestEndDistance));
   outstream.write(reinterpret_cast<const char *>(&parentPathIndex), sizeof(parentPathIndex));
   outstream.write(reinterpret_cast<const char *>(&previousPathIndex), sizeof(previousPathIndex));
   outstream.write(reinterpret_cast<const char *>(&nextPathIndex), sizeof(nextPathIndex));
@@ -131,6 +148,7 @@ void GraphPath::serialize(std::ostream &outstream) const {
 
 void GraphPath::deserialize(std::istream &instream) {
   instream.read(reinterpret_cast<char *>(&state), sizeof(state));
+  instream.read(reinterpret_cast<char *>(&bestEndDistance), sizeof(bestEndDistance));
   instream.read(reinterpret_cast<char *>(&parentPathIndex), sizeof(parentPathIndex));
   instream.read(reinterpret_cast<char *>(&previousPathIndex), sizeof(previousPathIndex));
   instream.read(reinterpret_cast<char *>(&nextPathIndex), sizeof(nextPathIndex));

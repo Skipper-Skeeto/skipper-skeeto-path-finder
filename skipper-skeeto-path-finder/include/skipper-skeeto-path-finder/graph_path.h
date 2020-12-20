@@ -47,6 +47,10 @@ public:
 
   bool hasVisitedVertex(char vertexIndex) const;
 
+  void maybeSetBestEndDistance(GraphPathPool *pool, unsigned char distance);
+
+  unsigned char getBestEndDistance() const;
+
   std::vector<char> getRoute(const GraphPathPool *pool) const;
 
   void serialize(std::ostream &outstream) const;
@@ -72,6 +76,7 @@ private:
   };
 
   State state{};
+  unsigned char bestEndDistance = 255;
   unsigned long int parentPathIndex = 0;
   unsigned long int previousPathIndex = 0;
   unsigned long int nextPathIndex = 0;

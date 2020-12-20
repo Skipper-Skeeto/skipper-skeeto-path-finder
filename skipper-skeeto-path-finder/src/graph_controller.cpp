@@ -138,6 +138,8 @@ void GraphController::setupStartRunner() {
 bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerInfo, unsigned long int pathIndex, GraphPath *path, unsigned char depth) {
   if (!path->hasSetSubPath()) {
     if (path->isFinished()) {
+      path->maybeSetBestEndDistance(pool, path->getDistance());
+
       commonState.maybeAddNewGoodOne(pool, runnerInfo, path);
 
       return false;
@@ -330,9 +332,11 @@ void GraphController::splitAndRemove(GraphPathPool *pool, RunnerInfo *runnerInfo
   while (true) {
     GraphPathPool tempPool; // TODO: Use common
 
+    auto subRunnerInfo = runnerInfo->makeSubRunner(rootPath->getCurrentVertex());
+    subRunnerInfo.setHighScore(pool->getGraphPath(subRootPathIndex)->getBestEndDistance());
+
     movePathData(pool, &tempPool, subRootPathIndex, 0);
 
-    auto subRunnerInfo = runnerInfo->makeSubRunner(rootPath->getCurrentVertex());
     runnerInfos.push_back(subRunnerInfo);
     serializePool(&tempPool, &subRunnerInfo);
 
