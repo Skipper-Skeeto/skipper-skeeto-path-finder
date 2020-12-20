@@ -204,7 +204,9 @@ void GraphCommonState::splitAndRemoveActiveRunnerInfo(RunnerInfo *parentRunnerIn
     return parentRunnerInfo == &activeRunnerInfo;
   });
 
-  ++splittedPathsCount[depth];
+  if (appliesForLogging(depth)) {
+    ++splittedPathsCount[depth];
+  }
 }
 
 int GraphCommonState::runnerInfoCount() const {
