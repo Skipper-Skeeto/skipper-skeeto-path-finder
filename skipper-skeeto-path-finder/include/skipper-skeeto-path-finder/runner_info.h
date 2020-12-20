@@ -7,6 +7,8 @@ class RunnerInfo {
 public:
   RunnerInfo(const std::vector<char> &parentPath);
 
+  RunnerInfo(const RunnerInfo &other);
+
   unsigned int getIdentifier() const;
 
   void setHighScore(unsigned char score);
@@ -25,7 +27,9 @@ private:
   static std::mutex identifierMutex;
   static unsigned int nextIdentifier;
 
+  mutable std::mutex highscoreMutex;
+  unsigned char highscore = 255;
+
   std::vector<char> parentPath;
   unsigned int identifier;
-  unsigned char highscore = 255;
 };

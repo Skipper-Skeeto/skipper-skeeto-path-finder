@@ -7,15 +7,24 @@ RunnerInfo::RunnerInfo(const std::vector<char> &parentPath) : identifier(createI
                                                               parentPath(parentPath) {
 }
 
+RunnerInfo::RunnerInfo(const RunnerInfo &other) : identifier(other.identifier),
+                                                  parentPath(other.parentPath),
+                                                  highscore(other.highscore) {
+}
+
 unsigned int RunnerInfo::getIdentifier() const {
   return identifier;
 }
 
 void RunnerInfo::setHighScore(unsigned char score) {
+  std::lock_guard<std::mutex> highscoreGuard(highscoreMutex);
+
   highscore = score;
 }
 
 unsigned char RunnerInfo::getHighScore() const {
+  std::lock_guard<std::mutex> highscoreGuard(highscoreMutex);
+
   return highscore;
 }
 
@@ -31,7 +40,7 @@ RunnerInfo RunnerInfo::makeSubRunner(char vertex) {
   auto newParentPath = parentPath;
   newParentPath.push_back(vertex);
 
-  return RunnerInfo(newParentPath);
+  return {newParentPath};
 }
 
 unsigned int RunnerInfo::createIdentifier() {
