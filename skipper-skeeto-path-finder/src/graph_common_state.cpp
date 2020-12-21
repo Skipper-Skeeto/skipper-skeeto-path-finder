@@ -124,7 +124,7 @@ void GraphCommonState::printStatus() {
   std::cout << std::endl;
 }
 
-void GraphCommonState::addRunnerInfos(std::vector<RunnerInfo> runnerInfos) {
+void GraphCommonState::addRunnerInfos(std::list<RunnerInfo> runnerInfos) {
   std::lock_guard<std::mutex> runnerInfoGuard(runnerInfoMutex);
   std::lock_guard<std::mutex> guardPrint(printMutex);
 
@@ -134,9 +134,7 @@ void GraphCommonState::addRunnerInfos(std::vector<RunnerInfo> runnerInfos) {
   }
   std::cout << std::endl;
 
-  for (const auto &info : runnerInfos) {
-    passiveRunners.push_back(info);
-  }
+  passiveRunners.splice(passiveRunners.end(), runnerInfos);
 }
 
 RunnerInfo *GraphCommonState::getNextRunnerInfo(RunnerInfo *currentInfo, bool preferBest) {
@@ -162,14 +160,19 @@ RunnerInfo *GraphCommonState::getNextRunnerInfo(RunnerInfo *currentInfo, bool pr
   }
 
   if (currentInfo != nullptr) {
-    passiveRunners.push_back(*currentInfo);
-    activeRunners.remove_if([currentInfo](auto &runnerInfo) {
+    auto currentInfoIterator = std::find_if(activeRunners.begin(), activeRunners.end(), [currentInfo](auto &runnerInfo) {
       return currentInfo == &runnerInfo;
     });
+
+    if (currentInfoIterator == activeRunners.end()) {
+      std::lock_guard<std::mutex> guardPrint(printMutex);
+      std::cout << "ERROR: Runner with id " << currentInfo->getIdentifier() << " not found in active runners" << std::endl;
+    } else {
+      passiveRunners.splice(passiveRunners.end(), activeRunners, currentInfoIterator);
+    }
   }
 
-  activeRunners.push_back(*newRunnerIterator);
-  passiveRunners.erase(newRunnerIterator);
+  activeRunners.splice(activeRunners.end(), passiveRunners, newRunnerIterator);
 
   return &activeRunners.back();
 }
@@ -185,7 +188,7 @@ void GraphCommonState::removeActiveRunnerInfo(RunnerInfo *runnerInfo) {
   });
 }
 
-void GraphCommonState::splitAndRemoveActiveRunnerInfo(RunnerInfo *parentRunnerInfo, std::vector<RunnerInfo> childRunnerInfos) {
+void GraphCommonState::splitAndRemoveActiveRunnerInfo(RunnerInfo *parentRunnerInfo, std::list<RunnerInfo> childRunnerInfos) {
   std::lock_guard<std::mutex> runnerInfoGuard(runnerInfoMutex);
   std::lock_guard<std::mutex> guardPathCount(pathCountMutex);
   std::lock_guard<std::mutex> guardPrint(printMutex);
@@ -198,9 +201,7 @@ void GraphCommonState::splitAndRemoveActiveRunnerInfo(RunnerInfo *parentRunnerIn
   }
   std::cout << std::endl;
 
-  for (const auto &info : childRunnerInfos) {
-    passiveRunners.push_back(info);
-  }
+  passiveRunners.splice(passiveRunners.end(), childRunnerInfos);
 
   activeRunners.remove_if([parentRunnerInfo](auto &activeRunnerInfo) {
     return parentRunnerInfo == &activeRunnerInfo;

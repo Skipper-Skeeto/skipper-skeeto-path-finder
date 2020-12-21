@@ -15,6 +15,7 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
+#include <list>
 #include <sstream>
 #include <thread>
 
@@ -131,7 +132,7 @@ void GraphController::setupStartRunner() {
 
   serializePool(&tempPool, &startRunnerInfo);
 
-  std::vector<RunnerInfo> runnerInfos{startRunnerInfo};
+  std::list<RunnerInfo> runnerInfos{startRunnerInfo};
   commonState.addRunnerInfos(runnerInfos);
 }
 
@@ -327,7 +328,7 @@ void GraphController::logRemovedSubPaths(GraphPathPool *pool, GraphPath *path, c
 void GraphController::splitAndRemove(GraphPathPool *pool, RunnerInfo *runnerInfo) {
   auto rootPath = pool->getGraphPath(1);
 
-  std::vector<RunnerInfo> runnerInfos;
+  std::list<RunnerInfo> runnerInfos;
   auto subRootPathIndex = rootPath->getFocusedSubPath();
   while (true) {
     GraphPathPool tempPool; // TODO: Use common

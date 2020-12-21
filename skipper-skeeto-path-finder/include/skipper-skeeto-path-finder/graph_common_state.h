@@ -27,13 +27,13 @@ public:
 
   void printStatus();
 
-  void addRunnerInfos(std::vector<RunnerInfo> runnerInfos);
+  void addRunnerInfos(std::list<RunnerInfo> runnerInfos);
 
   RunnerInfo *getNextRunnerInfo(RunnerInfo *currentInfo, bool preferBest);
 
   void removeActiveRunnerInfo(RunnerInfo *runnerInfo);
 
-  void splitAndRemoveActiveRunnerInfo(RunnerInfo *parentRunnerInfo, std::vector<RunnerInfo> childRunnerInfos);
+  void splitAndRemoveActiveRunnerInfo(RunnerInfo *parentRunnerInfo, std::list<RunnerInfo> childRunnerInfos);
 
   int runnerInfoCount() const;
 
