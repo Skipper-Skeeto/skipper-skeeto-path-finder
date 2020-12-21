@@ -21,7 +21,7 @@ public:
 
   bool makesSenseToKeep(GraphPath *path);
 
-  void maybeAddNewGoodOne(const GraphPathPool *pool, RunnerInfo *runnerInfo, const GraphPath *path);
+  void handleFinishedPath(const GraphPathPool *pool, RunnerInfo *runnerInfo, const GraphPath *path);
 
   void dumpGoodOnes(const std::string &dirName);
 

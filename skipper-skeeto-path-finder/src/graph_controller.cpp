@@ -140,7 +140,7 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
     if (path->isFinished()) {
       path->maybeSetBestEndDistance(pool, path->getDistance());
 
-      commonState.maybeAddNewGoodOne(pool, runnerInfo, path);
+      commonState.handleFinishedPath(pool, runnerInfo, path);
 
       return false;
     }

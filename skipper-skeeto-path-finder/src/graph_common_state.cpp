@@ -28,8 +28,12 @@ bool GraphCommonState::makesSenseToKeep(GraphPath *path) {
   return checkForDuplicateState(path);
 }
 
-void GraphCommonState::maybeAddNewGoodOne(const GraphPathPool *pool, RunnerInfo *runnerInfo, const GraphPath *path) {
+void GraphCommonState::handleFinishedPath(const GraphPathPool *pool, RunnerInfo *runnerInfo, const GraphPath *path) {
   auto distance = path->getDistance();
+
+  if (distance < runnerInfo->getHighScore()) {
+    runnerInfo->setHighScore(distance);
+  }
 
   std::lock_guard<std::mutex> guardFinalState(finalStateMutex);
   if (distance > maxDistance) {
@@ -55,8 +59,6 @@ void GraphCommonState::maybeAddNewGoodOne(const GraphPathPool *pool, RunnerInfo 
   }
 
   goodOnes.push_back(route);
-
-  runnerInfo->setHighScore(distance);
 
   std::lock_guard<std::mutex> guardPrint(printMutex);
   std::cout << "Found new good one with distance " << +distance << " in runner " << runnerInfo->getIdentifier() << std::endl;
