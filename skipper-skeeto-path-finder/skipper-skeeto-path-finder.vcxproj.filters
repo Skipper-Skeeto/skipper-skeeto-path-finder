@@ -75,6 +75,9 @@
     <ClInclude Include="include\skipper-skeeto-path-finder\graph_path_pool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\skipper-skeeto-path-finder\runner_info.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -129,6 +132,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\graph_path_pool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runner_info.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
