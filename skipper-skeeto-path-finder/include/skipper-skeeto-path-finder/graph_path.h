@@ -1,9 +1,9 @@
 #pragma once
 
+#include "skipper-skeeto-path-finder/state.h"
+
 #include <iostream>
 #include <vector>
-
-using State = unsigned long long int;
 
 class GraphPathPool;
 
@@ -37,13 +37,13 @@ public:
 
   bool isFinished() const;
 
-  State getUniqueState() const;
+  unsigned long long int getUniqueState() const;
 
   unsigned char getDistance() const;
 
-  State getVisitedVerticesState() const;
+  unsigned long long int getVisitedVerticesState() const;
 
-  bool meetsCondition(const State &condition) const;
+  bool meetsCondition(unsigned long long int condition) const;
 
   bool hasVisitedVertex(char vertexIndex) const;
 
@@ -63,17 +63,6 @@ public:
 
 private:
   void setCurrentVertex(char vertexIndex);
-
-  template <size_t StartIndex, size_t Count>
-  void setState(State newState) {
-    state &= (~(((1ULL << Count) - 1) << StartIndex));
-    state |= (newState << StartIndex);
-  };
-
-  template <size_t StartIndex, size_t Count>
-  State getState() const {
-    return (state >> StartIndex) & ((1ULL << Count) - 1);
-  };
 
   State state{};
   unsigned char bestEndDistance = 255;

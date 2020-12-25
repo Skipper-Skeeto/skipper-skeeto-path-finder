@@ -59,7 +59,7 @@ private:
   mutable std::mutex printMutex;
 
   unsigned char maxDistance = (1 << DISTANCE_BITS) - 1;
-  phmap::parallel_flat_hash_map<State, unsigned char> distanceForState{};
+  phmap::parallel_flat_hash_map<unsigned long long int, unsigned char> distanceForState{};
   std::vector<std::array<char, VERTICES_COUNT>> goodOnes;
   int dumpedGoodOnes = 0;
 

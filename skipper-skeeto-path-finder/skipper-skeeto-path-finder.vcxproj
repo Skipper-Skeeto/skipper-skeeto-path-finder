@@ -35,6 +35,7 @@
     <ClInclude Include="include\skipper-skeeto-path-finder\path_controller.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\room.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\runner_info.h" />
+    <ClInclude Include="include\skipper-skeeto-path-finder\state.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\sub_path.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\sub_path_info.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\sub_path_info_remaining.h" />
@@ -56,6 +57,7 @@
     <ClCompile Include="src\path_controller.cpp" />
     <ClCompile Include="src\room.cpp" />
     <ClCompile Include="src\runner_info.cpp" />
+    <ClCompile Include="src\state.cpp" />
     <ClCompile Include="src\sub_path.cpp" />
     <ClCompile Include="src\sub_path_info.cpp" />
     <ClCompile Include="src\sub_path_info_remaining.cpp" />
