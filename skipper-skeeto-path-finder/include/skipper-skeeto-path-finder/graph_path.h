@@ -35,17 +35,7 @@ public:
 
   bool isExhausted() const;
 
-  bool isFinished() const;
-
-  unsigned long long int getUniqueState() const;
-
   unsigned char getDistance() const;
-
-  unsigned long long int getVisitedVerticesState() const;
-
-  bool meetsCondition(unsigned long long int condition) const;
-
-  bool hasVisitedVertex(char vertexIndex) const;
 
   void maybeSetBestEndDistance(GraphPathPool *pool, unsigned char distance);
 
@@ -62,8 +52,6 @@ public:
   GraphPath() = default;
 
 private:
-  void setCurrentVertex(char vertexIndex);
-
   State state{};
   unsigned char bestEndDistance = 255;
   unsigned long int parentPathIndex = 0;

@@ -19,7 +19,7 @@ class GraphCommonState {
 public:
   bool makesSenseToInitialize(const GraphPath *path) const;
 
-  bool makesSenseToKeep(GraphPath *path);
+  bool makesSenseToKeep(GraphPath *path, unsigned long long int visitedVerticesState);
 
   void handleFinishedPath(const GraphPathPool *pool, RunnerInfo *runnerInfo, const GraphPath *path);
 
@@ -50,7 +50,7 @@ private:
 
   unsigned char getMaxDistance() const;
 
-  bool checkForDuplicateState(GraphPath *path);
+  bool checkForDuplicateState(GraphPath *path, unsigned long long int visitedVerticesState);
 
   mutable std::mutex finalStateMutex;
   mutable std::mutex distanceStateMutex;

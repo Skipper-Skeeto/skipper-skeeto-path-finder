@@ -21,6 +21,8 @@
 
 const char *GraphController::MEMORY_DUMP_DIR = "temp_memory_dump";
 
+const unsigned long long int GraphController::ALL_VERTICES_STATE_MASK = (1ULL << VERTICES_COUNT) - 1;
+
 GraphController::GraphController(const GraphData *data) {
   this->data = data;
 
@@ -71,8 +73,17 @@ void GraphController::start() {
       }
 
       auto pathIndex = 1; // This should always be the root
+      auto path = pool.getGraphPath(pathIndex);
+
+      unsigned long long int visitedVerticesState = 0;
+      auto route = runnerInfo->getRoute();
+      route.push_back(path->getCurrentVertex());
+      for (auto vertexIndex : route) {
+        visitedVerticesState |= (1ULL << vertexIndex);
+      }
+
       while (!pool.isFull()) {
-        bool continueWork = moveOnDistributed(&pool, runnerInfo, pathIndex, pool.getGraphPath(pathIndex), runnerInfo->getVisitedVerticesCount());
+        bool continueWork = moveOnDistributed(&pool, runnerInfo, pathIndex, path, visitedVerticesState, runnerInfo->getVisitedVerticesCount());
         if (!continueWork) {
           deletePoolFile(runnerInfo);
           commonState.removeActiveRunnerInfo(runnerInfo);
@@ -136,9 +147,9 @@ void GraphController::setupStartRunner() {
   commonState.addRunnerInfos(runnerInfos);
 }
 
-bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerInfo, unsigned long int pathIndex, GraphPath *path, unsigned char depth) {
+bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerInfo, unsigned long int pathIndex, GraphPath *path, unsigned long long int visitedVerticesState, int depth) {
   if (!path->hasSetSubPath()) {
-    if (path->isFinished()) {
+    if (visitedVerticesState == ALL_VERTICES_STATE_MASK) {
       path->maybeSetBestEndDistance(pool, path->getDistance());
 
       commonState.handleFinishedPath(pool, runnerInfo, path);
@@ -152,7 +163,7 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
       return false;
     }
 
-    if (!initializePath(pool, pathIndex, path, depth)) {
+    if (!initializePath(pool, pathIndex, path, visitedVerticesState, depth)) {
       return true; // Should just be because of full pool, so we want to continue
     }
   }
@@ -161,7 +172,7 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
     return false;
   }
 
-  if (!commonState.makesSenseToKeep(path)) {
+  if (!commonState.makesSenseToKeep(path, visitedVerticesState)) {
     logRemovedSubPaths(pool, path, depth);
 
     return false;
@@ -170,8 +181,9 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
   auto focusedSubPathIndex = path->getFocusedSubPath();
   auto focusedSubPath = pool->getGraphPath(focusedSubPathIndex);
   auto subDepth = depth + 1;
+  unsigned long long subPathVisitedVerticesState = visitedVerticesState | (1ULL << focusedSubPath->getCurrentVertex());
 
-  bool continueWork = moveOnDistributed(pool, runnerInfo, focusedSubPathIndex, focusedSubPath, subDepth);
+  bool continueWork = moveOnDistributed(pool, runnerInfo, focusedSubPathIndex, focusedSubPath, subPathVisitedVerticesState, subDepth);
   if (continueWork) {
     if (pool->isFull()) {
       // We want to continue with the same focus next time. It just didn't finish becasue pool was full
@@ -204,7 +216,7 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
   }
 }
 
-bool GraphController::initializePath(GraphPathPool *pool, unsigned long int pathIndex, GraphPath *path, char depth) {
+bool GraphController::initializePath(GraphPathPool *pool, unsigned long int pathIndex, GraphPath *path, unsigned long long int visitedVerticesState, int depth) {
   std::array<char, VERTICES_COUNT> nextVertices{};
   nextVertices.fill(-1);
 
@@ -232,12 +244,12 @@ bool GraphController::initializePath(GraphPathPool *pool, unsigned long int path
           if (newDistance < nextVertices[endVertexIndex]) {
             nextVertices[endVertexIndex] = newDistance;
           }
-        } else if (path->hasVisitedVertex(endVertexIndex)) {
+        } else if (hasVisitedVertex(visitedVerticesState, endVertexIndex)) {
           if (visitedVertices[endVertexIndex] < 0 || newDistance < visitedVertices[endVertexIndex]) {
             visitedVertices[endVertexIndex] = newDistance;
             ++unresovedVertices;
           }
-        } else if (path->meetsCondition(edge->condition)) {
+        } else if (meetsCondition(visitedVerticesState, edge->condition)) {
           nextVertices[endVertexIndex] = newDistance;
         }
       }
@@ -298,7 +310,15 @@ bool GraphController::initializePath(GraphPathPool *pool, unsigned long int path
   return true;
 }
 
-void GraphController::logRemovedSubPaths(GraphPathPool *pool, GraphPath *path, char depth) {
+bool GraphController::meetsCondition(unsigned long long int visitedVerticesState, unsigned long long int condition) {
+  return (visitedVerticesState & condition) == condition;
+}
+
+bool GraphController::hasVisitedVertex(unsigned long long int visitedVerticesState, unsigned char vertexIndex) {
+  return meetsCondition(visitedVerticesState, (1ULL << vertexIndex));
+}
+
+void GraphController::logRemovedSubPaths(GraphPathPool *pool, GraphPath *path, int depth) {
   auto subDepth = depth + 1;
 
   if (!commonState.appliesForLogging(subDepth)) {

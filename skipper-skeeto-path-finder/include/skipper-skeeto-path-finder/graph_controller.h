@@ -12,14 +12,19 @@ public:
 
 private:
   static const char *MEMORY_DUMP_DIR;
+  static const unsigned long long int ALL_VERTICES_STATE_MASK;
 
   void setupStartRunner();
 
-  bool moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerInfo, unsigned long int pathIndex, GraphPath *path, unsigned char depth);
+  bool moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerInfo, unsigned long int pathIndex, GraphPath *path, unsigned long long int visitedVerticesState, int depth);
 
-  bool initializePath(GraphPathPool *pool, unsigned long int pathIndex, GraphPath *path, char depth);
+  bool initializePath(GraphPathPool *pool, unsigned long int pathIndex, GraphPath *path, unsigned long long int visitedVerticesState, int depth);
 
-  void logRemovedSubPaths(GraphPathPool *pool, GraphPath *path, char depth);
+  bool meetsCondition(unsigned long long int visitedVerticesState, unsigned long long int condition);
+
+  bool hasVisitedVertex(unsigned long long int visitedVerticesState, unsigned char vertexIndex);
+
+  void logRemovedSubPaths(GraphPathPool *pool, GraphPath *path, int depth);
 
   void splitAndRemove(GraphPathPool *pool, RunnerInfo *runnerInfo);
 

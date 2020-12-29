@@ -19,13 +19,13 @@ bool GraphCommonState::makesSenseToInitialize(const GraphPath *path) const {
   return path->getDistance() <= getMaxDistance();
 }
 
-bool GraphCommonState::makesSenseToKeep(GraphPath *path) {
+bool GraphCommonState::makesSenseToKeep(GraphPath *path, unsigned long long int visitedVerticesState) {
   if (path->getDistance() > getMaxDistance()) {
     // We won't get to here if it's finished so only chance we have is if the missing edges are with zero distance
     return false;
   }
 
-  return checkForDuplicateState(path);
+  return checkForDuplicateState(path, visitedVerticesState);
 }
 
 void GraphCommonState::handleFinishedPath(const GraphPathPool *pool, RunnerInfo *runnerInfo, const GraphPath *path) {
@@ -257,13 +257,13 @@ unsigned char GraphCommonState::getMaxDistance() const {
   return maxDistance;
 }
 
-bool GraphCommonState::checkForDuplicateState(GraphPath *path) {
+bool GraphCommonState::checkForDuplicateState(GraphPath *path, unsigned long long int visitedVerticesState) {
   std::lock_guard<std::mutex> guard(distanceStateMutex);
 
-  auto state = path->getUniqueState();
+  auto uniqueState = visitedVerticesState | ((unsigned long long int)path->getCurrentVertex() << VERTICES_COUNT);
   auto distance = path->getDistance();
 
-  auto distanceIterator = distanceForState.find(state);
+  auto distanceIterator = distanceForState.find(uniqueState);
   if (distanceIterator != distanceForState.end()) {
     int result = distance - distanceIterator->second;
 
@@ -275,7 +275,7 @@ bool GraphCommonState::checkForDuplicateState(GraphPath *path) {
     }
   }
 
-  distanceForState[state] = distance;
+  distanceForState[uniqueState] = distance;
 
   path->setHasStateMax(true);
 
