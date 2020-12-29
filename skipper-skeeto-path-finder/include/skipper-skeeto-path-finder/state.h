@@ -18,8 +18,6 @@ public:
     return (getBits<StartIndex, Count>() & condition) == condition;
   }
 
-  void setBit(unsigned char index);
-
   void clear();
 
 private:
