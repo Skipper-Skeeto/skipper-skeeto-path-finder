@@ -52,9 +52,6 @@ public:
   GraphPath() = default;
 
 private:
-  State state{};
-  unsigned long int parentPathIndex = 0;
-  unsigned long int previousPathIndex = 0;
-  unsigned long int nextPathIndex = 0;
-  unsigned long int focusedSubPathIndex = 0;
+  State stateA{};
+  State stateB{};
 };
