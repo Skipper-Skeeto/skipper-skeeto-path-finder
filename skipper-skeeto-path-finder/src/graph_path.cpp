@@ -4,6 +4,7 @@
 #include "skipper-skeeto-path-finder/info.h"
 
 #define POOL_INDEX_BITS 25
+#define CURRENT_VERTEX_BITS 6
 #define FOCUSED_SUB_PATH_SET_BITS 1
 #define HAS_STATE_MAX_BITS 1
 
