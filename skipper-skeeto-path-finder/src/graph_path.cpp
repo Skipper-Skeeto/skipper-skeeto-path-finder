@@ -8,14 +8,14 @@
 
 #define CURRENT_VERTEX_INDEX 0
 #define DISTANCE_INDEX (CURRENT_VERTEX_INDEX + CURRENT_VERTEX_BITS)
-#define FOCUSED_SUB_PATH_SET_INDEX (DISTANCE_INDEX + DISTANCE_BITS)
+#define BEST_END_DISTANCE_INDEX (DISTANCE_INDEX + DISTANCE_BITS)
+#define FOCUSED_SUB_PATH_SET_INDEX (BEST_END_DISTANCE_INDEX + DISTANCE_BITS)
 #define HAS_STATE_MAX_INDEX (FOCUSED_SUB_PATH_SET_INDEX + FOCUSED_SUB_PATH_SET_BITS)
 static_assert(sizeof(State) < (HAS_STATE_MAX_INDEX + HAS_STATE_MAX_BITS), "Bits does not fit in state");
 
 void GraphPath::initialize(char vertexIndex, unsigned long int parentPathIndex, const GraphPath *parentPath, char extraDistance) {
   this->parentPathIndex = parentPathIndex;
   state.clear();
-  bestEndDistance = 255;
 
   unsigned char parentDistance = 0;
   if (parentPath != nullptr) {
@@ -23,13 +23,13 @@ void GraphPath::initialize(char vertexIndex, unsigned long int parentPathIndex, 
   }
 
   state.setBits<DISTANCE_INDEX, DISTANCE_BITS>(parentDistance + extraDistance);
+  state.setBits<BEST_END_DISTANCE_INDEX, DISTANCE_BITS>((1 << DISTANCE_BITS) - 1);
   state.setBits<CURRENT_VERTEX_INDEX, CURRENT_VERTEX_BITS>(vertexIndex);
 }
 
 void GraphPath::initializeAsCopy(const GraphPath *sourcePath, unsigned long int parentPathIndex) {
   this->parentPathIndex = parentPathIndex;
   state = sourcePath->state;
-  bestEndDistance = sourcePath->bestEndDistance;
 }
 
 void GraphPath::setFocusedSubPath(unsigned long int index) {
@@ -82,8 +82,8 @@ unsigned char GraphPath::getDistance() const {
 }
 
 void GraphPath::maybeSetBestEndDistance(GraphPathPool *pool, unsigned char distance) {
-  if (distance < bestEndDistance) {
-    bestEndDistance = distance;
+  if (distance < getBestEndDistance()) {
+    state.setBits<BEST_END_DISTANCE_INDEX, DISTANCE_BITS>(distance);
 
     if (parentPathIndex > 0) {
       pool->getGraphPath(parentPathIndex)->maybeSetBestEndDistance(pool, distance);
@@ -92,7 +92,7 @@ void GraphPath::maybeSetBestEndDistance(GraphPathPool *pool, unsigned char dista
 }
 
 unsigned char GraphPath::getBestEndDistance() const {
-  return bestEndDistance;
+  return state.getBits<BEST_END_DISTANCE_INDEX, DISTANCE_BITS>();
 }
 
 std::vector<char> GraphPath::getRoute(const GraphPathPool *pool) const {
@@ -107,7 +107,6 @@ std::vector<char> GraphPath::getRoute(const GraphPathPool *pool) const {
 
 void GraphPath::serialize(std::ostream &outstream) const {
   outstream.write(reinterpret_cast<const char *>(&state), sizeof(state));
-  outstream.write(reinterpret_cast<const char *>(&bestEndDistance), sizeof(bestEndDistance));
   outstream.write(reinterpret_cast<const char *>(&parentPathIndex), sizeof(parentPathIndex));
   outstream.write(reinterpret_cast<const char *>(&previousPathIndex), sizeof(previousPathIndex));
   outstream.write(reinterpret_cast<const char *>(&nextPathIndex), sizeof(nextPathIndex));
@@ -116,7 +115,6 @@ void GraphPath::serialize(std::ostream &outstream) const {
 
 void GraphPath::deserialize(std::istream &instream) {
   instream.read(reinterpret_cast<char *>(&state), sizeof(state));
-  instream.read(reinterpret_cast<char *>(&bestEndDistance), sizeof(bestEndDistance));
   instream.read(reinterpret_cast<char *>(&parentPathIndex), sizeof(parentPathIndex));
   instream.read(reinterpret_cast<char *>(&previousPathIndex), sizeof(previousPathIndex));
   instream.read(reinterpret_cast<char *>(&nextPathIndex), sizeof(nextPathIndex));

@@ -40,7 +40,7 @@ GraphController::GraphController(const GraphData *data) {
 }
 
 void GraphController::start() {
-  std::cout << "Starting with thread count " << THREAD_COUNT << " and pool size " << POOL_COUNT << std::endl;
+  std::cout << "Starting with thread count " << THREAD_COUNT << " and pool size " << POOL_COUNT << " (Path Graph size being " << sizeof(GraphPath) << " bytes)" << std::endl;
 
   FileHelper::createDir(MEMORY_DUMP_DIR);
 
