@@ -1,6 +1,7 @@
 #pragma once
 
 #include "skipper-skeeto-path-finder/graph_common_state.h"
+#include "skipper-skeeto-path-finder/graph_path_pool.h"
 
 class GraphData;
 
@@ -42,6 +43,8 @@ private:
 
   GraphCommonState commonState;
   const GraphData *data;
-
   std::string resultDirName;
+
+  mutable std::mutex tempPoolMutex;
+  GraphPathPool tempPool;
 };

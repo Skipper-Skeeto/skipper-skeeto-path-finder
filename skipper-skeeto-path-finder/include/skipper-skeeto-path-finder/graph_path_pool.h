@@ -20,6 +20,8 @@ public:
 
   void deserialize(std::istream &instream);
 
+  void reset();
+
 private:
   std::unique_ptr<std::array<GraphPath, POOL_COUNT>> pool = std::make_unique<std::array<GraphPath, POOL_COUNT>>();
   unsigned long int nextAvailableIndex = 1; // 0 index in graph paths means "nullptr"

@@ -351,7 +351,8 @@ void GraphController::splitAndRemove(GraphPathPool *pool, RunnerInfo *runnerInfo
   std::list<RunnerInfo> runnerInfos;
   auto subRootPathIndex = rootPath->getFocusedSubPath();
   while (true) {
-    GraphPathPool tempPool; // TODO: Use common
+    std::lock_guard<std::mutex> tempPoolGuard(tempPoolMutex);
+    tempPool.reset();
 
     auto subRunnerInfo = runnerInfo->makeSubRunner(rootPath->getCurrentVertex());
     subRunnerInfo.setHighScore(pool->getGraphPath(subRootPathIndex)->getBestEndDistance());

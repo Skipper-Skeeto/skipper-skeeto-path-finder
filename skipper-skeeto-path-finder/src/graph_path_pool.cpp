@@ -23,8 +23,12 @@ void GraphPathPool::serialize(std::ostream &outstream) const {
 }
 
 void GraphPathPool::deserialize(std::istream &instream) {
-  nextAvailableIndex = 1;
+  reset();
   while (instream.peek() != EOF) {
     pool->at(generateNewIndex()).deserialize(instream);
   }
+}
+
+void GraphPathPool::reset() {
+  nextAvailableIndex = 1;
 }
