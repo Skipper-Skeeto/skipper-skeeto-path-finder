@@ -8,6 +8,7 @@
 #include "skipper-skeeto-path-finder/info.h"
 #include "skipper-skeeto-path-finder/runner_info.h"
 
+#include <bitset>
 #include <chrono>
 #include <cstdio>
 #include <ctime>
@@ -148,6 +149,8 @@ void GraphController::setupStartRunner() {
 }
 
 bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerInfo, unsigned long int pathIndex, GraphPath *path, unsigned long long int visitedVerticesState, int depth) {
+  auto minimumEndDistance = getMinimumEndDistance(path, visitedVerticesState);
+
   if (!path->hasSetSubPath()) {
     if (visitedVerticesState == ALL_VERTICES_STATE_MASK) {
       path->maybeSetBestEndDistance(pool, path->getDistance());
@@ -157,7 +160,7 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
       return false;
     }
 
-    if (!commonState.makesSenseToInitialize(path)) {
+    if (!commonState.makesSenseToInitialize(minimumEndDistance)) {
       commonState.logStartedPath(depth);
 
       return false;
@@ -172,7 +175,7 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
     return false;
   }
 
-  if (!commonState.makesSenseToKeep(path, visitedVerticesState)) {
+  if (!commonState.makesSenseToKeep(path, visitedVerticesState, minimumEndDistance)) {
     logRemovedSubPaths(pool, path, depth);
 
     return false;
@@ -316,6 +319,19 @@ bool GraphController::meetsCondition(unsigned long long int visitedVerticesState
 
 bool GraphController::hasVisitedVertex(unsigned long long int visitedVerticesState, unsigned char vertexIndex) {
   return meetsCondition(visitedVerticesState, (1ULL << vertexIndex));
+}
+
+unsigned char GraphController::getMinimumEndDistance(const GraphPath *path, unsigned long long int visitedVerticesState) const {
+  std::bitset<VERTICES_COUNT> visitedVertices(visitedVerticesState);
+
+  unsigned char extraDistance = 0;
+  for (unsigned char vertexIndex = 0; vertexIndex < VERTICES_COUNT; ++vertexIndex) {
+    if (!visitedVertices[vertexIndex]) {
+      extraDistance += data->getMinimumEntryDistance(vertexIndex);
+    }
+  }
+
+  return path->getDistance() + extraDistance;
 }
 
 void GraphController::logRemovedSubPaths(GraphPathPool *pool, GraphPath *path, int depth) {

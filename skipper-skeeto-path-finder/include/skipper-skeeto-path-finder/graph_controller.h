@@ -25,6 +25,8 @@ private:
 
   bool hasVisitedVertex(unsigned long long int visitedVerticesState, unsigned char vertexIndex);
 
+  unsigned char getMinimumEndDistance(const GraphPath *path, unsigned long long int visitedVerticesState) const;
+
   void logRemovedSubPaths(GraphPathPool *pool, GraphPath *path, int depth);
 
   void splitAndRemove(GraphPathPool *pool, RunnerInfo *runnerInfo);

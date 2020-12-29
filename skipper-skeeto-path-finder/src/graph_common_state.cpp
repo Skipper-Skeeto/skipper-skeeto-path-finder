@@ -14,14 +14,14 @@
 
 const char *GraphCommonState::DUMPED_GOOD_ONES_BASE_DIR = "results";
 
-bool GraphCommonState::makesSenseToInitialize(const GraphPath *path) const {
-  // We won't get to here if it's finished so only chance we have is if the missing edges are with zero distance
-  return path->getDistance() <= getMaxDistance();
+bool GraphCommonState::makesSenseToInitialize(unsigned char minimumEndDistance) const {
+  // If we're sure we won't get a better one, there's no reason to start at all
+  return minimumEndDistance < getMaxDistance();
 }
 
-bool GraphCommonState::makesSenseToKeep(GraphPath *path, unsigned long long int visitedVerticesState) {
-  if (path->getDistance() > getMaxDistance()) {
-    // We won't get to here if it's finished so only chance we have is if the missing edges are with zero distance
+bool GraphCommonState::makesSenseToKeep(GraphPath *path, unsigned long long int visitedVerticesState, unsigned char minimumEndDistance) {
+  if (minimumEndDistance >= getMaxDistance()) {
+    // If we're sure we won't get a better one, there's no reason to keep it
     return false;
   }
 
