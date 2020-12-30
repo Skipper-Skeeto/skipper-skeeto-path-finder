@@ -5,6 +5,7 @@
 
 #define POOL_INDEX_BITS 25
 #define CURRENT_VERTEX_BITS 6
+#define DISTANCE_BITS 7
 #define FOCUSED_SUB_PATH_SET_BITS 1
 #define HAS_STATE_MAX_BITS 1
 
@@ -34,6 +35,8 @@ static_assert(sizeof(State) * 8 >= (BEST_END_DISTANCE_INDEX + DISTANCE_BITS), "B
 #define HAS_STATE_MAX_INDEX (FOCUSED_SUB_PATH_SET_INDEX + FOCUSED_SUB_PATH_SET_BITS)
 static_assert(sizeof(State) * 8 >= (HAS_STATE_MAX_INDEX + HAS_STATE_MAX_BITS), "Bits does not fit in state B");
 
+const unsigned char GraphPath::MAX_DISTANCE = (1 << DISTANCE_BITS) - 1;
+
 void GraphPath::initialize(char vertexIndex, unsigned long int parentPathIndex, const GraphPath *parentPath, char extraDistance) {
   stateA.clear();
   stateB.clear();
@@ -45,7 +48,7 @@ void GraphPath::initialize(char vertexIndex, unsigned long int parentPathIndex, 
 
   PARENT_PATH_STATE.setBits<PARENT_PATH_INDEX, POOL_INDEX_BITS>(parentPathIndex);
   DISTANCE_STATE.setBits<DISTANCE_INDEX, DISTANCE_BITS>(parentDistance + extraDistance);
-  BEST_END_DISTANCE_STATE.setBits<BEST_END_DISTANCE_INDEX, DISTANCE_BITS>((1 << DISTANCE_BITS) - 1);
+  BEST_END_DISTANCE_STATE.setBits<BEST_END_DISTANCE_INDEX, DISTANCE_BITS>(MAX_DISTANCE);
   CURRENT_VERTEX_STATE.setBits<CURRENT_VERTEX_INDEX, CURRENT_VERTEX_BITS>(vertexIndex);
 }
 

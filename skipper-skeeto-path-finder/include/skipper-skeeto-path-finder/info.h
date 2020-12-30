@@ -16,5 +16,4 @@
 #define POOL_TOTAL_BYTES 4000000000
 #define POOL_COUNT (POOL_TOTAL_BYTES / ((THREAD_COUNT + 1) * sizeof(GraphPath))) // Note that we add temp pool for splitting
 #define VERTICES_COUNT 46
-#define DISTANCE_BITS 7
 #define EDGES_COUNT 176

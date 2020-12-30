@@ -9,6 +9,8 @@ class GraphPathPool;
 
 class GraphPath {
 public:
+  static const unsigned char MAX_DISTANCE;
+
   void initialize(char vertexIndex, unsigned long int parentPathIndex, const GraphPath *parentPath, char extraDistance);
 
   void initializeAsCopy(const GraphPath *sourcePath, unsigned long int parentPathIndex);

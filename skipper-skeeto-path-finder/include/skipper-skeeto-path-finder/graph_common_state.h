@@ -58,7 +58,7 @@ private:
   mutable std::mutex pathCountMutex;
   mutable std::mutex printMutex;
 
-  unsigned char maxDistance = (1 << DISTANCE_BITS) - 1;
+  unsigned char maxDistance = GraphPath::MAX_DISTANCE;
   phmap::parallel_flat_hash_map<unsigned long long int, unsigned char> distanceForState{};
   std::vector<std::array<char, VERTICES_COUNT>> goodOnes;
   int dumpedGoodOnes = 0;
