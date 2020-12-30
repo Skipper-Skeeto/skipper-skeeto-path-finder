@@ -14,12 +14,12 @@ static_assert((1ULL << POOL_INDEX_BITS) > POOL_COUNT, "Too many items allowed in
 // State A
 #define PARENT_PATH_STATE stateA
 #define FOCUSED_SUB_PATH_STATE stateA
-#define DISTANCE_STATE stateA
+#define MINIMUM_END_DISTANCE_STATE stateA
 #define BEST_END_DISTANCE_STATE stateA
 #define PARENT_PATH_INDEX 0
 #define FOCUSED_SUB_PATH_INDEX (PARENT_PATH_INDEX + POOL_INDEX_BITS)
-#define DISTANCE_INDEX (FOCUSED_SUB_PATH_INDEX + POOL_INDEX_BITS)
-#define BEST_END_DISTANCE_INDEX (DISTANCE_INDEX + DISTANCE_BITS)
+#define MINIMUM_END_DISTANCE_INDEX (FOCUSED_SUB_PATH_INDEX + POOL_INDEX_BITS)
+#define BEST_END_DISTANCE_INDEX (MINIMUM_END_DISTANCE_INDEX + DISTANCE_BITS)
 static_assert(sizeof(State) * 8 >= (BEST_END_DISTANCE_INDEX + DISTANCE_BITS), "Bits does not fit in state A");
 
 // State B
@@ -37,17 +37,12 @@ static_assert(sizeof(State) * 8 >= (HAS_STATE_MAX_INDEX + HAS_STATE_MAX_BITS), "
 
 const unsigned char GraphPath::MAX_DISTANCE = (1 << DISTANCE_BITS) - 1;
 
-void GraphPath::initialize(char vertexIndex, unsigned long int parentPathIndex, const GraphPath *parentPath, char extraDistance) {
+void GraphPath::initialize(char vertexIndex, unsigned long int parentPathIndex, unsigned char minimumEndDistance) {
   stateA.clear();
   stateB.clear();
 
-  unsigned char parentDistance = 0;
-  if (parentPath != nullptr) {
-    parentDistance = parentPath->getDistance();
-  }
-
   PARENT_PATH_STATE.setBits<PARENT_PATH_INDEX, POOL_INDEX_BITS>(parentPathIndex);
-  DISTANCE_STATE.setBits<DISTANCE_INDEX, DISTANCE_BITS>(parentDistance + extraDistance);
+  MINIMUM_END_DISTANCE_STATE.setBits<MINIMUM_END_DISTANCE_INDEX, DISTANCE_BITS>(minimumEndDistance);
   BEST_END_DISTANCE_STATE.setBits<BEST_END_DISTANCE_INDEX, DISTANCE_BITS>(MAX_DISTANCE);
   CURRENT_VERTEX_STATE.setBits<CURRENT_VERTEX_INDEX, CURRENT_VERTEX_BITS>(vertexIndex);
 }
@@ -104,8 +99,8 @@ bool GraphPath::isExhausted() const {
   return getFocusedSubPath() == 0;
 }
 
-unsigned char GraphPath::getDistance() const {
-  return DISTANCE_STATE.getBits<DISTANCE_INDEX, DISTANCE_BITS>();
+unsigned char GraphPath::getMinimumEndDistance() const {
+  return MINIMUM_END_DISTANCE_STATE.getBits<MINIMUM_END_DISTANCE_INDEX, DISTANCE_BITS>();
 }
 
 void GraphPath::maybeSetBestEndDistance(GraphPathPool *pool, unsigned char distance) {

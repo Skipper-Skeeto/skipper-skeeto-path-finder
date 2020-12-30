@@ -17,9 +17,9 @@ class GraphPathPool;
 
 class GraphCommonState {
 public:
-  bool makesSenseToInitialize(unsigned char minimumEndDistance) const;
+  bool makesSenseToInitialize(const GraphPath *path) const;
 
-  bool makesSenseToKeep(GraphPath *path, unsigned long long int visitedVerticesState, unsigned char minimumEndDistance);
+  bool makesSenseToKeep(GraphPath *path, unsigned long long int visitedVerticesState);
 
   void handleFinishedPath(const GraphPathPool *pool, RunnerInfo *runnerInfo, const GraphPath *path);
 

@@ -134,7 +134,13 @@ void GraphController::setupStartRunner() {
   auto startPathIndex = tempPool.generateNewIndex();
   auto startPath = tempPool.getGraphPath(startPathIndex);
 
-  startPath->initialize(0, 0, nullptr, 0);
+  // Note that we start at index 1 since start (index 0) already has been visited
+  unsigned char minimumEndDistance = 0;
+  for (int index = 1; index < VERTICES_COUNT; ++index) {
+    minimumEndDistance += data->getMinimumEntryDistance(index);
+  }
+
+  startPath->initialize(0, 0, minimumEndDistance);
 
   // This shouldn't make a difference, but just to be sure
   startPath->setPreviousPath(startPathIndex);
@@ -149,18 +155,16 @@ void GraphController::setupStartRunner() {
 }
 
 bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerInfo, unsigned long int pathIndex, GraphPath *path, unsigned long long int visitedVerticesState, int depth) {
-  auto minimumEndDistance = getMinimumEndDistance(path, visitedVerticesState);
-
   if (!path->hasSetSubPath()) {
     if (visitedVerticesState == ALL_VERTICES_STATE_MASK) {
-      path->maybeSetBestEndDistance(pool, path->getDistance());
+      path->maybeSetBestEndDistance(pool, path->getMinimumEndDistance());
 
       commonState.handleFinishedPath(pool, runnerInfo, path);
 
       return false;
     }
 
-    if (!commonState.makesSenseToInitialize(minimumEndDistance)) {
+    if (!commonState.makesSenseToInitialize(path)) {
       commonState.logStartedPath(depth);
 
       return false;
@@ -175,7 +179,7 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
     return false;
   }
 
-  if (!commonState.makesSenseToKeep(path, visitedVerticesState, minimumEndDistance)) {
+  if (!commonState.makesSenseToKeep(path, visitedVerticesState)) {
     logRemovedSubPaths(pool, path, depth);
 
     return false;
@@ -267,6 +271,11 @@ bool GraphController::initializePath(GraphPathPool *pool, unsigned long int path
       continue;
     }
 
+    unsigned char minimumEndDistance = path->getMinimumEndDistance() - data->getMinimumEntryDistance(vertexIndex) + distance;
+    if (minimumEndDistance > GraphPath::MAX_DISTANCE) {
+      continue;
+    }
+
     if (pool->isFull()) {
       return false;
     }
@@ -274,14 +283,14 @@ bool GraphController::initializePath(GraphPathPool *pool, unsigned long int path
     auto newPathIndex = pool->generateNewIndex();
     auto newPath = pool->getGraphPath(newPathIndex);
 
-    newPath->initialize(vertexIndex, pathIndex, path, distance);
+    newPath->initialize(vertexIndex, pathIndex, minimumEndDistance);
 
     const auto &longerLengthIterator = std::upper_bound(
         subPathsSorted.begin(),
         subPathsSorted.end(),
         newPath,
         [](const auto &subPath, const auto &otherPathPair) {
-          return subPath->getDistance() < otherPathPair.second->getDistance();
+          return subPath->getMinimumEndDistance() < otherPathPair.second->getMinimumEndDistance();
         });
     subPathsSorted.insert(longerLengthIterator, std::make_pair(newPathIndex, newPath));
   }
@@ -319,19 +328,6 @@ bool GraphController::meetsCondition(unsigned long long int visitedVerticesState
 
 bool GraphController::hasVisitedVertex(unsigned long long int visitedVerticesState, unsigned char vertexIndex) {
   return meetsCondition(visitedVerticesState, (1ULL << vertexIndex));
-}
-
-unsigned char GraphController::getMinimumEndDistance(const GraphPath *path, unsigned long long int visitedVerticesState) const {
-  std::bitset<VERTICES_COUNT> visitedVertices(visitedVerticesState);
-
-  unsigned char extraDistance = 0;
-  for (unsigned char vertexIndex = 0; vertexIndex < VERTICES_COUNT; ++vertexIndex) {
-    if (!visitedVertices[vertexIndex]) {
-      extraDistance += data->getMinimumEntryDistance(vertexIndex);
-    }
-  }
-
-  return path->getDistance() + extraDistance;
 }
 
 void GraphController::logRemovedSubPaths(GraphPathPool *pool, GraphPath *path, int depth) {

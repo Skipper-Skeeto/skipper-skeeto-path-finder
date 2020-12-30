@@ -14,13 +14,13 @@
 
 const char *GraphCommonState::DUMPED_GOOD_ONES_BASE_DIR = "results";
 
-bool GraphCommonState::makesSenseToInitialize(unsigned char minimumEndDistance) const {
+bool GraphCommonState::makesSenseToInitialize(const GraphPath *path) const {
   // If we're sure we won't get a better one, there's no reason to start at all
-  return minimumEndDistance < getMaxDistance();
+  return path->getMinimumEndDistance() < getMaxDistance();
 }
 
-bool GraphCommonState::makesSenseToKeep(GraphPath *path, unsigned long long int visitedVerticesState, unsigned char minimumEndDistance) {
-  if (minimumEndDistance >= getMaxDistance()) {
+bool GraphCommonState::makesSenseToKeep(GraphPath *path, unsigned long long int visitedVerticesState) {
+  if (path->getMinimumEndDistance() >= getMaxDistance()) {
     // If we're sure we won't get a better one, there's no reason to keep it
     return false;
   }
@@ -29,7 +29,7 @@ bool GraphCommonState::makesSenseToKeep(GraphPath *path, unsigned long long int 
 }
 
 void GraphCommonState::handleFinishedPath(const GraphPathPool *pool, RunnerInfo *runnerInfo, const GraphPath *path) {
-  auto distance = path->getDistance();
+  auto distance = path->getMinimumEndDistance();
 
   if (distance < runnerInfo->getHighScore()) {
     runnerInfo->setHighScore(distance);
@@ -261,7 +261,7 @@ bool GraphCommonState::checkForDuplicateState(GraphPath *path, unsigned long lon
   std::lock_guard<std::mutex> guard(distanceStateMutex);
 
   auto uniqueState = visitedVerticesState | ((unsigned long long int)path->getCurrentVertex() << VERTICES_COUNT);
-  auto distance = path->getDistance();
+  auto distance = path->getMinimumEndDistance();
 
   auto distanceIterator = distanceForState.find(uniqueState);
   if (distanceIterator != distanceForState.end()) {
