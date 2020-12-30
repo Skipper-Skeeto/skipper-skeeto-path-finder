@@ -52,6 +52,8 @@ void GraphPath::initialize(char vertexIndex, unsigned long int parentPathIndex, 
 void GraphPath::initializeAsCopy(const GraphPath *sourcePath, unsigned long int parentPathIndex) {
   stateA = sourcePath->stateA;
   stateB = sourcePath->stateB;
+
+  PARENT_PATH_STATE.setBits<PARENT_PATH_INDEX, POOL_INDEX_BITS>(parentPathIndex);
 }
 
 void GraphPath::setFocusedSubPath(unsigned long int index) {
