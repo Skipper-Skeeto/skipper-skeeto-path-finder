@@ -17,9 +17,11 @@ public:
 
   char getCurrentVertex() const;
 
-  void setFocusedSubPath(unsigned long int index);
+  void updateFocusedSubPath(unsigned long int index, unsigned char iterationCount);
 
   unsigned long int getFocusedSubPath() const;
+
+  unsigned char getSubPathIterationCount() const;
 
   bool hasSetSubPath() const;
 

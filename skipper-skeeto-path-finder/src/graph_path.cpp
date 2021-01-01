@@ -8,6 +8,7 @@
 #define DISTANCE_BITS 7
 #define FOCUSED_SUB_PATH_SET_BITS 1
 #define HAS_STATE_MAX_BITS 1
+#define SUB_PATH_ITERATION_COUNT_BITS 5
 
 static_assert((1ULL << POOL_INDEX_BITS) > POOL_COUNT, "Too many items allowed in graph path pools. Reduce POOL_TOTAL_BYTES, increase THREAD_COUNT or restructure GraphPath so POOL_INDEX_BITS can be biggger");
 
@@ -28,12 +29,14 @@ static_assert(sizeof(State) * 8 >= (BEST_END_DISTANCE_INDEX + DISTANCE_BITS), "B
 #define CURRENT_VERTEX_STATE stateB
 #define FOCUSED_SUB_PATH_SET_STATE stateB
 #define HAS_STATE_MAX_STATE stateB
+#define SUB_PATH_ITERATION_COUNT_STATE stateB
 #define NEXT_PATH_INDEX 0
 #define PREVIOUS_SUB_PATH_INDEX (NEXT_PATH_INDEX + POOL_INDEX_BITS)
 #define CURRENT_VERTEX_INDEX (PREVIOUS_SUB_PATH_INDEX + POOL_INDEX_BITS)
 #define FOCUSED_SUB_PATH_SET_INDEX (CURRENT_VERTEX_INDEX + CURRENT_VERTEX_BITS)
 #define HAS_STATE_MAX_INDEX (FOCUSED_SUB_PATH_SET_INDEX + FOCUSED_SUB_PATH_SET_BITS)
-static_assert(sizeof(State) * 8 >= (HAS_STATE_MAX_INDEX + HAS_STATE_MAX_BITS), "Bits does not fit in state B");
+#define SUB_PATH_ITERATION_COUNT_INDEX (HAS_STATE_MAX_INDEX + HAS_STATE_MAX_BITS)
+static_assert(sizeof(State) * 8 >= (SUB_PATH_ITERATION_COUNT_INDEX + SUB_PATH_ITERATION_COUNT_BITS), "Bits does not fit in state B");
 
 const unsigned char GraphPath::MAX_DISTANCE = (1 << DISTANCE_BITS) - 1;
 
@@ -54,13 +57,19 @@ void GraphPath::initializeAsCopy(const GraphPath *sourcePath, unsigned long int 
   PARENT_PATH_STATE.setBits<PARENT_PATH_INDEX, POOL_INDEX_BITS>(parentPathIndex);
 }
 
-void GraphPath::setFocusedSubPath(unsigned long int index) {
+void GraphPath::updateFocusedSubPath(unsigned long int index, unsigned char iterationCount) {
   FOCUSED_SUB_PATH_STATE.setBits<FOCUSED_SUB_PATH_INDEX, POOL_INDEX_BITS>(index);
   FOCUSED_SUB_PATH_SET_STATE.setBits<FOCUSED_SUB_PATH_SET_INDEX, FOCUSED_SUB_PATH_SET_BITS>(1);
+
+  SUB_PATH_ITERATION_COUNT_STATE.setBits<SUB_PATH_ITERATION_COUNT_INDEX, SUB_PATH_ITERATION_COUNT_BITS>(iterationCount);
 }
 
 unsigned long int GraphPath::getFocusedSubPath() const {
   return FOCUSED_SUB_PATH_STATE.getBits<FOCUSED_SUB_PATH_INDEX, POOL_INDEX_BITS>();
+}
+
+unsigned char GraphPath::getSubPathIterationCount() const {
+  return SUB_PATH_ITERATION_COUNT_STATE.getBits<SUB_PATH_ITERATION_COUNT_INDEX, SUB_PATH_ITERATION_COUNT_BITS>();
 }
 
 bool GraphPath::hasSetSubPath() const {

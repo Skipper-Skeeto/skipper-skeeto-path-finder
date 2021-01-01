@@ -25,6 +25,8 @@ private:
 
   bool hasVisitedVertex(unsigned long long int visitedVerticesState, unsigned char vertexIndex);
 
+  unsigned char sortSubPaths(GraphPathPool *pool, unsigned long int pathIndex, GraphPath *path);
+
   void logRemovedSubPaths(GraphPathPool *pool, GraphPath *path, int depth);
 
   void splitAndRemove(GraphPathPool *pool, RunnerInfo *runnerInfo);

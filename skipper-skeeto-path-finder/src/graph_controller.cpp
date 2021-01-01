@@ -185,6 +185,11 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
     return false;
   }
 
+  auto subPathIterationCount = path->getSubPathIterationCount();
+  if (subPathIterationCount == 0) {
+    subPathIterationCount = sortSubPaths(pool, pathIndex, path);
+  }
+
   auto focusedSubPathIndex = path->getFocusedSubPath();
   auto focusedSubPath = pool->getGraphPath(focusedSubPathIndex);
   auto subDepth = depth + 1;
@@ -197,14 +202,14 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
       return true;
     }
 
-    path->setFocusedSubPath(focusedSubPath->getNextPath());
+    path->updateFocusedSubPath(focusedSubPath->getNextPath(), subPathIterationCount - 1);
 
     return true;
   } else {
     auto nextSubPathIndex = focusedSubPath->getNextPath();
     auto nextSubPath = pool->getGraphPath(nextSubPathIndex);
     if (nextSubPath == focusedSubPath) {
-      path->setFocusedSubPath(0);
+      path->updateFocusedSubPath(0, 0);
     } else {
       auto previousSubPathIndex = focusedSubPath->getPreviousPath();
       auto previousSubPath = pool->getGraphPath(previousSubPathIndex);
@@ -212,7 +217,7 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
       previousSubPath->setNextPath(nextSubPathIndex);
       nextSubPath->setPreviousPath(previousSubPathIndex);
 
-      path->setFocusedSubPath(nextSubPathIndex);
+      path->updateFocusedSubPath(nextSubPathIndex, 0);
     }
 
     commonState.logRemovePath(subDepth);
@@ -313,9 +318,9 @@ bool GraphController::initializePath(GraphPathPool *pool, unsigned long int path
   commonState.logStartedPath(depth);
 
   if (subPathsSorted.empty()) {
-    path->setFocusedSubPath(0);
+    path->updateFocusedSubPath(0, 0);
   } else {
-    path->setFocusedSubPath(subPathsSorted.front().first);
+    path->updateFocusedSubPath(subPathsSorted.front().first, subPathsSorted.size());
     commonState.logAddedPaths(depth + 1, subPathsSorted.size());
   }
 
@@ -328,6 +333,62 @@ bool GraphController::meetsCondition(unsigned long long int visitedVerticesState
 
 bool GraphController::hasVisitedVertex(unsigned long long int visitedVerticesState, unsigned char vertexIndex) {
   return meetsCondition(visitedVerticesState, (1ULL << vertexIndex));
+}
+
+unsigned char GraphController::sortSubPaths(GraphPathPool *pool, unsigned long int pathIndex, GraphPath *path) {
+  auto focusedIndex = path->getFocusedSubPath();
+  auto endIndex = pool->getGraphPath(focusedIndex)->getPreviousPath();
+  auto currentIndex = focusedIndex;
+
+  unsigned char itemCount = 0;
+  while (true) {
+    ++itemCount;
+
+    auto currentPath = pool->getGraphPath(currentIndex);
+    auto nextIndex = currentPath->getNextPath();
+
+    auto potentialNewIndex = currentPath->getPreviousPath();
+    auto newIndex = currentIndex;
+    while (potentialNewIndex != endIndex) {
+      auto potentialNewPath = pool->getGraphPath(potentialNewIndex);
+
+      if (currentPath->getBestEndDistance() < potentialNewPath->getBestEndDistance()) {
+        newIndex = potentialNewIndex;
+      } else {
+        break;
+      }
+
+      potentialNewIndex = potentialNewPath->getPreviousPath();
+    }
+
+    if (newIndex != currentIndex) {
+      pool->getGraphPath(currentPath->getPreviousPath())->setNextPath(currentPath->getNextPath());
+      pool->getGraphPath(currentPath->getNextPath())->setPreviousPath(currentPath->getPreviousPath());
+
+      auto newNextPath = pool->getGraphPath(newIndex);
+      auto newPreviousPathIndex = newNextPath->getPreviousPath();
+      auto newPreviousPath = pool->getGraphPath(newPreviousPathIndex);
+
+      currentPath->setNextPath(newIndex);
+      currentPath->setPreviousPath(newPreviousPathIndex);
+      newNextPath->setPreviousPath(currentIndex);
+      newPreviousPath->setNextPath(currentIndex);
+    }
+
+    if (potentialNewIndex == endIndex) {
+      focusedIndex = currentIndex;
+    }
+
+    if (currentIndex == endIndex) {
+      break;
+    } else {
+      currentIndex = nextIndex;
+    }
+  }
+
+  path->updateFocusedSubPath(focusedIndex, itemCount);
+
+  return itemCount;
 }
 
 void GraphController::logRemovedSubPaths(GraphPathPool *pool, GraphPath *path, int depth) {
@@ -406,7 +467,7 @@ std::pair<unsigned long int, GraphPath *> GraphController::movePathData(GraphPat
         destinationSubPathStart = destinationSubPathCurrent;
         destinationSubPathStartIndex = destinationSubPathCurrentIndex;
 
-        destinationPath->setFocusedSubPath(destinationSubPathCurrentIndex);
+        destinationPath->updateFocusedSubPath(destinationSubPathCurrentIndex, sourcePath->getSubPathIterationCount());
       }
 
       if (destinationSubPathPrevious != nullptr) {
