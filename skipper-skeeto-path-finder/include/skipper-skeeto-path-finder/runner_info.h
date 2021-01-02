@@ -15,6 +15,10 @@ public:
 
   unsigned char getHighScore() const;
 
+  void setLocalMaxDistance(unsigned char score);
+
+  unsigned char getLocalMaxDistance() const;
+
   int getVisitedVerticesCount() const;
 
   std::vector<char> getRoute() const;
@@ -32,4 +36,5 @@ private:
 
   std::vector<char> parentPath;
   unsigned int identifier;
+  unsigned char localMaxDistance;
 };

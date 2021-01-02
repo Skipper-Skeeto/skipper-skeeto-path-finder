@@ -14,13 +14,13 @@
 
 const char *GraphCommonState::DUMPED_GOOD_ONES_BASE_DIR = "results";
 
-bool GraphCommonState::makesSenseToInitialize(const GraphPath *path) const {
+bool GraphCommonState::makesSenseToInitialize(const RunnerInfo *runnerInfo, const GraphPath *path) const {
   // If we're sure we won't get a better one, there's no reason to start at all
-  return path->getMinimumEndDistance() < getMaxDistance();
+  return path->getMinimumEndDistance() < runnerInfo->getLocalMaxDistance();
 }
 
-bool GraphCommonState::makesSenseToKeep(GraphPath *path, unsigned long long int visitedVerticesState) {
-  if (path->getMinimumEndDistance() >= getMaxDistance()) {
+bool GraphCommonState::makesSenseToKeep(const RunnerInfo *runnerInfo, GraphPath *path, unsigned long long int visitedVerticesState) {
+  if (path->getMinimumEndDistance() >= runnerInfo->getLocalMaxDistance()) {
     // If we're sure we won't get a better one, there's no reason to keep it
     return false;
   }
@@ -62,6 +62,11 @@ void GraphCommonState::handleFinishedPath(const GraphPathPool *pool, RunnerInfo 
 
   std::lock_guard<std::mutex> guardPrint(printMutex);
   std::cout << "Found new good one with distance " << +distance << " in runner " << runnerInfo->getIdentifier() << std::endl;
+}
+
+void GraphCommonState::updateLocalMax(RunnerInfo *runnerInfo) {
+  std::lock_guard<std::mutex> guard(finalStateMutex);
+  runnerInfo->setLocalMaxDistance(maxDistance);
 }
 
 void GraphCommonState::dumpGoodOnes(const std::string &dirName) {
@@ -250,11 +255,6 @@ void GraphCommonState::logRemovePath(int depth) {
 
 bool GraphCommonState::appliesForLogging(int depth) const {
   return depth < LOG_PATH_COUNT_MAX;
-}
-
-unsigned char GraphCommonState::getMaxDistance() const {
-  std::lock_guard<std::mutex> guard(finalStateMutex);
-  return maxDistance;
 }
 
 bool GraphCommonState::checkForDuplicateState(GraphPath *path, unsigned long long int visitedVerticesState) {

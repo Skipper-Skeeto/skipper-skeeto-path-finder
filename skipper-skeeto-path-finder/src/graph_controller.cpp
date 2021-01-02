@@ -88,6 +88,8 @@ void GraphController::start() {
       auto depth = runnerInfo->getVisitedVerticesCount();
 
       while (!pool.isFull()) {
+        commonState.updateLocalMax(runnerInfo);
+
         bool forceFinished = (path->getBestEndDistance() == GraphPath::MAX_DISTANCE && depth < FORCE_FINISH_THRESHOLD_DEPTH);
         bool continueWork = moveOnDistributed(&pool, runnerInfo, pathIndex, path, visitedVerticesState, depth, forceFinished);
         if (!continueWork) {
@@ -169,7 +171,7 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
       return false;
     }
 
-    if (!forceFinish && !commonState.makesSenseToInitialize(path)) {
+    if (!forceFinish && !commonState.makesSenseToInitialize(runnerInfo, path)) {
       commonState.logStartedPath(depth);
 
       return false;
@@ -184,7 +186,7 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
     return false;
   }
 
-  if (!forceFinish && !commonState.makesSenseToKeep(path, visitedVerticesState)) {
+  if (!forceFinish && !commonState.makesSenseToKeep(runnerInfo, path, visitedVerticesState)) {
     logRemovedSubPaths(pool, path, depth);
 
     return false;

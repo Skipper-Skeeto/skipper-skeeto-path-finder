@@ -28,6 +28,14 @@ unsigned char RunnerInfo::getHighScore() const {
   return highscore;
 }
 
+void RunnerInfo::setLocalMaxDistance(unsigned char score) {
+  localMaxDistance = score;
+}
+
+unsigned char RunnerInfo::getLocalMaxDistance() const {
+  return localMaxDistance;
+}
+
 int RunnerInfo::getVisitedVerticesCount() const {
   return parentPath.size();
 }
