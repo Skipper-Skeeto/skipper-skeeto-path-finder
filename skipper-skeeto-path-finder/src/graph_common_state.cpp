@@ -258,26 +258,28 @@ unsigned char GraphCommonState::getMaxDistance() const {
 }
 
 bool GraphCommonState::checkForDuplicateState(GraphPath *path, unsigned long long int visitedVerticesState) {
-  std::lock_guard<std::mutex> guard(distanceStateMutex);
-
   auto uniqueState = visitedVerticesState | ((unsigned long long int)path->getCurrentVertex() << VERTICES_COUNT);
   auto distance = path->getMinimumEndDistance();
 
-  auto distanceIterator = distanceForState.find(uniqueState);
-  if (distanceIterator != distanceForState.end()) {
-    int result = distance - distanceIterator->second;
+  // Should default to true since lambda won't be called in case the value wasn't present
+  bool isGood = true;
 
-    if (result > 0) {
-      path->setHasStateMax(false);
-      return false;
-    } else if (result == 0) {
-      return path->hasStateMax();
-    }
-  }
+  distanceForState.try_emplace_l(
+      uniqueState,
+      [path, distance, &isGood](unsigned char &value) {
+        int result = distance - value;
 
-  distanceForState[uniqueState] = distance;
+        if (result > 0) {
+          isGood = false;
+        } else if (result == 0) {
+          isGood = path->hasStateMax();
+        } else {
+          value = distance;
+        }
+      },
+      distance);
 
-  path->setHasStateMax(true);
+  path->setHasStateMax(isGood);
 
-  return true;
+  return isGood;
 }

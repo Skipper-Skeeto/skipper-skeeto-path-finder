@@ -53,13 +53,20 @@ private:
   bool checkForDuplicateState(GraphPath *path, unsigned long long int visitedVerticesState);
 
   mutable std::mutex finalStateMutex;
-  mutable std::mutex distanceStateMutex;
   mutable std::mutex runnerInfoMutex;
   mutable std::mutex pathCountMutex;
   mutable std::mutex printMutex;
 
   unsigned char maxDistance = GraphPath::MAX_DISTANCE;
-  phmap::parallel_flat_hash_map<unsigned long long int, unsigned char> distanceForState{};
+  phmap::parallel_flat_hash_map<
+      unsigned long long int,
+      unsigned char,
+      phmap::priv::hash_default_hash<unsigned long long int>,
+      phmap::priv::hash_default_eq<unsigned long long int>,
+      phmap::priv::Allocator<phmap::priv::Pair<const unsigned long long int, unsigned char>>, // alias for std::allocator
+      6,                                                                                      // 2^N submaps, default is 4
+      std::mutex>
+      distanceForState{};
   std::vector<std::array<char, VERTICES_COUNT>> goodOnes;
   int dumpedGoodOnes = 0;
 
