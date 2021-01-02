@@ -225,7 +225,7 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
       previousSubPath->setNextPath(nextSubPathIndex);
       nextSubPath->setPreviousPath(previousSubPathIndex);
 
-      path->updateFocusedSubPath(nextSubPathIndex, 0);
+      path->updateFocusedSubPath(nextSubPathIndex, subPathIterationCount - 1);
     }
 
     commonState.logRemovePath(subDepth);
