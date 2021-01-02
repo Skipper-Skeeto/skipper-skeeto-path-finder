@@ -24,6 +24,8 @@ const char *GraphController::MEMORY_DUMP_DIR = "temp_memory_dump";
 
 const unsigned long long int GraphController::ALL_VERTICES_STATE_MASK = (1ULL << VERTICES_COUNT) - 1;
 
+#define FORCE_FINISH_THRESHOLD_DEPTH 10
+
 GraphController::GraphController(const GraphData *data) {
   this->data = data;
 
@@ -83,8 +85,11 @@ void GraphController::start() {
         visitedVerticesState |= (1ULL << vertexIndex);
       }
 
+      auto depth = runnerInfo->getVisitedVerticesCount();
+
       while (!pool.isFull()) {
-        bool continueWork = moveOnDistributed(&pool, runnerInfo, pathIndex, path, visitedVerticesState, runnerInfo->getVisitedVerticesCount());
+        bool forceFinished = (path->getBestEndDistance() == GraphPath::MAX_DISTANCE && depth < FORCE_FINISH_THRESHOLD_DEPTH);
+        bool continueWork = moveOnDistributed(&pool, runnerInfo, pathIndex, path, visitedVerticesState, depth, forceFinished);
         if (!continueWork) {
           deletePoolFile(runnerInfo);
           commonState.removeActiveRunnerInfo(runnerInfo);
@@ -154,7 +159,7 @@ void GraphController::setupStartRunner() {
   commonState.addRunnerInfos(runnerInfos);
 }
 
-bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerInfo, unsigned long int pathIndex, GraphPath *path, unsigned long long int visitedVerticesState, int depth) {
+bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerInfo, unsigned long int pathIndex, GraphPath *path, unsigned long long int visitedVerticesState, int depth, bool forceFinish) {
   if (!path->hasSetSubPath()) {
     if (visitedVerticesState == ALL_VERTICES_STATE_MASK) {
       path->maybeSetBestEndDistance(pool, path->getMinimumEndDistance());
@@ -164,7 +169,7 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
       return false;
     }
 
-    if (!commonState.makesSenseToInitialize(path)) {
+    if (!forceFinish && !commonState.makesSenseToInitialize(path)) {
       commonState.logStartedPath(depth);
 
       return false;
@@ -179,7 +184,7 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
     return false;
   }
 
-  if (!commonState.makesSenseToKeep(path, visitedVerticesState)) {
+  if (!forceFinish && !commonState.makesSenseToKeep(path, visitedVerticesState)) {
     logRemovedSubPaths(pool, path, depth);
 
     return false;
@@ -194,8 +199,9 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
   auto focusedSubPath = pool->getGraphPath(focusedSubPathIndex);
   auto subDepth = depth + 1;
   unsigned long long subPathVisitedVerticesState = visitedVerticesState | (1ULL << focusedSubPath->getCurrentVertex());
+  bool subForceFinish = forceFinish || (path->getBestEndDistance() == GraphPath::MAX_DISTANCE && depth < FORCE_FINISH_THRESHOLD_DEPTH);
 
-  bool continueWork = moveOnDistributed(pool, runnerInfo, focusedSubPathIndex, focusedSubPath, subPathVisitedVerticesState, subDepth);
+  bool continueWork = moveOnDistributed(pool, runnerInfo, focusedSubPathIndex, focusedSubPath, subPathVisitedVerticesState, subDepth, subForceFinish);
   if (continueWork) {
     if (pool->isFull()) {
       // We want to continue with the same focus next time. It just didn't finish becasue pool was full
