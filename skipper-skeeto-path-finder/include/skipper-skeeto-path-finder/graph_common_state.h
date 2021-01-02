@@ -47,6 +47,10 @@ public:
 
   bool appliesForLogging(int depth) const;
 
+  void logPoolDumpFailed(int runnerInfoIdentifier);
+
+  bool shouldStop() const;
+
 private:
   static const char *DUMPED_GOOD_ONES_BASE_DIR;
 
@@ -54,6 +58,7 @@ private:
 
   mutable std::mutex finalStateMutex;
   mutable std::mutex runnerInfoMutex;
+  mutable std::mutex stopMutex;
   mutable std::mutex pathCountMutex;
   mutable std::mutex printMutex;
 
@@ -72,6 +77,8 @@ private:
 
   std::list<RunnerInfo> activeRunners;
   std::list<RunnerInfo> passiveRunners;
+
+  bool stopping = false;
 
   std::array<int, LOG_PATH_COUNT_MAX> addedPathsCount{};
   std::array<int, LOG_PATH_COUNT_MAX> startedPathsCount{};

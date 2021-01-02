@@ -51,7 +51,7 @@ void GraphController::start() {
     GraphPathPool pool;
 
     RunnerInfo *runnerInfo = nullptr;
-    while (true) {
+    while (!commonState.shouldStop()) {
       int oldRunnerInfoIdentifier = -1;
       if (runnerInfo != nullptr) {
         oldRunnerInfoIdentifier = runnerInfo->getIdentifier();
@@ -59,17 +59,16 @@ void GraphController::start() {
 
       runnerInfo = commonState.getNextRunnerInfo(runnerInfo, preferBest);
       if (runnerInfo == nullptr) {
-        if (commonState.runnerInfoCount() == 0) {
-          break;
-        } else {
-          std::this_thread::sleep_for(std::chrono::seconds(10));
-          continue;
-        }
+        std::this_thread::sleep_for(std::chrono::seconds(10));
+        continue;
       }
 
       if (runnerInfo->getIdentifier() != oldRunnerInfoIdentifier) {
         if (oldRunnerInfoIdentifier != -1) {
-          serializePool(&pool, oldRunnerInfoIdentifier);
+          bool success = serializePool(&pool, oldRunnerInfoIdentifier);
+          if (!success) {
+            break;
+          }
         }
 
         deserializePool(&pool, runnerInfo);
@@ -116,7 +115,7 @@ void GraphController::start() {
     threads[index] = std::thread(threadFunction, preferBest);
   }
 
-  while (commonState.runnerInfoCount() > 0) {
+  while (!commonState.shouldStop()) {
     commonState.printStatus();
 
     commonState.dumpGoodOnes(resultDirName);
@@ -441,7 +440,10 @@ void GraphController::splitAndRemove(GraphPathPool *pool, RunnerInfo *runnerInfo
     movePathData(pool, &tempPool, subRootPathIndex, 0);
 
     runnerInfos.push_back(subRunnerInfo);
-    serializePool(&tempPool, &subRunnerInfo);
+    bool success = serializePool(&tempPool, &subRunnerInfo);
+    if (!success) {
+      break;
+    }
 
     subRootPathIndex = pool->getGraphPath(subRootPathIndex)->getNextPath();
     if (subRootPathIndex == rootPath->getFocusedSubPath()) {
@@ -503,14 +505,22 @@ std::string GraphController::getPoolFileName(unsigned int runnerInfoIdentifier) 
   return std::string(MEMORY_DUMP_DIR) + "/" + std::to_string(runnerInfoIdentifier) + ".dat";
 }
 
-void GraphController::serializePool(GraphPathPool *pool, RunnerInfo *runnerInfo) {
-  serializePool(pool, runnerInfo->getIdentifier());
+bool GraphController::serializePool(GraphPathPool *pool, RunnerInfo *runnerInfo) {
+  return serializePool(pool, runnerInfo->getIdentifier());
 }
 
-void GraphController::serializePool(GraphPathPool *pool, unsigned int runnerInfoIdentifier) {
+bool GraphController::serializePool(GraphPathPool *pool, unsigned int runnerInfoIdentifier) {
   std::string fileName = getPoolFileName(runnerInfoIdentifier);
   std::ofstream dumpFile(fileName, std::ios::binary | std::ios::trunc);
   pool->serialize(dumpFile);
+
+  bool dumpSuccess = !dumpFile.fail();
+
+  if (!dumpSuccess) {
+    commonState.logPoolDumpFailed(runnerInfoIdentifier);
+  }
+
+  return dumpSuccess;
 }
 
 void GraphController::deserializePool(GraphPathPool *pool, RunnerInfo *runnerInfo) {

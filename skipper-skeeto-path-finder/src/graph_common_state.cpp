@@ -257,6 +257,25 @@ bool GraphCommonState::appliesForLogging(int depth) const {
   return depth < LOG_PATH_COUNT_MAX;
 }
 
+void GraphCommonState::logPoolDumpFailed(int runnerInfoIdentifier) {
+  std::lock_guard<std::mutex> stopGuard(stopMutex);
+  std::lock_guard<std::mutex> guardPrint(printMutex);
+
+  stopping = true;
+
+  std::cout << "Stopping after pool dump failed for runner " << runnerInfoIdentifier << std::endl;
+}
+
+bool GraphCommonState::shouldStop() const {
+  if (runnerInfoCount() == 0) {
+    return true;
+  }
+
+  std::lock_guard<std::mutex> stopGuard(stopMutex);
+
+  return stopping;
+}
+
 bool GraphCommonState::checkForDuplicateState(GraphPath *path, unsigned long long int visitedVerticesState) {
   auto uniqueState = visitedVerticesState | ((unsigned long long int)path->getCurrentVertex() << VERTICES_COUNT);
   auto distance = path->getMinimumEndDistance();
