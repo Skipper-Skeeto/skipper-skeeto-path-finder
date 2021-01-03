@@ -38,7 +38,7 @@ private:
 
   void performPossibleActions(Path *path);
 
-  void performPossibleActions(Path *path, const std::vector<const Task *> &possibleTasks);
+  void performPossibleActions(Path *path, std::vector<const Task *> possibleTasks);
 
   std::vector<const Task *> getPossibleTasks(const Path *path, const Room *room) const;
 
