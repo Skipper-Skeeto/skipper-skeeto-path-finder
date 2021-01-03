@@ -347,7 +347,7 @@ PathController::EnterRoomResult PathController::canEnterRoom(const Path *path, c
     return EnterRoomResult::CanEnter;
   }
 
-  if (canCompleteTask(path, room->taskObstacle)) {
+  if (room->taskObstacle->room == room && canCompleteTask(path, room->taskObstacle)) {
     return EnterRoomResult::CanEnterWithTaskObstacle;
   } else {
     return EnterRoomResult::CannotEnter;
@@ -359,18 +359,26 @@ void PathController::performPossibleActions(Path *path) {
   performPossibleActions(path, getPossibleTasks(path, currentRoom));
 }
 
-void PathController::performPossibleActions(Path *path, const std::vector<const Task *> &possibleTasks) {
+void PathController::performPossibleActions(Path *path, std::vector<const Task *> possibleTasks) {
   std::vector<const Task *> postRoomTasks;
-  for (const auto &task : possibleTasks) {
-    if (task->postRoom != nullptr) {
-      postRoomTasks.push_back(task);
-    } else {
-      path->completeTask(task);
-    }
-  }
 
   auto currentRoom = data->getRoom(path->getCurrentRoomIndex());
-  path->pickUpItems(getPossibleItems(path, currentRoom));
+  auto possibleItems = getPossibleItems(path, currentRoom);
+
+  while (!possibleItems.empty() || (possibleTasks.size() - postRoomTasks.size()) > 0) {
+    for (const auto &task : possibleTasks) {
+      if (task->postRoom != nullptr) {
+        postRoomTasks.push_back(task);
+      } else {
+        path->completeTask(task);
+      }
+    }
+
+    path->pickUpItems(possibleItems);
+
+    possibleTasks = getPossibleTasks(path, currentRoom);
+    possibleItems = getPossibleItems(path, currentRoom);
+  }
 
   for (const auto &task : postRoomTasks) {
     path->completeTask(task);

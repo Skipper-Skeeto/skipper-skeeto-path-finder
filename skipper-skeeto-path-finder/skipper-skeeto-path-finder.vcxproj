@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -65,8 +65,9 @@
     <ClCompile Include="src\thread_info.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\data\ss1.json" />
     <None Include="..\data\ss1_graph.json" />
+    <None Include="..\data\ss1_raw.json" />
+    <None Include="..\data\ss2_raw.json" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

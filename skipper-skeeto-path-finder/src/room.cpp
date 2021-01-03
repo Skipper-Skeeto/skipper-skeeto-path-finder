@@ -4,24 +4,8 @@ std::string Room::getStepDescription() const {
   return std::string("- Move to: ") + key;
 }
 
-void Room::setupNextRooms(Room *left, Room *right, Room *up, Room *down) {
-  rooms.clear();
-
-  if (left != nullptr) {
-    rooms.push_back(left);
-  }
-
-  if (right != nullptr) {
-    rooms.push_back(right);
-  }
-
-  if (up != nullptr) {
-    rooms.push_back(up);
-  }
-
-  if (down != nullptr) {
-    rooms.push_back(down);
-  }
+void Room::setupNextRooms(std::vector<const Room *> rooms) {
+  this->rooms = rooms;
 
   roomIndexes.clear();
   for (auto room : rooms) {

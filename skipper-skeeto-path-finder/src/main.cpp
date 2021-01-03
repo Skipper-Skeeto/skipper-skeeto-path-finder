@@ -13,12 +13,14 @@
 #include <fstream>
 #include <iostream>
 
-int main() {
 #if USED_DATA_TYPE == DATA_TYPE_RAW
-  std::ifstream dataStream("../data/ss1.json");
+#define DATA_FILE_SUFFIX "raw"
 #else if DATA_TYPE == DATA_TYPE_GRAPH
-  std::ifstream dataStream("../data/ss1_graph.json");
+#define DATA_FILE_SUFFIX "graph"
 #endif
+
+int main() {
+  std::ifstream dataStream(std::string("../data/ss") + std::to_string(GAME_ID) + "_" DATA_FILE_SUFFIX ".json");
 
   nlohmann::json jsonData;
   dataStream >> jsonData;

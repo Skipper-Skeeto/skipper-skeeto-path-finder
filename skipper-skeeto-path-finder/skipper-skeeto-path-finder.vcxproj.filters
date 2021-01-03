@@ -145,7 +145,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\data\ss1.json">
+    <None Include="..\data\ss2_raw.json">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\data\ss1_raw.json">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\data\ss1_graph.json">
