@@ -8,7 +8,7 @@
 #include <iostream>
 
 int main() {
-  std::ifstream dataStream("../data/ss1.json");
+  std::ifstream dataStream(std::string("../data/ss1_raw.json"));
   nlohmann::json jsonData;
   dataStream >> jsonData;
 

@@ -61,28 +61,12 @@ Data::Data(const nlohmann::json &jsonData) {
       room.taskObstacle = &taskMapping[jsonRoomMapping.value()["task_obstacle"]];
     }
 
-    Room *left = nullptr;
-    Room *right = nullptr;
-    Room *up = nullptr;
-    Room *down = nullptr;
-
-    if (jsonRoomMapping.value()["left"] != nullptr) {
-      left = &roomMapping[jsonRoomMapping.value()["left"]];
+    std::vector<const Room *> rooms;
+    for (auto const &room : jsonRoomMapping.value()["connected_rooms"]) {
+      rooms.push_back(&roomMapping[room]);
     }
 
-    if (jsonRoomMapping.value()["right"] != nullptr) {
-      right = &roomMapping[jsonRoomMapping.value()["right"]];
-    }
-
-    if (jsonRoomMapping.value()["up"] != nullptr) {
-      up = &roomMapping[jsonRoomMapping.value()["up"]];
-    }
-
-    if (jsonRoomMapping.value()["down"] != nullptr) {
-      down = &roomMapping[jsonRoomMapping.value()["down"]];
-    }
-
-    room.setupNextRooms(left, right, up, down);
+    room.setupNextRooms(rooms);
   }
 
   for (auto const &jsonItemMapping : jsonData["items"].items()) {

@@ -15,7 +15,7 @@ public:
   Task *taskObstacle = nullptr;
   int roomIndex;
 
-  void setupNextRooms(Room *left, Room *right, Room *up, Room *down);
+  void setupNextRooms(std::vector<const Room *>  rooms);
   std::vector<const Room *> getNextRooms() const;
   std::vector<unsigned char> getNextRoomIndexes() const;
 

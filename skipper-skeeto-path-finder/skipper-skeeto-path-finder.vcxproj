@@ -50,7 +50,7 @@
     <ClCompile Include="src\thread_info.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\data\ss1.json" />
+    <None Include="..\data\ss1_raw.json" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
