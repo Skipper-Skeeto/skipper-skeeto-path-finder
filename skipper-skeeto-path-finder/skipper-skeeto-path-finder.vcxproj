@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\data\ss1_raw.json" />
+    <None Include="..\data\ss2_raw.json" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

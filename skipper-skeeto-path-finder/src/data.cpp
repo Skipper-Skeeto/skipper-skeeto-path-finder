@@ -203,7 +203,7 @@ const Room *Data::getRoom(int index) const {
 }
 
 const Room *Data::getStartRoom() const {
-  auto roomIterator = roomMapping.find(std::string("Home"));
+  auto roomIterator = roomMapping.find(std::string(START_ROOM));
   if (roomIterator == roomMapping.end()) {
     throw std::runtime_error("Could not find start room");
   }

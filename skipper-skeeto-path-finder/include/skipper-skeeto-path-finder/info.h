@@ -1,8 +1,25 @@
 #pragma once
 
+#define GAME_ID 1
+
+#if GAME_ID == 1
+
+#define START_ROOM "Home"
 #define ROOM_COUNT 45
 #define ITEM_COUNT 40
 #define TASK_COUNT 33
 #define STATE_ROOM_INDEX_SIZE 6
 #define STATE_TASK_ITEM_START STATE_ROOM_INDEX_SIZE
 #define STATE_TASK_ITEM_SIZE 58
+
+#elif GAME_ID == 2
+
+#define START_ROOM "main_hall"
+#define ROOM_COUNT 28
+#define ITEM_COUNT 29
+#define TASK_COUNT 21
+#define STATE_ROOM_INDEX_SIZE 6
+#define STATE_TASK_ITEM_START STATE_ROOM_INDEX_SIZE
+#define STATE_TASK_ITEM_SIZE 39
+
+#endif
