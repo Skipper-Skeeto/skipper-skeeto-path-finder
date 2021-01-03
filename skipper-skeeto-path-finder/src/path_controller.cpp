@@ -347,7 +347,7 @@ PathController::EnterRoomResult PathController::canEnterRoom(const Path *path, c
     return EnterRoomResult::CanEnter;
   }
 
-  if (canCompleteTask(path, room->taskObstacle)) {
+  if (room->taskObstacle->room == room && canCompleteTask(path, room->taskObstacle)) {
     return EnterRoomResult::CanEnterWithTaskObstacle;
   } else {
     return EnterRoomResult::CannotEnter;
