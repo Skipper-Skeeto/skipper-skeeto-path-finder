@@ -111,7 +111,7 @@ void GraphData::setupMinimumEntryDistances() {
       std::stringstream stream;
       stream << "Could not find an entry for vertex " << ownIndex << std::endl;
 
-      throw std::exception(stream.str().c_str());
+      throw std::runtime_error(stream.str().c_str());
     }
 
     vertexMinimumEntryDistances[ownIndex] = distance;
