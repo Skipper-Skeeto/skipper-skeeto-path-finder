@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 class State {
 public:
   template <size_t StartIndex, size_t Count>
