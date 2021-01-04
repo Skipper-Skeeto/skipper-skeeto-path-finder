@@ -3,7 +3,7 @@
 #if USED_DATA_TYPE == DATA_TYPE_RAW
 #include "skipper-skeeto-path-finder/data.h"
 #include "skipper-skeeto-path-finder/path_controller.h"
-#else if DATA_TYPE == DATA_TYPE_GRAPH
+#elif USED_DATA_TYPE == DATA_TYPE_GRAPH
 #include "skipper-skeeto-path-finder/graph_controller.h"
 #include "skipper-skeeto-path-finder/graph_data.h"
 #endif
@@ -15,7 +15,7 @@
 
 #if USED_DATA_TYPE == DATA_TYPE_RAW
 #define DATA_FILE_SUFFIX "raw"
-#else if DATA_TYPE == DATA_TYPE_GRAPH
+#elif USED_DATA_TYPE == DATA_TYPE_GRAPH
 #define DATA_FILE_SUFFIX "graph"
 #endif
 
@@ -33,7 +33,7 @@ int main() {
     controller.start();
 
     controller.printResult();
-#else if DATA_TYPE == DATA_TYPE_GRAPH
+#elif USED_DATA_TYPE == DATA_TYPE_GRAPH
     GraphData data(jsonData);
 
     GraphController controller(&data);
