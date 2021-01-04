@@ -17,7 +17,7 @@
 
 const char *PathController::MEMORY_DUMP_DIR = "temp_memory_dump";
 
-PathController::PathController(const Data *data) {
+PathController::PathController(const RawData *data) {
   this->data = data;
   this->commonState = new CommonState();
 

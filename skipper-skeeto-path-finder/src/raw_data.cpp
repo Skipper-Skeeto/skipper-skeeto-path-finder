@@ -1,10 +1,10 @@
-#include "skipper-skeeto-path-finder/data.h"
+#include "skipper-skeeto-path-finder/raw_data.h"
 
 #include "skipper-skeeto-path-finder/info.h"
 
 #include <sstream>
 
-Data::Data(const nlohmann::json &jsonData) {
+RawData::RawData(const nlohmann::json &jsonData) {
   int nextItemIndex = 0;
   int nextTaskIndex = 0;
   int nextRoomIndex = 0;
@@ -170,11 +170,11 @@ Data::Data(const nlohmann::json &jsonData) {
   }
 }
 
-const std::array<const Room *, ROOM_COUNT> &Data::getRooms() const {
+const std::array<const Room *, ROOM_COUNT> &RawData::getRooms() const {
   return rooms;
 }
 
-std::vector<const Item *> Data::getItems() const {
+std::vector<const Item *> RawData::getItems() const {
   std::vector<const Item *> items;
   for (const auto &item : itemMapping) {
     items.push_back(&item.second);
@@ -182,7 +182,7 @@ std::vector<const Item *> Data::getItems() const {
   return items;
 }
 
-std::vector<const Task *> Data::getTasks() const {
+std::vector<const Task *> RawData::getTasks() const {
   std::vector<const Task *> tasks;
   for (const auto &task : taskMapping) {
     tasks.push_back(&task.second);
@@ -190,19 +190,19 @@ std::vector<const Task *> Data::getTasks() const {
   return tasks;
 }
 
-const std::vector<const Item *> &Data::getItemsForRoom(const Room *room) const {
+const std::vector<const Item *> &RawData::getItemsForRoom(const Room *room) const {
   return roomToItemsMapping.find(room)->second;
 }
 
-const std::vector<const Task *> &Data::getTasksForRoom(const Room *room) const {
+const std::vector<const Task *> &RawData::getTasksForRoom(const Room *room) const {
   return roomToTasksMapping.find(room)->second;
 }
 
-const Room *Data::getRoom(int index) const {
+const Room *RawData::getRoom(int index) const {
   return rooms[index];
 }
 
-const Room *Data::getStartRoom() const {
+const Room *RawData::getStartRoom() const {
   auto roomIterator = roomMapping.find(std::string(START_ROOM));
   if (roomIterator == roomMapping.end()) {
     throw std::runtime_error("Could not find start room");

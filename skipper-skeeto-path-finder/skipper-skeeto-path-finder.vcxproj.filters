@@ -24,9 +24,6 @@
     <ClInclude Include="include\skipper-skeeto-path-finder\task.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\skipper-skeeto-path-finder\data.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\skipper-skeeto-path-finder\item.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -57,15 +54,15 @@
     <ClInclude Include="include\skipper-skeeto-path-finder\file_helper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\skipper-skeeto-path-finder\raw_data.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\path.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\data.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\path_controller.cpp">
@@ -96,6 +93,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\common_state.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\raw_data.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,6 +1,6 @@
-#include "skipper-skeeto-path-finder/data.h"
 #include "skipper-skeeto-path-finder/path.h"
 #include "skipper-skeeto-path-finder/path_controller.h"
+#include "skipper-skeeto-path-finder/raw_data.h"
 
 #include "json/json.hpp"
 
@@ -13,7 +13,7 @@ int main() {
   dataStream >> jsonData;
 
   try {
-    Data data(jsonData);
+    RawData data(jsonData);
 
     PathController controller(&data);
     controller.start();
