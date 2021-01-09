@@ -144,7 +144,6 @@ void PathController::distributeToThreads(const std::vector<Path *> paths, std::v
 
   std::mutex controllerMutex;
   auto handleParentThreadFunction = [this, threadFunction, &parentPaths, &controllerMutex](Path *path) {
-
     // Make sure everything is set up correctly before we start computing
     controllerMutex.lock();
     controllerMutex.unlock();
@@ -226,8 +225,8 @@ bool PathController::findNewPath(Path *originPath) {
         if (originPath->hasPostRoom()) {
           auto tasks = data->getTasksForRoom(currentRoom);
           for (const auto &task : tasks) {
-            if (task->postRoom != nullptr) {
-              currentRoom = task->postRoom;
+            if (task->getPostRoom() != nullptr) {
+              currentRoom = task->getPostRoom();
             }
           }
         }
@@ -250,13 +249,13 @@ bool PathController::findNewPath(Path *originPath) {
       originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.pop_back();
     }
 
-    if (originPath->subPathInfo.remaining->unavailableRooms[nextRoom->roomIndex]) {
+    if (originPath->subPathInfo.remaining->unavailableRooms[nextRoom->getUniqueIndex()]) {
       // Room already reached or cannot be entered.
       // We cannot have gotten here faster than the other steps getting here.
       continue;
     }
 
-    originPath->subPathInfo.remaining->unavailableRooms[nextRoom->roomIndex] = true;
+    originPath->subPathInfo.remaining->unavailableRooms[nextRoom->getUniqueIndex()] = true;
 
     auto enterRoomResult = canEnterRoom(originPath, nextRoom);
     if (enterRoomResult == EnterRoomResult::CannotEnter) {
@@ -271,7 +270,7 @@ bool PathController::findNewPath(Path *originPath) {
 
     if (enterRoomResult == EnterRoomResult::CanEnterWithTaskObstacle) {
       Path newPath = originPath->createFromSubPath(&newSubPath);
-      newPath.completeTask(nextRoom->taskObstacle);
+      newPath.completeTask(nextRoom->getTaskObstacle());
 
       performPossibleActions(&newPath);
 
@@ -339,15 +338,16 @@ bool PathController::findNewPath(Path *originPath) {
 }
 
 PathController::EnterRoomResult PathController::canEnterRoom(const Path *path, const Room *room) const {
-  if (room->taskObstacle == nullptr) {
+  auto taskObstacle = room->getTaskObstacle();
+  if (taskObstacle == nullptr) {
     return EnterRoomResult::CanEnter;
   }
 
-  if (path->hasCompletedTask(room->taskObstacle)) {
+  if (path->hasCompletedTask(taskObstacle)) {
     return EnterRoomResult::CanEnter;
   }
 
-  if (room->taskObstacle->room == room && canCompleteTask(path, room->taskObstacle)) {
+  if (taskObstacle->getRoom() == room && canCompleteTask(path, taskObstacle)) {
     return EnterRoomResult::CanEnterWithTaskObstacle;
   } else {
     return EnterRoomResult::CannotEnter;
@@ -367,7 +367,7 @@ void PathController::performPossibleActions(Path *path, std::vector<const Task *
 
   while (!possibleItems.empty() || (possibleTasks.size() - postRoomTasks.size()) > 0) {
     for (const auto &task : possibleTasks) {
-      if (task->postRoom != nullptr) {
+      if (task->getPostRoom() != nullptr) {
         postRoomTasks.push_back(task);
       } else {
         path->completeTask(task);
@@ -415,26 +415,27 @@ std::vector<const Item *> PathController::getPossibleItems(const Path *path, con
 }
 
 bool PathController::canCompleteTask(const Path *path, const Task *task) const {
-  if (task->taskObstacle != nullptr) {
-    if (!path->hasCompletedTask(task->taskObstacle)) {
+  if (task->getTaskObstacle() != nullptr) {
+    if (!path->hasCompletedTask(task->getTaskObstacle())) {
       return false;
     }
   }
 
+  const auto &itemsNeeded = task->getItemsNeeded();
   return std::all_of(
-      task->itemsNeeded.begin(),
-      task->itemsNeeded.end(),
-      [&path](Item *item) {
+      itemsNeeded.begin(),
+      itemsNeeded.end(),
+      [&path](const Item *item) {
         return path->hasFoundItem(item);
       });
 }
 
 bool PathController::canPickUpItem(const Path *path, const Item *item) const {
-  if (item->taskObstacle == nullptr) {
+  if (item->getTaskObstacle() == nullptr) {
     return true;
   }
 
-  return path->hasCompletedTask(item->taskObstacle);
+  return path->hasCompletedTask(item->getTaskObstacle());
 }
 
 bool PathController::submitIfDone(const Path *path) {
@@ -458,7 +459,7 @@ std::vector<std::vector<const Action *>> PathController::findFinalSteps(const Pa
   std::tie(stepsOfSteps, lastRoom) = performFinalStepsActions(stepsOfSteps, &startPath, lastRoom);
 
   for (auto path : route) {
-    if (path->getCurrentRoomIndex() != lastRoom->roomIndex) {
+    if (path->getCurrentRoomIndex() != lastRoom->getUniqueIndex()) {
       auto targetRoom = data->getRoom(path->getCurrentRoomIndex());
       stepsOfSteps = moveToFinalStepsRoom(stepsOfSteps, lastPath, lastRoom, targetRoom);
       lastRoom = targetRoom;
@@ -531,17 +532,17 @@ std::pair<std::vector<std::vector<const Action *>>, const Room *> PathController
 
   if (canEnterRoom(currentPath, currentRoom) == EnterRoomResult::CanEnterWithTaskObstacle) {
     for (auto &steps : newStepsOfSteps) {
-      steps.push_back(currentRoom->taskObstacle);
+      steps.push_back(currentRoom->getTaskObstacle());
     }
   }
 
   const Task *postRoomTask = nullptr;
   for (const auto &task : getPossibleTasks(currentPath, currentRoom)) {
-    if (task == currentRoom->taskObstacle) {
+    if (task == currentRoom->getTaskObstacle()) {
       continue;
     }
 
-    if (task->postRoom != nullptr) {
+    if (task->getPostRoom() != nullptr) {
       postRoomTask = task;
     } else {
       for (auto &steps : newStepsOfSteps) {
@@ -559,10 +560,10 @@ std::pair<std::vector<std::vector<const Action *>>, const Room *> PathController
   if (postRoomTask != nullptr) {
     for (auto &steps : newStepsOfSteps) {
       steps.push_back(postRoomTask);
-      steps.push_back(postRoomTask->postRoom);
+      steps.push_back(postRoomTask->getPostRoom());
     }
 
-    newRoom = postRoomTask->postRoom;
+    newRoom = postRoomTask->getPostRoom();
   }
 
   return std::make_pair(newStepsOfSteps, newRoom);

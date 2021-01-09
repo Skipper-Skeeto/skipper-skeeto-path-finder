@@ -2,7 +2,7 @@
 #include "skipper-skeeto-path-finder/room.h"
 
 SubPath::SubPath(const Room *newRoom, const SubPath &parent) {
-  lastRoomIndex = newRoom->roomIndex;
+  lastRoomIndex = newRoom->getUniqueIndex();
   size = parent.visitedRoomsCount() + 1;
 }
 
