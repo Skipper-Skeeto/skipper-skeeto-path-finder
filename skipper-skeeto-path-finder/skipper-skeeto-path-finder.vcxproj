@@ -31,6 +31,8 @@
     <ClInclude Include="include\skipper-skeeto-path-finder\graph_path_pool.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\info.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\item.h" />
+    <ClInclude Include="include\skipper-skeeto-path-finder\memory_mapped_file_allocator.h" />
+    <ClInclude Include="include\skipper-skeeto-path-finder\memory_mapped_file_pool.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\path.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\path_controller.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\room.h" />
@@ -53,6 +55,7 @@
     <ClCompile Include="src\graph_path_pool.cpp" />
     <ClCompile Include="src\item.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\memory_mapped_file_pool.cpp" />
     <ClCompile Include="src\path.cpp" />
     <ClCompile Include="src\path_controller.cpp" />
     <ClCompile Include="src\room.cpp" />
@@ -156,11 +159,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)libs\json\include;$(SolutionDir)libs\parallel-hashmap;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)libs\json\include;$(SolutionDir)libs\parallel-hashmap;$(BOOST_ROOT);$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(BOOST_ROOT)\stage\lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -191,13 +195,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)libs\json\include;$(SolutionDir)libs\parallel-hashmap;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)libs\json\include;$(SolutionDir)libs\parallel-hashmap;$(BOOST_ROOT);$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(BOOST_ROOT)\stage\lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -2,6 +2,7 @@
 
 #include "skipper-skeeto-path-finder/graph_path.h"
 #include "skipper-skeeto-path-finder/info.h"
+#include "skipper-skeeto-path-finder/memory_mapped_file_allocator.h"
 #include "skipper-skeeto-path-finder/runner_info.h"
 
 #include <parallel_hashmap/phmap.h>
@@ -17,6 +18,8 @@ class GraphPathPool;
 
 class GraphCommonState {
 public:
+  GraphCommonState(const std::string &tempDir);
+
   bool makesSenseToInitialize(const RunnerInfo *runnerInfo, const GraphPath *path) const;
 
   bool makesSenseToKeep(const RunnerInfo *runnerInfo, GraphPath *path, unsigned long long int visitedVerticesState);
@@ -68,10 +71,10 @@ private:
       unsigned char,
       phmap::priv::hash_default_hash<unsigned long long int>,
       phmap::priv::hash_default_eq<unsigned long long int>,
-      phmap::priv::Allocator<phmap::priv::Pair<const unsigned long long int, unsigned char>>, // alias for std::allocator
-      6,                                                                                      // 2^N submaps, default is 4
+      MemoryMappedFileAllocator<phmap::priv::Pair<const unsigned long long int, unsigned char>>, // alias for std::allocator
+      6,                                                                                         // 2^N submaps, default is 4
       std::mutex>
-      distanceForState{};
+      distanceForState;
   std::vector<std::array<char, VERTICES_COUNT>> goodOnes;
   int dumpedGoodOnes = 0;
 
