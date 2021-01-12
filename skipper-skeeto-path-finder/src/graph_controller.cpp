@@ -20,13 +20,11 @@
 #include <sstream>
 #include <thread>
 
-const char *GraphController::MEMORY_DUMP_DIR = "temp_memory_dump";
-
 const unsigned long long int GraphController::ALL_VERTICES_STATE_MASK = (1ULL << VERTICES_COUNT) - 1;
 
 #define FORCE_FINISH_THRESHOLD_DEPTH 10
 
-GraphController::GraphController(const GraphData *data) : commonState(MEMORY_DUMP_DIR) {
+GraphController::GraphController(const GraphData *data) : commonState(TEMP_STATES_DIR) {
   this->data = data;
 
   // Do not use localtime(), see https://stackoverflow.com/a/38034148/2761541
@@ -45,7 +43,8 @@ GraphController::GraphController(const GraphData *data) : commonState(MEMORY_DUM
 void GraphController::start() {
   std::cout << "Starting with thread count " << THREAD_COUNT << " and pool size " << POOL_COUNT << " (Path Graph size being " << sizeof(GraphPath) << " bytes)" << std::endl;
 
-  FileHelper::createDir(MEMORY_DUMP_DIR);
+  FileHelper::createDir(TEMP_DIR);
+  FileHelper::createDir(TEMP_PATHS_DIR);
 
   auto threadFunction = [this](bool preferBest) {
     GraphPathPool pool;
@@ -502,7 +501,7 @@ std::pair<unsigned long int, GraphPath *> GraphController::movePathData(GraphPat
 }
 
 std::string GraphController::getPoolFileName(unsigned int runnerInfoIdentifier) const {
-  return std::string(MEMORY_DUMP_DIR) + "/" + std::to_string(runnerInfoIdentifier) + ".dat";
+  return std::string(TEMP_PATHS_DIR) + "/" + std::to_string(runnerInfoIdentifier) + ".dat";
 }
 
 bool GraphController::serializePool(GraphPathPool *pool, RunnerInfo *runnerInfo) {

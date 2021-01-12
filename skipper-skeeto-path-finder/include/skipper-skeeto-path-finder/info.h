@@ -10,6 +10,10 @@
 #define POOL_TOTAL_BYTES 4000000000
 #define POOL_COUNT (POOL_TOTAL_BYTES / ((THREAD_COUNT + 1) * sizeof(GraphPath))) // Note that we add temp pool for splitting
 
+#define TEMP_DIR "temp"
+#define TEMP_PATHS_DIR TEMP_DIR "/paths"
+#define TEMP_STATES_DIR TEMP_DIR "/states"
+
 #if GAME_ID == 1
 
 #define START_ROOM "Home"

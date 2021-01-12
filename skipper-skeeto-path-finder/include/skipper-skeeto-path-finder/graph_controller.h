@@ -12,7 +12,6 @@ public:
   void start();
 
 private:
-  static const char *MEMORY_DUMP_DIR;
   static const unsigned long long int ALL_VERTICES_STATE_MASK;
 
   void setupStartRunner();

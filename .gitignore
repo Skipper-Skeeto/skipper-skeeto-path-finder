@@ -5,7 +5,7 @@
 
 #SKIPPER-SKEETO specific
 /skipper-skeeto-path-finder/results/
-/skipper-skeeto-path-finder/temp_memory_dump/
+/skipper-skeeto-path-finder/temp/
 /build
 
 # User-specific files

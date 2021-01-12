@@ -1,5 +1,7 @@
 #include "skipper-skeeto-path-finder/memory_mapped_file_pool.h"
 
+#include "skipper-skeeto-path-finder/file_helper.h"
+
 #include <cstdio>
 #include <iostream>
 
@@ -13,6 +15,8 @@ std::unordered_map<void *, std::pair<std::string, boost::iostreams::mapped_file>
 
 void MemoryMappedFilePool::setAllocationDir(const std::string &dir) {
   allocationDirPath = dir;
+
+  FileHelper::createDir(dir.c_str());
 }
 
 void *MemoryMappedFilePool::addFile(size_t size) {
@@ -22,7 +26,7 @@ void *MemoryMappedFilePool::addFile(size_t size) {
   fileParams.flags = boost::iostreams::mapped_file::readwrite;
   fileParams.new_file_size = size;
 
-  auto fileName = allocationDirPath + "/mm-" + std::to_string(nextAvailableIndex++) + ".dat";
+  auto fileName = allocationDirPath + "/" + std::to_string(nextAvailableIndex++) + ".dat";
   fileParams.path = fileName;
 
   boost::iostreams::mapped_file file(fileParams);
