@@ -8,16 +8,19 @@
 
 class MemoryMappedFilePool {
 public:
-  static void setAllocationDir(const std::string &dir);
+  static MemoryMappedFilePool &getInstance();
 
-  static void *addFile(size_t size);
+  MemoryMappedFilePool(const MemoryMappedFilePool &) = delete;
+  void operator=(const MemoryMappedFilePool &) = delete;
 
-  static void deleteFile(void *pointer, size_t expectedSize);
+  void *addFile(size_t size);
+
+  void deleteFile(void *pointer, size_t expectedSize);
 
 private:
-  static std::string allocationDirPath;
+  MemoryMappedFilePool();
 
-  static std::mutex sharedMapMutex;
-  static int nextAvailableIndex;
-  static std::unordered_map<void *, std::pair<std::string, boost::iostreams::mapped_file>> memoryMappedfileMap;
+  mutable std::mutex sharedMapMutex;
+  int nextAvailableIndex = 0;
+  std::unordered_map<void *, std::pair<std::string, boost::iostreams::mapped_file>> memoryMappedfileMap;
 };

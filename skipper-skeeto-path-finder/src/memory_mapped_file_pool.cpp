@@ -1,22 +1,15 @@
 #include "skipper-skeeto-path-finder/memory_mapped_file_pool.h"
 
 #include "skipper-skeeto-path-finder/file_helper.h"
+#include "skipper-skeeto-path-finder/info.h"
 
 #include <cstdio>
 #include <iostream>
 
-std::string MemoryMappedFilePool::allocationDirPath;
+MemoryMappedFilePool &MemoryMappedFilePool::getInstance() {
+  static MemoryMappedFilePool instance;
 
-std::mutex MemoryMappedFilePool::sharedMapMutex;
-
-int MemoryMappedFilePool::nextAvailableIndex = 0;
-
-std::unordered_map<void *, std::pair<std::string, boost::iostreams::mapped_file>> MemoryMappedFilePool::memoryMappedfileMap;
-
-void MemoryMappedFilePool::setAllocationDir(const std::string &dir) {
-  allocationDirPath = dir;
-
-  FileHelper::createDir(dir.c_str());
+  return instance;
 }
 
 void *MemoryMappedFilePool::addFile(size_t size) {
@@ -26,7 +19,7 @@ void *MemoryMappedFilePool::addFile(size_t size) {
   fileParams.flags = boost::iostreams::mapped_file::readwrite;
   fileParams.new_file_size = size;
 
-  auto fileName = allocationDirPath + "/" + std::to_string(nextAvailableIndex++) + ".dat";
+  auto fileName = std::string(TEMP_STATES_DIR) + "/" + std::to_string(nextAvailableIndex++) + ".dat";
   fileParams.path = fileName;
 
   boost::iostreams::mapped_file file(fileParams);
@@ -58,4 +51,8 @@ void MemoryMappedFilePool::deleteFile(void *pointer, size_t expectedSize) {
   std::remove(fileName.c_str());
 
   memoryMappedfileMap.erase(iterator);
+}
+
+MemoryMappedFilePool::MemoryMappedFilePool() {
+  FileHelper::createDir(TEMP_STATES_DIR);
 }

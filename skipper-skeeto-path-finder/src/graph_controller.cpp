@@ -24,7 +24,7 @@ const unsigned long long int GraphController::ALL_VERTICES_STATE_MASK = (1ULL <<
 
 #define FORCE_FINISH_THRESHOLD_DEPTH 10
 
-GraphController::GraphController(const GraphData *data) : commonState(TEMP_STATES_DIR) {
+GraphController::GraphController(const GraphData *data) {
   this->data = data;
 
   // Do not use localtime(), see https://stackoverflow.com/a/38034148/2761541

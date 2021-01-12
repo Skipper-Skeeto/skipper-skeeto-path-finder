@@ -15,7 +15,7 @@ public:
   ValueType *allocate(size_t objectCount) {
     auto size = sizeof(ValueType) * objectCount;
 
-    auto pointer = reinterpret_cast<ValueType *>(MemoryMappedFilePool::addFile(size));
+    auto pointer = reinterpret_cast<ValueType *>(MemoryMappedFilePool::getInstance().addFile(size));
 
     return pointer;
   }
@@ -23,7 +23,7 @@ public:
   void deallocate(ValueType *pointer, size_t objectCount) {
     auto expectedSize = sizeof(ValueType) * objectCount;
 
-    MemoryMappedFilePool::deleteFile(pointer, expectedSize);
+    MemoryMappedFilePool::getInstance().deleteFile(pointer, expectedSize);
   }
 
 private:

@@ -15,10 +15,6 @@
 
 const char *GraphCommonState::DUMPED_GOOD_ONES_BASE_DIR = "results";
 
-GraphCommonState::GraphCommonState(const std::string &tempDir)
-    : distanceForState((MemoryMappedFilePool::setAllocationDir(tempDir), MemoryMappedFileAllocator<phmap::priv::Pair<const unsigned long long int, unsigned char>>())) {
-}
-
 bool GraphCommonState::makesSenseToInitialize(const RunnerInfo *runnerInfo, const GraphPath *path) const {
   // If we're sure we won't get a better one, there's no reason to start at all
   return path->getMinimumEndDistance() < runnerInfo->getLocalMaxDistance();

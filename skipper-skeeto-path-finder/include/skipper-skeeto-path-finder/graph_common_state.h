@@ -18,8 +18,6 @@ class GraphPathPool;
 
 class GraphCommonState {
 public:
-  GraphCommonState(const std::string &tempDir);
-
   bool makesSenseToInitialize(const RunnerInfo *runnerInfo, const GraphPath *path) const;
 
   bool makesSenseToKeep(const RunnerInfo *runnerInfo, GraphPath *path, unsigned long long int visitedVerticesState);
@@ -74,7 +72,7 @@ private:
       MemoryMappedFileAllocator<phmap::priv::Pair<const unsigned long long int, unsigned char>>, // alias for std::allocator
       6,                                                                                         // 2^N submaps, default is 4
       std::mutex>
-      distanceForState;
+      distanceForState{};
   std::vector<std::array<char, VERTICES_COUNT>> goodOnes;
   int dumpedGoodOnes = 0;
 
