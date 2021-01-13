@@ -11,9 +11,9 @@
 
 #include "json/json.hpp"
 
-class Data {
+class RawData {
 public:
-  Data(const nlohmann::json &jsonData);
+  RawData(const nlohmann::json &jsonData);
 
   const std::array<const Room *, ROOM_COUNT> &getRooms() const;
 

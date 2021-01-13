@@ -1,116 +1,116 @@
-#include "skipper-skeeto-path-finder/data.h"
+#include "skipper-skeeto-path-finder/raw_data.h"
 
 #include "skipper-skeeto-path-finder/info.h"
 
 #include <sstream>
 
-Data::Data(const nlohmann::json &jsonData) {
+RawData::RawData(const nlohmann::json &jsonData) {
   int nextItemIndex = 0;
   int nextTaskIndex = 0;
   int nextRoomIndex = 0;
 
   for (auto const &jsonRoomMapping : jsonData["rooms"].items()) {
-    auto room = Room();
-    room.key = jsonRoomMapping.key();
-    room.roomIndex = nextRoomIndex++;
-    roomMapping[jsonRoomMapping.key()] = room;
+    auto key = jsonRoomMapping.key();
+    auto room = &roomMapping.emplace(key, Room{key, nextRoomIndex++}).first->second;
 
-    roomToItemsMapping[&roomMapping[jsonRoomMapping.key()]];
-    roomToTasksMapping[&roomMapping[jsonRoomMapping.key()]];
+    roomToItemsMapping[room];
+    roomToTasksMapping[room];
   }
 
   for (auto const &jsonItemMapping : jsonData["items"].items()) {
-    auto item = Item();
-    item.key = jsonItemMapping.key();
-    item.uniqueIndex = nextItemIndex++;
+    auto room = &roomMapping.find(jsonItemMapping.value()["room"])->second;
 
-    itemMapping[jsonItemMapping.key()] = item;
+    auto key = jsonItemMapping.key();
+    auto item = &itemMapping.emplace(key, Item{key, nextItemIndex++, room}).first->second;
+
+    roomToItemsMapping[room].push_back(item);
   }
 
   for (auto const &jsonTaskMapping : jsonData["tasks"].items()) {
-    auto task = Task();
-    task.key = jsonTaskMapping.key();
-    task.uniqueIndex = nextTaskIndex++;
+    auto room = &roomMapping.find(jsonTaskMapping.value()["room"])->second;
 
-    task.room = &roomMapping[jsonTaskMapping.value()["room"]];
-
+    std::vector<const Item *> itemsNeeded;
     for (auto const &itemKey : jsonTaskMapping.value()["items_needed"]) {
-      task.itemsNeeded.push_back(&itemMapping[itemKey]);
+      itemsNeeded.push_back(&itemMapping.find(itemKey)->second);
     }
 
+    Room *postRoom = nullptr;
     if (jsonTaskMapping.value()["post_room"] != nullptr) {
-      task.postRoom = &roomMapping[jsonTaskMapping.value()["post_room"]];
+      postRoom = &roomMapping.find(jsonTaskMapping.value()["post_room"])->second;
     }
 
-    taskMapping[jsonTaskMapping.key()] = task;
+    auto key = jsonTaskMapping.key();
+    auto task = &taskMapping.emplace(key, Task{key, nextTaskIndex++, room, itemsNeeded, postRoom}).first->second;
+
+    roomToTasksMapping[room].push_back(task);
   }
 
   for (auto const &jsonTaskMapping : jsonData["tasks"].items()) {
-    auto &task = taskMapping[jsonTaskMapping.key()];
-    roomToTasksMapping[task.room].push_back(&task);
+    auto &task = taskMapping.find(jsonTaskMapping.key())->second;
 
     if (jsonTaskMapping.value()["task_obstacle"] != nullptr) {
-      task.taskObstacle = &taskMapping[jsonTaskMapping.value()["task_obstacle"]];
+      task.setTaskObstacle(&taskMapping.find(jsonTaskMapping.value()["task_obstacle"])->second);
     }
   }
 
   for (auto const &jsonRoomMapping : jsonData["rooms"].items()) {
-    auto &room = roomMapping[jsonRoomMapping.key()];
+    auto &room = roomMapping.find(jsonRoomMapping.key())->second;
 
     if (jsonRoomMapping.value()["task_obstacle"] != nullptr) {
-      room.taskObstacle = &taskMapping[jsonRoomMapping.value()["task_obstacle"]];
+      room.setTaskObstacle(&taskMapping.find(jsonRoomMapping.value()["task_obstacle"])->second);
     }
 
     std::vector<const Room *> rooms;
     for (auto const &room : jsonRoomMapping.value()["connected_rooms"]) {
-      rooms.push_back(&roomMapping[room]);
+      rooms.push_back(&roomMapping.find(room)->second);
     }
 
     room.setupNextRooms(rooms);
   }
 
   for (auto const &jsonItemMapping : jsonData["items"].items()) {
-    auto &item = itemMapping[jsonItemMapping.key()];
-
-    item.room = &roomMapping[jsonItemMapping.value()["room"]];
-    roomToItemsMapping[item.room].push_back(&item);
+    auto &item = itemMapping.find(jsonItemMapping.key())->second;
 
     if (jsonItemMapping.value()["task_obstacle"] != nullptr) {
-      item.taskObstacle = &taskMapping[jsonItemMapping.value()["task_obstacle"]];
+      item.setTaskObstacle(&taskMapping.find(jsonItemMapping.value()["task_obstacle"])->second);
     }
   }
 
   int nextStateIndex = STATE_TASK_ITEM_START;
   for (const auto &roomTasks : roomToTasksMapping) {
     int noObstacleIndex = -1;
-    for (const auto &task : roomTasks.second) {
-      if (task->taskObstacle == nullptr && task->itemsNeeded.empty()) {
+    for (const auto &constTask : roomTasks.second) {
+      auto &task = taskMapping.find(constTask->getKey())->second;
+      if (constTask->getTaskObstacle() == nullptr && constTask->getItemsNeeded().empty()) {
         if (noObstacleIndex == -1) {
           noObstacleIndex = nextStateIndex++;
         }
-        taskMapping[task->key].stateIndex = noObstacleIndex;
+        task.setStateIndex(noObstacleIndex);
       } else {
-        taskMapping[task->key].stateIndex = nextStateIndex++;
+        task.setStateIndex(nextStateIndex++);
       }
     }
   }
 
   for (const auto &roomItems : roomToItemsMapping) {
     int noObstacleIndex = -1;
-    if (roomItems.first->taskObstacle != nullptr && roomItems.first->taskObstacle->room == roomItems.first) {
-      noObstacleIndex = roomItems.first->taskObstacle->stateIndex;
+    auto taskObstacle = roomItems.first->getTaskObstacle();
+    if (taskObstacle != nullptr && taskObstacle->getRoom() == roomItems.first) {
+      noObstacleIndex = taskObstacle->getStateIndex();
     }
 
-    for (const auto &item : roomItems.second) {
-      if (item->taskObstacle == nullptr) {
+    for (const auto &constItem : roomItems.second) {
+      auto taskObstacle = constItem->getTaskObstacle();
+      auto &item = itemMapping.find(constItem->getKey())->second;
+      if (taskObstacle == nullptr) {
         if (noObstacleIndex == -1) {
           noObstacleIndex = nextStateIndex++;
         }
-        itemMapping[item->key].stateIndex = noObstacleIndex;
-      } else if (item->taskObstacle->room == roomItems.first) {
-        itemMapping[item->key].stateIndex = item->taskObstacle->stateIndex;
+        item.setStateIndex(noObstacleIndex);
+      } else if (taskObstacle->getRoom() == roomItems.first) {
+        item.setStateIndex(taskObstacle->getStateIndex());
       } else {
-        itemMapping[item->key].stateIndex = nextStateIndex++;
+        item.setStateIndex(nextStateIndex++);
       }
     }
   }
@@ -121,7 +121,7 @@ Data::Data(const nlohmann::json &jsonData) {
     throw std::runtime_error(stringStream.str());
   } else {
     for (const auto &roomInfo : roomMapping) {
-      rooms[roomInfo.second.roomIndex] = &roomInfo.second;
+      rooms[roomInfo.second.getUniqueIndex()] = &roomInfo.second;
     }
   }
 
@@ -155,11 +155,11 @@ Data::Data(const nlohmann::json &jsonData) {
   for (const auto &room : rooms) {
     bool foundPostRoom = false;
     for (const auto &task : getTasksForRoom(room)) {
-      if (task->postRoom != nullptr) {
+      if (task->getPostRoom() != nullptr) {
         if (foundPostRoom) {
           std::stringstream stringStream;
           stringStream << "Logic cannot handle more than one task with post-room in a room. "
-                       << "This was the case for the room \"" << room->key << "\"! "
+                       << "This was the case for the room \"" << room->getKey() << "\"! "
                        << "Update PathController if it is needed.";
           throw std::runtime_error(stringStream.str());
         }
@@ -170,11 +170,11 @@ Data::Data(const nlohmann::json &jsonData) {
   }
 }
 
-const std::array<const Room *, ROOM_COUNT> &Data::getRooms() const {
+const std::array<const Room *, ROOM_COUNT> &RawData::getRooms() const {
   return rooms;
 }
 
-std::vector<const Item *> Data::getItems() const {
+std::vector<const Item *> RawData::getItems() const {
   std::vector<const Item *> items;
   for (const auto &item : itemMapping) {
     items.push_back(&item.second);
@@ -182,7 +182,7 @@ std::vector<const Item *> Data::getItems() const {
   return items;
 }
 
-std::vector<const Task *> Data::getTasks() const {
+std::vector<const Task *> RawData::getTasks() const {
   std::vector<const Task *> tasks;
   for (const auto &task : taskMapping) {
     tasks.push_back(&task.second);
@@ -190,19 +190,19 @@ std::vector<const Task *> Data::getTasks() const {
   return tasks;
 }
 
-const std::vector<const Item *> &Data::getItemsForRoom(const Room *room) const {
+const std::vector<const Item *> &RawData::getItemsForRoom(const Room *room) const {
   return roomToItemsMapping.find(room)->second;
 }
 
-const std::vector<const Task *> &Data::getTasksForRoom(const Room *room) const {
+const std::vector<const Task *> &RawData::getTasksForRoom(const Room *room) const {
   return roomToTasksMapping.find(room)->second;
 }
 
-const Room *Data::getRoom(int index) const {
+const Room *RawData::getRoom(int index) const {
   return rooms[index];
 }
 
-const Room *Data::getStartRoom() const {
+const Room *RawData::getStartRoom() const {
   auto roomIterator = roomMapping.find(std::string(START_ROOM));
   if (roomIterator == roomMapping.end()) {
     throw std::runtime_error("Could not find start room");

@@ -1,8 +1,8 @@
 #include "skipper-skeeto-path-finder/info.h"
 
 #if USED_DATA_TYPE == DATA_TYPE_RAW
-#include "skipper-skeeto-path-finder/data.h"
 #include "skipper-skeeto-path-finder/path_controller.h"
+#include "skipper-skeeto-path-finder/raw_data.h"
 #elif USED_DATA_TYPE == DATA_TYPE_GRAPH
 #include "skipper-skeeto-path-finder/graph_controller.h"
 #include "skipper-skeeto-path-finder/graph_data.h"
@@ -27,7 +27,7 @@ int main() {
 
   try {
 #if USED_DATA_TYPE == DATA_TYPE_RAW
-    Data data(jsonData);
+    RawData data(jsonData);
 
     PathController controller(&data);
     controller.start();

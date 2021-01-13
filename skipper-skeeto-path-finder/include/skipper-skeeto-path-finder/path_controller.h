@@ -1,8 +1,8 @@
 #pragma once
 
 #include "skipper-skeeto-path-finder/common_state.h"
-#include "skipper-skeeto-path-finder/data.h"
 #include "skipper-skeeto-path-finder/path.h"
+#include "skipper-skeeto-path-finder/raw_data.h"
 
 #include <functional>
 #include <queue>
@@ -10,7 +10,7 @@
 
 class PathController {
 public:
-  PathController(const Data *data);
+  PathController(const RawData *data);
   ~PathController();
 
   void start();
@@ -57,7 +57,7 @@ private:
   std::pair<std::vector<std::vector<const Action *>>, const Room *> performFinalStepsActions(const std::vector<std::vector<const Action *>> &currentStepsOfSteps, const Path *currentPath, const Room *currentRoom) const;
 
   CommonState *commonState;
-  const Data *data;
+  const RawData *data;
 
   std::string resultDirName;
 };

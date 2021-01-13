@@ -7,7 +7,7 @@
 #include "skipper-skeeto-path-finder/task.h"
 
 Path::Path(const Room *startRoom) {
-  state = getStateWithRoom(state, startRoom->roomIndex);
+  state = getStateWithRoom(state, startRoom->getUniqueIndex());
 }
 
 Path::Path(const Path &path) {
@@ -70,8 +70,8 @@ void Path::pickUpItem(const Item *item) {
     throw std::runtime_error("Item was already picked up");
   }
 
-  state |= (1ULL << item->stateIndex);
-  foundItems |= (1ULL << item->uniqueIndex);
+  state |= (1ULL << item->getStateIndex());
+  foundItems |= (1ULL << item->getUniqueIndex());
 }
 
 void Path::pickUpItems(const std::vector<const Item *> &items) {
@@ -85,8 +85,8 @@ void Path::completeTask(const Task *task) {
     throw std::runtime_error("Task was already completed");
   }
 
-  state |= (1ULL << task->stateIndex);
-  completedTasks |= (1ULL << task->uniqueIndex);
+  state |= (1ULL << task->getStateIndex());
+  completedTasks |= (1ULL << task->getUniqueIndex());
 }
 
 void Path::completeTasks(const std::vector<const Task *> &tasks) {
@@ -112,11 +112,11 @@ const State &Path::getState() const {
 }
 
 bool Path::hasFoundItem(const Item *item) const {
-  return foundItems & (1ULL << item->uniqueIndex);
+  return foundItems & (1ULL << item->getUniqueIndex());
 }
 
 bool Path::hasCompletedTask(const Task *task) const {
-  return completedTasks & (1ULL << task->uniqueIndex);
+  return completedTasks & (1ULL << task->getUniqueIndex());
 }
 
 void Path::setPostRoomState(bool hasPostRoom) {

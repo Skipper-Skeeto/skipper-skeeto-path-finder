@@ -9,11 +9,26 @@ class Task;
 
 class Item : public Action {
 public:
+  Item(const std::string &key, int uniqueIndex, const Room *room);
+
   virtual std::string getStepDescription() const;
 
-  int uniqueIndex = -1;
-  int stateIndex = -1;
+  const std::string &getKey() const;
+
+  int getUniqueIndex() const;
+
+  void setStateIndex(int stateIndex);
+
+  int getStateIndex() const;
+
+  void setTaskObstacle(const Task *taskObstacle);
+
+  const Task *getTaskObstacle() const;
+
+private:
   std::string key;
-  Room *room = nullptr;
-  Task *taskObstacle = nullptr;
+  int uniqueIndex;
+  int stateIndex = -1;
+  const Room *room;
+  const Task *taskObstacle = nullptr;
 };
