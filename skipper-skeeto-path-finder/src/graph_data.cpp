@@ -4,10 +4,12 @@
 
 #include <sstream>
 
-GraphData::GraphData(const nlohmann::json &jsonData) {
+GraphData GraphData::fromJson(const nlohmann::json &jsonData) {
+  GraphData graphData;
+
   int edgeIndex = 0;
   for (auto const &edgeData : jsonData) {
-    auto &edge = edges[edgeIndex];
+    auto &edge = graphData.edges[edgeIndex];
 
     edge.endVertexIndex = edgeData["to"].get<int>() - 1;
     edge.length = edgeData["length"];
@@ -17,7 +19,7 @@ GraphData::GraphData(const nlohmann::json &jsonData) {
     }
 
     // Insert edge into vertices map - note that we sort the shortest first
-    auto &edgesFromVertex = verticesMap[edgeData["from"].get<int>() - 1];
+    auto &edgesFromVertex = graphData.verticesMap[edgeData["from"].get<int>() - 1];
     const auto &longerLengthIterator = std::upper_bound(
         edgesFromVertex.begin(),
         edgesFromVertex.end(),
@@ -30,7 +32,9 @@ GraphData::GraphData(const nlohmann::json &jsonData) {
     ++edgeIndex;
   }
 
-  setupMinimumEntryDistances();
+  graphData.setupMinimumEntryDistances();
+
+  return graphData;
 }
 
 const std::vector<const Edge *> &GraphData::getEdgesForVertex(char vertexIndex) const {

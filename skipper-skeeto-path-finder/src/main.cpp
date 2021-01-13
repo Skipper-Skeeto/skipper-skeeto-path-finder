@@ -34,7 +34,7 @@ int main() {
 
     controller.printResult();
 #elif USED_DATA_TYPE == DATA_TYPE_GRAPH
-    GraphData data(jsonData);
+    GraphData data = GraphData::fromJson(jsonData);
 
     GraphController controller(&data);
     controller.start();

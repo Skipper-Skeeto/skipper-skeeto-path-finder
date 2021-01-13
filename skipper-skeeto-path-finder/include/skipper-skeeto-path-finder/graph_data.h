@@ -10,13 +10,15 @@
 
 class GraphData {
 public:
-  GraphData(const nlohmann::json &jsonData);
+  static GraphData fromJson(const nlohmann::json &jsonData);
 
   const std::vector<const Edge *> &getEdgesForVertex(char vertexIndex) const;
 
   unsigned char getMinimumEntryDistance(char vertexIndex) const;
 
 private:
+  GraphData() = default;
+
   void setupMinimumEntryDistances();
 
   std::array<std::vector<const Edge *>, VERTICES_COUNT> verticesMap{};
