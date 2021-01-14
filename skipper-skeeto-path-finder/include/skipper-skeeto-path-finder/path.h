@@ -5,7 +5,7 @@
 #include <array>
 #include <vector>
 
-using State = unsigned long long int;
+using RawState = unsigned long long int;
 
 class Action;
 class Item;
@@ -43,7 +43,7 @@ public:
 
   bool isDone() const;
 
-  const State &getState() const;
+  const RawState &getState() const;
 
   bool hasFoundItem(const Item *item) const;
 
@@ -59,13 +59,13 @@ public:
 
   SubPathInfo subPathInfo;
 
-  static State getStateWithRoom(const State &state, int roomIndex);
+  static RawState getStateWithRoom(const RawState &state, int roomIndex);
 
 private:
   const Path *previousPath = nullptr;
   unsigned char enteredRoomsCount = 0;
   bool postRoom = false;
-  State state{};
+  RawState state{};
   unsigned long long int foundItems{};
   unsigned long long int completedTasks{};
 };

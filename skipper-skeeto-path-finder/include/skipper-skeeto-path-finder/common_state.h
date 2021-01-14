@@ -44,7 +44,7 @@ private:
 
   unsigned char getMaxVisitedRoomsCount() const;
 
-  int checkForDuplicateState(const State &state, unsigned char visitedRoomsCount);
+  int checkForDuplicateState(const RawState &state, unsigned char visitedRoomsCount);
 
   size_t getWorkingSetBytes();
 
@@ -56,7 +56,7 @@ private:
   mutable std::mutex memoryMutex;
 
   unsigned char maxVisitedRoomsCount = 255;
-  phmap::parallel_flat_hash_map<State, unsigned char> stepsForState{};
+  phmap::parallel_flat_hash_map<RawState, unsigned char> stepsForState{};
   std::vector<std::vector<const Action *>> goodOnes;
   int dumpedGoodOnes = 0;
   int lastRunningExtraThread = -1;

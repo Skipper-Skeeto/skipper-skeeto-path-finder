@@ -295,7 +295,7 @@ unsigned char CommonState::getMaxVisitedRoomsCount() const {
   return maxVisitedRoomsCount;
 }
 
-int CommonState::checkForDuplicateState(const State &state, unsigned char visitedRoomsCount) {
+int CommonState::checkForDuplicateState(const RawState &state, unsigned char visitedRoomsCount) {
   std::lock_guard<std::mutex> guard(stepStageMutex);
   int result = -1;
 

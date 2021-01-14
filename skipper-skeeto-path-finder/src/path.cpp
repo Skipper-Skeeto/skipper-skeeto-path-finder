@@ -107,7 +107,7 @@ bool Path::isDone() const {
   return (1ULL << STATE_TASK_ITEM_SIZE) - 1 == (state >> STATE_TASK_ITEM_START);
 };
 
-const State &Path::getState() const {
+const RawState &Path::getState() const {
   return state;
 }
 
@@ -137,6 +137,6 @@ std::vector<const Path *> Path::getRoute() const {
   }
 }
 
-State Path::getStateWithRoom(const State &state, int roomIndex) {
+RawState Path::getStateWithRoom(const RawState &state, int roomIndex) {
   return ((~((1ULL << STATE_ROOM_INDEX_SIZE) - 1) & state) | roomIndex);
 }
