@@ -6,6 +6,7 @@
 
 GraphData GraphData::fromJson(const nlohmann::json &jsonData) {
   GraphData graphData;
+  graphData.startIndex = 0;
 
   int edgeIndex = 0;
   for (auto const &edgeData : jsonData) {
@@ -35,6 +36,10 @@ GraphData GraphData::fromJson(const nlohmann::json &jsonData) {
   graphData.setupMinimumEntryDistances();
 
   return graphData;
+}
+
+unsigned char GraphData::getStartIndex() const {
+  return startIndex;
 }
 
 const std::vector<const Edge *> &GraphData::getEdgesForVertex(char vertexIndex) const {

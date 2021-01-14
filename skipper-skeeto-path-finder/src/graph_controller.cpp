@@ -145,7 +145,7 @@ void GraphController::setupStartRunner() {
     minimumEndDistance += data->getMinimumEntryDistance(index);
   }
 
-  startPath->initialize(0, 0, minimumEndDistance);
+  startPath->initialize(data->getStartIndex(), 0, minimumEndDistance);
 
   // This shouldn't make a difference, but just to be sure
   startPath->setPreviousPath(startPathIndex);
