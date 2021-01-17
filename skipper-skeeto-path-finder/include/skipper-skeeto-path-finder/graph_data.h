@@ -21,6 +21,8 @@ public:
 private:
   GraphData() = default;
 
+  void addEdge(int edgeIndex, const Edge &edge, int fromVertexIndex);
+
   void setupMinimumEntryDistances();
 
   unsigned char startIndex;

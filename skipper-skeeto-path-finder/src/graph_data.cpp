@@ -10,8 +10,9 @@ GraphData GraphData::fromJson(const nlohmann::json &jsonData) {
 
   int edgeIndex = 0;
   for (auto const &edgeData : jsonData) {
-    auto &edge = graphData.edges[edgeIndex];
+    Edge edge;
 
+    // Minus 1 because the vertices are 1-indexed
     edge.endVertexIndex = edgeData["to"].get<int>() - 1;
     edge.length = edgeData["length"];
     for (auto const &conditionNumber : edgeData["conditions"]) {
@@ -19,16 +20,10 @@ GraphData GraphData::fromJson(const nlohmann::json &jsonData) {
       edge.condition |= (1ULL << (conditionNumber.get<int>() - 1));
     }
 
-    // Insert edge into vertices map - note that we sort the shortest first
-    auto &edgesFromVertex = graphData.verticesMap[edgeData["from"].get<int>() - 1];
-    const auto &longerLengthIterator = std::upper_bound(
-        edgesFromVertex.begin(),
-        edgesFromVertex.end(),
-        edge.length,
-        [](const auto length, const auto &otherEdge) {
-          return length < otherEdge->length;
-        });
-    edgesFromVertex.insert(longerLengthIterator, &edge);
+    // Minus 1 because the vertices are 1-indexed
+    auto fromVertexIndex = edgeData["from"].get<int>() - 1;
+
+    graphData.addEdge(edgeIndex, edge, fromVertexIndex);
 
     ++edgeIndex;
   }
@@ -48,6 +43,21 @@ const std::vector<const Edge *> &GraphData::getEdgesForVertex(char vertexIndex) 
 
 unsigned char GraphData::getMinimumEntryDistance(char vertexIndex) const {
   return vertexMinimumEntryDistances[vertexIndex];
+}
+
+void GraphData::addEdge(int edgeIndex, const Edge &edge, int fromVertexIndex) {
+  edges[edgeIndex] = edge;
+
+  // Insert edge into vertices map - note that we sort the shortest first
+  auto &edgesFromVertex = verticesMap[fromVertexIndex];
+  const auto &longerLengthIterator = std::upper_bound(
+      edgesFromVertex.begin(),
+      edgesFromVertex.end(),
+      edge.length,
+      [](const auto length, const auto &otherEdge) {
+        return length < otherEdge->length;
+      });
+  edgesFromVertex.insert(longerLengthIterator, &edges[edgeIndex]);
 }
 
 void GraphData::setupMinimumEntryDistances() {
