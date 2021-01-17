@@ -70,7 +70,7 @@ void Path::pickUpItem(const Item *item) {
     throw std::runtime_error("Item was already picked up");
   }
 
-  state |= (1ULL << item->getStateIndex());
+  state |= (1ULL << (item->getStateIndex() + STATE_TASK_ITEM_START));
   foundItems |= (1ULL << item->getUniqueIndex());
 }
 
@@ -85,7 +85,7 @@ void Path::completeTask(const Task *task) {
     throw std::runtime_error("Task was already completed");
   }
 
-  state |= (1ULL << task->getStateIndex());
+  state |= (1ULL << (task->getStateIndex() + STATE_TASK_ITEM_START));
   completedTasks |= (1ULL << task->getUniqueIndex());
 }
 

@@ -76,7 +76,7 @@ RawData::RawData(const nlohmann::json &jsonData) {
     }
   }
 
-  int nextStateIndex = STATE_TASK_ITEM_START;
+  int nextStateIndex = 0;
   for (const auto &roomTasks : roomToTasksMapping) {
     int noObstacleIndex = -1;
     for (const auto &constTask : roomTasks.second) {
@@ -137,14 +137,13 @@ RawData::RawData(const nlohmann::json &jsonData) {
     throw std::runtime_error(stringStream.str());
   }
 
-  auto actualStateTaskItemSize = nextStateIndex - STATE_TASK_ITEM_START;
-  if (STATE_TASK_ITEM_SIZE != actualStateTaskItemSize) {
+  if (STATE_TASK_ITEM_SIZE != nextStateIndex) {
     std::stringstream stringStream;
-    stringStream << "Predefined state count (" << STATE_TASK_ITEM_SIZE << ") did not match the actual (" << actualStateTaskItemSize << ")";
+    stringStream << "Predefined state count (" << STATE_TASK_ITEM_SIZE << ") did not match the actual (" << nextStateIndex << ")";
     throw std::runtime_error(stringStream.str());
   }
 
-  if (nextStateIndex > 64) {
+  if (nextStateIndex + STATE_TASK_ITEM_START > 64) {
     std::stringstream stringStream;
     stringStream << "Too many different states to be able to optimize state key. "
                  << "Optimize the state-grouping or roll-back that use list of bools as state key. "
