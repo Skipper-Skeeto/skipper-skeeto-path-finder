@@ -69,7 +69,7 @@ void GraphData::setupMinimumEntryDistances() {
     char distance = -1;
 
     for (int otherIndex = 0; otherIndex < VERTICES_COUNT; ++otherIndex) {
-      if (!isDeadEnd) {
+      if (!isDeadEnd || exitEdges.empty()) {
         break;
       }
 
@@ -82,9 +82,7 @@ void GraphData::setupMinimumEntryDistances() {
           continue;
         }
 
-        if (exitEdges.front()->endVertexIndex == otherIndex) {
-          distance = edge->length;
-        } else {
+        if (exitEdges.front()->endVertexIndex != otherIndex) {
           isDeadEnd = false;
           break;
         }
@@ -93,15 +91,10 @@ void GraphData::setupMinimumEntryDistances() {
 
     if (isDeadEnd) {
       isDeadEndMap[ownIndex] = true;
-      vertexMinimumEntryDistances[ownIndex] = distance;
     }
   }
 
   for (int ownIndex = 0; ownIndex < VERTICES_COUNT; ++ownIndex) {
-    if (isDeadEndMap[ownIndex]) {
-      continue; // Distance already set
-    }
-
     char distance = -1;
 
     for (int otherIndex = 0; otherIndex < VERTICES_COUNT; ++otherIndex) {
