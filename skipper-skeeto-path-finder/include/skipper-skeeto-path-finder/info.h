@@ -25,7 +25,7 @@
 #define STATE_TASK_ITEM_SIZE 58
 
 #define VERTICES_COUNT 46
-#define EDGES_COUNT 176
+#define EDGES_COUNT 175
 
 #elif GAME_ID == 2
 

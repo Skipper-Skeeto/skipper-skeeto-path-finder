@@ -7,6 +7,12 @@
 GraphData::GraphData(const nlohmann::json &jsonData) : startIndex(0) {
   int edgeIndex = 0;
   for (auto const &edgeData : jsonData) {
+    if (edgeIndex >= EDGES_COUNT) {
+      std::stringstream stringStream;
+      stringStream << "Predefined edges count (" << EDGES_COUNT << ") is too small, it should be increased";
+      throw std::runtime_error(stringStream.str());
+    }
+
     auto edge = &edges[edgeIndex];
 
     // Minus 1 because the vertices are 1-indexed
@@ -23,6 +29,12 @@ GraphData::GraphData(const nlohmann::json &jsonData) : startIndex(0) {
     addEdgeToVertex(edge, fromVertexIndex);
 
     ++edgeIndex;
+  }
+
+  if (edgeIndex != EDGES_COUNT) {
+    std::stringstream stringStream;
+    stringStream << "Predefined edges count (" << EDGES_COUNT << ") did not match the actual (" << edgeIndex << ")";
+    throw std::runtime_error(stringStream.str());
   }
 
   setupMinimumEntryDistances();
