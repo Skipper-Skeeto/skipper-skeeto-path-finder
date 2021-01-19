@@ -10,7 +10,7 @@
 
 class GraphData {
 public:
-  static GraphData fromJson(const nlohmann::json &jsonData);
+  GraphData(const nlohmann::json &jsonData);
 
   unsigned char getStartIndex() const;
 
@@ -19,9 +19,8 @@ public:
   unsigned char getMinimumEntryDistance(char vertexIndex) const;
 
 private:
-  GraphData() = default;
 
-  void addEdge(int edgeIndex, const Edge &edge, int fromVertexIndex);
+  void addEdgeToVertex(const Edge *edge, int fromVertexIndex);
 
   void setupMinimumEntryDistances();
 

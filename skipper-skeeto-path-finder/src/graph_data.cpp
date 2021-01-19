@@ -4,33 +4,29 @@
 
 #include <sstream>
 
-GraphData GraphData::fromJson(const nlohmann::json &jsonData) {
-  GraphData graphData;
-  graphData.startIndex = 0;
-
+GraphData::GraphData(const nlohmann::json &jsonData) : startIndex(0) {
   int edgeIndex = 0;
   for (auto const &edgeData : jsonData) {
-    Edge edge;
+    auto edge = &edges[edgeIndex];
 
     // Minus 1 because the vertices are 1-indexed
-    edge.endVertexIndex = edgeData["to"].get<int>() - 1;
-    edge.length = edgeData["length"];
+    edge->endVertexIndex = edgeData["to"].get<int>() - 1;
+    edge->length = edgeData["length"];
     for (auto const &conditionNumber : edgeData["conditions"]) {
       // Minus 1 because the vertices are 1-indexed
-      edge.condition |= (1ULL << (conditionNumber.get<int>() - 1));
+      edge->condition |= (1ULL << (conditionNumber.get<int>() - 1));
     }
 
     // Minus 1 because the vertices are 1-indexed
     auto fromVertexIndex = edgeData["from"].get<int>() - 1;
 
-    graphData.addEdge(edgeIndex, edge, fromVertexIndex);
+    addEdgeToVertex(edge, fromVertexIndex);
 
     ++edgeIndex;
   }
 
-  graphData.setupMinimumEntryDistances();
+  setupMinimumEntryDistances();
 
-  return graphData;
 }
 
 unsigned char GraphData::getStartIndex() const {
@@ -45,19 +41,17 @@ unsigned char GraphData::getMinimumEntryDistance(char vertexIndex) const {
   return vertexMinimumEntryDistances[vertexIndex];
 }
 
-void GraphData::addEdge(int edgeIndex, const Edge &edge, int fromVertexIndex) {
-  edges[edgeIndex] = edge;
-
+void GraphData::addEdgeToVertex(const Edge *edge, int fromVertexIndex) {
   // Insert edge into vertices map - note that we sort the shortest first
   auto &edgesFromVertex = verticesMap[fromVertexIndex];
   const auto &longerLengthIterator = std::upper_bound(
       edgesFromVertex.begin(),
       edgesFromVertex.end(),
-      edge.length,
+      edge->length,
       [](const auto length, const auto &otherEdge) {
         return length < otherEdge->length;
       });
-  edgesFromVertex.insert(longerLengthIterator, &edges[edgeIndex]);
+  edgesFromVertex.insert(longerLengthIterator, edge);
 }
 
 void GraphData::setupMinimumEntryDistances() {
