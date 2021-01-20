@@ -1,7 +1,9 @@
 #include "skipper-skeeto-path-finder/graph_data.h"
 
 #include "skipper-skeeto-path-finder/edge.h"
+#include "skipper-skeeto-path-finder/raw_data.h"
 
+#include <list>
 #include <sstream>
 
 GraphData::GraphData(const nlohmann::json &jsonData) : startIndex(0) {
@@ -38,7 +40,149 @@ GraphData::GraphData(const nlohmann::json &jsonData) : startIndex(0) {
   }
 
   setupMinimumEntryDistances();
+}
 
+GraphData::GraphData(const RawData &rawData) {
+  auto startRoom = rawData.getStartRoom();
+  const Item *startItem = nullptr;
+  for (auto item : rawData.getItemsForRoom(startRoom)) {
+    if (item->getTaskObstacle() == nullptr) {
+      startItem = item;
+      break;
+    }
+  }
+
+  if (startItem == nullptr) {
+    throw std::runtime_error("Don't know how to handle start room without item without obstacle");
+  }
+  startIndex = startItem->getStateIndex();
+
+  int edgeIndex = 0;
+  for (int currentStateIndex = 0; currentStateIndex < STATE_TASK_ITEM_SIZE; ++currentStateIndex) {
+    const Room *rootRoom = nullptr;
+    for (auto room : rawData.getRooms()) {
+      for (auto roomState : rawData.getStatesForRoom(room)) {
+        if (roomState.first == currentStateIndex) {
+          rootRoom = room;
+          break;
+        }
+      }
+      if (rootRoom != nullptr) {
+        break;
+      }
+    }
+
+    std::array<std::vector<std::pair<int, unsigned long long int>>, STATE_TASK_ITEM_SIZE> foundEdges{};
+
+    std::list<std::tuple<const Room *, int, unsigned long long int, int>> unresolvedRooms;
+    unresolvedRooms.emplace_back(rootRoom, 0, 0, -1);
+
+    while (!unresolvedRooms.empty()) {
+      auto currentRoomTuple = unresolvedRooms.front();
+      auto currentRoom = std::get<0>(currentRoomTuple);
+      auto edgeLengh = std::get<1>(currentRoomTuple);
+      auto extraConditions = std::get<2>(currentRoomTuple);
+      auto previousRoomIndex = std::get<3>(currentRoomTuple);
+      unresolvedRooms.pop_front();
+
+      bool keepLooking = true;
+      if (currentRoom->getTaskObstacle() != nullptr && currentRoom != rootRoom) {
+        if (currentRoom->getTaskObstacle()->getRoom() == currentRoom) {
+          // We have to solve this task to enter the room - and after it's solved, we can always travel via it
+          keepLooking = false;
+
+          auto conditions = extraConditions;
+          for (auto item : currentRoom->getTaskObstacle()->getItemsNeeded()) {
+            conditions |= (1ULL << item->getStateIndex());
+          }
+
+          if (currentRoom->getTaskObstacle()->getTaskObstacle() != nullptr) {
+            conditions |= (1ULL << currentRoom->getTaskObstacle()->getTaskObstacle()->getStateIndex());
+          }
+
+          maybeAddEdge(foundEdges[currentRoom->getTaskObstacle()->getStateIndex()], edgeLengh, conditions);
+        } else {
+          int foundStateWithoutCondition = false;
+          for (auto state : rawData.getStatesForRoom(currentRoom)) {
+            auto conditionForState = state.second.getBits<0, STATE_TASK_ITEM_SIZE>();
+            auto conditionForEdge = extraConditions | conditionForState | (1ULL << currentRoom->getTaskObstacle()->getStateIndex());
+
+            maybeAddEdge(foundEdges[state.first], edgeLengh, conditionForEdge);
+
+            if (conditionForState == 0) {
+              foundStateWithoutCondition = true;
+            }
+          }
+
+          // We need a state without condition to finish this "path" since we want to be able to
+          // go to a state continue from it without fulfilling any extra conditions (other than
+          // the task obstacle of the room(s))
+          if (foundStateWithoutCondition) {
+            keepLooking = false;
+          } else {
+            extraConditions |= (1ULL << currentRoom->getTaskObstacle()->getStateIndex());
+          }
+        }
+      } else {
+        for (auto roomState : rawData.getStatesForRoom(currentRoom)) {
+          if (roomState.first == currentStateIndex) {
+            continue;
+          }
+
+          auto condition = roomState.second.getBits<0, STATE_TASK_ITEM_SIZE>();
+
+          maybeAddEdge(foundEdges[roomState.first], edgeLengh, condition | extraConditions);
+
+          if (condition == 0) {
+            // This state can always be reached so we can just continue from it
+            keepLooking = false;
+          }
+        }
+      }
+
+      if (keepLooking) {
+        for (auto nextRoom : currentRoom->getNextRooms()) {
+          if (nextRoom->getUniqueIndex() == previousRoomIndex) {
+            continue;
+          }
+
+          unresolvedRooms.emplace_back(nextRoom, edgeLengh + 1, extraConditions, currentRoom->getUniqueIndex());
+        }
+      }
+
+      // Remember post room
+    }
+
+    for (int endVertexIndex = 0; endVertexIndex < STATE_TASK_ITEM_SIZE; ++endVertexIndex) {
+      for (auto edgeData : foundEdges[endVertexIndex]) {
+        if (edgeIndex >= EDGES_COUNT) {
+          std::stringstream stringStream;
+          stringStream << "Predefined edges count (" << EDGES_COUNT << ") is too small, it should be increased";
+          throw std::runtime_error(stringStream.str());
+        }
+
+        auto edge = &edges[edgeIndex];
+
+        edge->endVertexIndex = endVertexIndex;
+        edge->length = edgeData.first;
+        edge->condition = edgeData.second;
+
+        auto fromVertexIndex = currentStateIndex;
+
+        addEdgeToVertex(edge, fromVertexIndex);
+
+        ++edgeIndex;
+      }
+    }
+  }
+
+  if (edgeIndex != EDGES_COUNT) {
+    std::stringstream stringStream;
+    stringStream << "Predefined edges count (" << EDGES_COUNT << ") did not match the actual (" << edgeIndex << ")";
+    throw std::runtime_error(stringStream.str());
+  }
+
+  setupMinimumEntryDistances();
 }
 
 unsigned char GraphData::getStartIndex() const {
@@ -51,6 +195,51 @@ const std::vector<const Edge *> &GraphData::getEdgesForVertex(char vertexIndex) 
 
 unsigned char GraphData::getMinimumEntryDistance(char vertexIndex) const {
   return vertexMinimumEntryDistances[vertexIndex];
+}
+
+void GraphData::maybeAddEdge(std::vector<std::pair<int, unsigned long long int>> &edges, int length, unsigned long long int condition) {
+  bool shouldAdd = true;
+  auto iterator = edges.begin();
+  while (iterator != edges.end()) {
+    if (condition == 0) {
+      if (length <= iterator->first) {
+        iterator = edges.erase(iterator);
+      } else if (iterator->second == 0) {
+        // The other edge with no conditions as well that's shorter
+        shouldAdd = false;
+        break;
+      } else {
+        // The other edge is shorter, but has conditions, so it's not enough to discard this
+        ++iterator;
+      }
+    } else {
+      if (iterator->second == 0) {
+        if (iterator->first <= length) {
+          shouldAdd = false;
+          break;
+        } else {
+          // Even though there is an edge without condition it might be smarter to go this
+          // shorter route with condition if it's fulfilled
+          ++iterator;
+        }
+      } else if (iterator->second == condition) {
+        if (iterator->first > length) {
+          iterator = edges.erase(iterator);
+        } else {
+          shouldAdd = false;
+          break;
+        }
+      } else {
+        // There might be faster ways with other conditions but if this is the only fulfilled
+        // it might be smarter to pick
+        ++iterator;
+      }
+    }
+  }
+
+  if (shouldAdd) {
+    edges.emplace_back(length, condition);
+  }
 }
 
 void GraphData::addEdgeToVertex(const Edge *edge, int fromVertexIndex) {

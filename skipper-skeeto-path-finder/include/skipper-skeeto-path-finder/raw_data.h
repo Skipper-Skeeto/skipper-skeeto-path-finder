@@ -3,6 +3,7 @@
 #include "skipper-skeeto-path-finder/info.h"
 #include "skipper-skeeto-path-finder/item.h"
 #include "skipper-skeeto-path-finder/room.h"
+#include "skipper-skeeto-path-finder/state.h"
 #include "skipper-skeeto-path-finder/task.h"
 
 #include <string>
@@ -28,6 +29,8 @@ public:
   const Room *getRoom(int index) const;
 
   const Room *getStartRoom() const;
+
+  std::vector<std::pair<unsigned char, State>> getStatesForRoom(const Room *room) const;
 
 private:
   std::unordered_map<std::string, Room> roomMapping;

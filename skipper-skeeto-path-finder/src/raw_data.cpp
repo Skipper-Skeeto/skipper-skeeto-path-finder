@@ -208,3 +208,38 @@ const Room *RawData::getStartRoom() const {
   }
   return &roomIterator->second;
 }
+
+std::vector<std::pair<unsigned char, State>> RawData::getStatesForRoom(const Room *room) const {
+  std::array<bool, STATE_TASK_ITEM_SIZE> stateFound{};
+  std::array<unsigned long long int, STATE_TASK_ITEM_SIZE> stateConditions{};
+  for (auto item : getItemsForRoom(room)) {
+    stateFound[item->getStateIndex()] = true;
+
+    if (item->getTaskObstacle() != nullptr && item->getTaskObstacle()->getStateIndex() != item->getStateIndex()) {
+      stateConditions[item->getStateIndex()] |= (1ULL << item->getTaskObstacle()->getStateIndex());
+    }
+  }
+  for (auto task : getTasksForRoom(room)) {
+    stateFound[task->getStateIndex()] = true;
+
+    for (auto item : task->getItemsNeeded()) {
+      stateConditions[task->getStateIndex()] |= (1ULL << item->getStateIndex());
+    }
+
+    if (task->getTaskObstacle() != nullptr) {
+      stateConditions[task->getStateIndex()] |= (1ULL << task->getTaskObstacle()->getStateIndex());
+    }
+  }
+
+  std::vector<std::pair<unsigned char, State>> states;
+  for (int stateIndex = 0; stateIndex < stateFound.size(); ++stateIndex) {
+    if (stateFound[stateIndex]) {
+      State condition;
+      condition.setBits<0, STATE_TASK_ITEM_SIZE>(stateConditions[stateIndex]);
+
+      states.emplace_back(stateIndex, condition);
+    }
+  }
+
+  return states;
+}

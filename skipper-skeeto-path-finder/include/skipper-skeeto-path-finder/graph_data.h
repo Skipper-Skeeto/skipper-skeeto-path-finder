@@ -8,9 +8,13 @@
 #include <array>
 #include <vector>
 
+class RawData;
+
 class GraphData {
 public:
   GraphData(const nlohmann::json &jsonData);
+
+  GraphData(const RawData &rawData);
 
   unsigned char getStartIndex() const;
 
@@ -19,6 +23,7 @@ public:
   unsigned char getMinimumEntryDistance(char vertexIndex) const;
 
 private:
+  static void maybeAddEdge(std::vector<std::pair<int, unsigned long long int>> &edges, int length, unsigned long long int condition);
 
   void addEdgeToVertex(const Edge *edge, int fromVertexIndex);
 

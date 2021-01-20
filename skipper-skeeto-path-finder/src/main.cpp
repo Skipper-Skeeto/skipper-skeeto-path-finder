@@ -3,10 +3,9 @@
 #if USED_DATA_TYPE == DATA_TYPE_RAW
 #include "skipper-skeeto-path-finder/path_controller.h"
 #include "skipper-skeeto-path-finder/raw_data.h"
-#elif USED_DATA_TYPE == DATA_TYPE_GRAPH
+#endif
 #include "skipper-skeeto-path-finder/graph_controller.h"
 #include "skipper-skeeto-path-finder/graph_data.h"
-#endif
 
 #include "json/json.hpp"
 
@@ -27,18 +26,15 @@ int main() {
 
   try {
 #if USED_DATA_TYPE == DATA_TYPE_RAW
-    RawData data(jsonData);
+    RawData rawData(jsonData);
 
-    PathController controller(&data);
-    controller.start();
-
-    controller.printResult();
+    GraphData graphData(rawData);
 #elif USED_DATA_TYPE == DATA_TYPE_GRAPH
-    GraphData data(jsonData);
-
-    GraphController controller(&data);
-    controller.start();
+    GraphData graphData(jsonData);
 #endif
+
+    GraphController controller(&graphData);
+    controller.start();
 
     std::cout << "Done" << std::endl;
   } catch (const std::exception &exception) {
