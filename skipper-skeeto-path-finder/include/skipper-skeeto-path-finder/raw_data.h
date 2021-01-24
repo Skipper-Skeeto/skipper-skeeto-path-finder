@@ -6,8 +6,8 @@
 #include "skipper-skeeto-path-finder/state.h"
 #include "skipper-skeeto-path-finder/task.h"
 
+#include <map>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "json/json.hpp"
@@ -33,12 +33,12 @@ public:
   std::vector<std::pair<unsigned char, State>> getStatesForRoom(const Room *room) const;
 
 private:
-  std::unordered_map<std::string, Room> roomMapping;
-  std::unordered_map<std::string, Item> itemMapping;
-  std::unordered_map<std::string, Task> taskMapping;
+  std::map<std::string, Room> roomMapping;
+  std::map<std::string, Item> itemMapping;
+  std::map<std::string, Task> taskMapping;
 
-  std::unordered_map<const Room *, std::vector<const Item *>> roomToItemsMapping;
-  std::unordered_map<const Room *, std::vector<const Task *>> roomToTasksMapping;
+  std::map<const Room *, std::vector<const Item *>> roomToItemsMapping;
+  std::map<const Room *, std::vector<const Task *>> roomToTasksMapping;
 
   std::array<const Room *, ROOM_COUNT> rooms;
 };

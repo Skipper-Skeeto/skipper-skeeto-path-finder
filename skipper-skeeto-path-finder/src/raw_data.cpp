@@ -77,9 +77,9 @@ RawData::RawData(const nlohmann::json &jsonData) {
   }
 
   int nextStateIndex = 0;
-  for (const auto &roomTasks : roomToTasksMapping) {
+  for (const auto &roomPair : roomMapping) {
     int noObstacleIndex = -1;
-    for (const auto &constTask : roomTasks.second) {
+    for (const auto &constTask : roomToTasksMapping.find(&roomPair.second)->second) {
       auto &task = taskMapping.find(constTask->getKey())->second;
       if (constTask->getTaskObstacle() == nullptr && constTask->getItemsNeeded().empty()) {
         if (noObstacleIndex == -1) {
@@ -92,14 +92,14 @@ RawData::RawData(const nlohmann::json &jsonData) {
     }
   }
 
-  for (const auto &roomItems : roomToItemsMapping) {
+  for (const auto &roomPair : roomMapping) {
     int noObstacleIndex = -1;
-    auto taskObstacle = roomItems.first->getTaskObstacle();
-    if (taskObstacle != nullptr && taskObstacle->getRoom() == roomItems.first) {
+    auto taskObstacle = roomPair.second.getTaskObstacle();
+    if (taskObstacle != nullptr && taskObstacle->getRoom() == &roomPair.second) {
       noObstacleIndex = taskObstacle->getStateIndex();
     }
 
-    for (const auto &constItem : roomItems.second) {
+    for (const auto &constItem : roomToItemsMapping.find(&roomPair.second)->second) {
       auto taskObstacle = constItem->getTaskObstacle();
       auto &item = itemMapping.find(constItem->getKey())->second;
       if (taskObstacle == nullptr) {
@@ -107,7 +107,7 @@ RawData::RawData(const nlohmann::json &jsonData) {
           noObstacleIndex = nextStateIndex++;
         }
         item.setStateIndex(noObstacleIndex);
-      } else if (taskObstacle->getRoom() == roomItems.first) {
+      } else if (taskObstacle->getRoom() == &roomPair.second) {
         item.setStateIndex(taskObstacle->getStateIndex());
       } else {
         item.setStateIndex(nextStateIndex++);
