@@ -264,7 +264,7 @@ bool GraphController::initializePath(GraphPathPool *pool, unsigned long int path
         auto newDistance = currentDistance + edge->length;
         auto endVertexIndex = edge->endVertexIndex;
 
-        if (nextVertices[endVertexIndex] > 0) {
+        if (nextVertices[endVertexIndex] >= 0) {
           if (newDistance < nextVertices[endVertexIndex]) {
             nextVertices[endVertexIndex] = newDistance;
           }
