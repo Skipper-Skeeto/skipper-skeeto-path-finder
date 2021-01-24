@@ -60,10 +60,21 @@ GraphData::GraphData(const RawData &rawData) {
   int edgeIndex = 0;
   for (int currentStateIndex = 0; currentStateIndex < STATE_TASK_ITEM_SIZE; ++currentStateIndex) {
     const Room *rootRoom = nullptr;
+    int startEdgeLengh = 0;
     for (auto room : rawData.getRooms()) {
       for (auto roomState : rawData.getStatesForRoom(room)) {
         if (roomState.first == currentStateIndex) {
-          rootRoom = room;
+          for (auto task : rawData.getTasksForRoom(room)) {
+            if (task->getStateIndex() == currentStateIndex && task->getPostRoom() != nullptr) {
+              rootRoom = task->getPostRoom();
+              startEdgeLengh = 10; // TODO: Find better solution
+              break;
+            }
+          }
+
+          if (rootRoom == nullptr) {
+            rootRoom = room;
+          }
           break;
         }
       }
@@ -75,7 +86,7 @@ GraphData::GraphData(const RawData &rawData) {
     std::array<std::vector<std::pair<int, unsigned long long int>>, STATE_TASK_ITEM_SIZE> foundEdges{};
 
     std::list<std::tuple<const Room *, int, unsigned long long int, int>> unresolvedRooms;
-    unresolvedRooms.emplace_back(rootRoom, 0, 0, -1);
+    unresolvedRooms.emplace_back(rootRoom, startEdgeLengh, 0, -1);
 
     while (!unresolvedRooms.empty()) {
       auto currentRoomTuple = unresolvedRooms.front();
