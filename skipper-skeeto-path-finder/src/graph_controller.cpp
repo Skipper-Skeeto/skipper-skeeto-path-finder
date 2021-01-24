@@ -139,13 +139,19 @@ void GraphController::setupStartRunner() {
   auto startPathIndex = tempPool.generateNewIndex();
   auto startPath = tempPool.getGraphPath(startPathIndex);
 
-  // Note that we start at index 1 since start (index 0) already has been visited
+  auto startVertexIndex = data->getStartIndex();
+
   unsigned char minimumEndDistance = 0;
-  for (int index = 1; index < VERTICES_COUNT; ++index) {
+  for (int index = 0; index < VERTICES_COUNT; ++index) {
+    if (index == startVertexIndex) {
+      // We already visited this so it shouldn't affect minimum distance
+      continue;
+    }
+
     minimumEndDistance += data->getMinimumEntryDistance(index);
   }
 
-  startPath->initialize(data->getStartIndex(), 0, minimumEndDistance);
+  startPath->initialize(startVertexIndex, 0, minimumEndDistance);
 
   // This shouldn't make a difference, but just to be sure
   startPath->setPreviousPath(startPathIndex);
