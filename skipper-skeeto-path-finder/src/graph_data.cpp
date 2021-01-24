@@ -197,6 +197,46 @@ unsigned char GraphData::getMinimumEntryDistance(char vertexIndex) const {
   return vertexMinimumEntryDistances[vertexIndex];
 }
 
+nlohmann::json GraphData::toJson(const RawData &rawData) const {
+  nlohmann::json json;
+
+  for (const auto &edge : edges) {
+    int fromVertexIndex = -1;
+    for (int vertexIndex = 0; vertexIndex < VERTICES_COUNT; ++vertexIndex) {
+      for (auto edgePtr : verticesMap[vertexIndex]) {
+        if (edgePtr == &edge) {
+          fromVertexIndex = vertexIndex;
+          break;
+        }
+      }
+
+      if (fromVertexIndex != -1) {
+        break;
+      }
+    }
+
+    if (fromVertexIndex < 0) {
+      throw std::runtime_error("Could not find from vertex");
+    }
+
+    auto conditions = nlohmann::json::array();
+    for (int conditionNumber = 0; conditionNumber < VERTICES_COUNT; ++conditionNumber) {
+      auto mask = (1ULL << conditionNumber);
+      if ((edge.condition & mask) == mask) {
+        conditions.push_back(conditionNumber);
+      }
+    }
+
+    json.push_back(
+        {{"from", fromVertexIndex},
+         {"to", edge.endVertexIndex},
+         {"length", edge.length},
+         {"conditions", conditions}});
+  }
+
+  return json;
+}
+
 void GraphData::maybeAddEdge(std::vector<std::pair<int, unsigned long long int>> &edges, int length, unsigned long long int condition) {
   bool shouldAdd = true;
   auto iterator = edges.begin();

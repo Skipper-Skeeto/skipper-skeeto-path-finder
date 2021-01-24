@@ -22,6 +22,8 @@ public:
 
   unsigned char getMinimumEntryDistance(char vertexIndex) const;
 
+  nlohmann::json toJson(const RawData &rawData) const;
+
 private:
   static void maybeAddEdge(std::vector<std::pair<int, unsigned long long int>> &edges, int length, unsigned long long int condition);
 
