@@ -104,7 +104,15 @@ RawData::RawData(const nlohmann::json &jsonData) {
       auto &item = itemMapping.find(constItem->getKey())->second;
       if (taskObstacle == nullptr) {
         if (noObstacleIndex == -1) {
-          noObstacleIndex = nextStateIndex++;
+          for (auto task : roomToTasksMapping[&roomPair.second]) {
+            if (task->getTaskObstacle() == nullptr && task->getItemsNeeded().empty()) {
+              noObstacleIndex = task->getStateIndex();
+              break;
+            }
+          }
+          if (noObstacleIndex == -1) {
+            noObstacleIndex = nextStateIndex++;
+          }
         }
         item.setStateIndex(noObstacleIndex);
       } else if (taskObstacle->getRoom() == &roomPair.second) {
