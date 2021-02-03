@@ -40,6 +40,16 @@ static_assert(sizeof(State) * 8 >= (SUB_PATH_ITERATION_COUNT_INDEX + SUB_PATH_IT
 
 const unsigned char GraphPath::MAX_DISTANCE = (1 << DISTANCE_BITS) - 1;
 
+void GraphPath::swap(GraphPath *pathA, GraphPath *pathB) {
+  auto tempState = pathA->stateA;
+  pathA->stateA = pathB->stateA;
+  pathB->stateA = tempState;
+
+  tempState = pathA->stateB;
+  pathA->stateB = pathB->stateB;
+  pathB->stateB = tempState;
+}
+
 void GraphPath::initialize(char vertexIndex, unsigned long int parentPathIndex, unsigned char minimumEndDistance) {
   stateA.clear();
   stateB.clear();
@@ -62,6 +72,14 @@ void GraphPath::updateFocusedSubPath(unsigned long int index, unsigned char iter
   FOCUSED_SUB_PATH_SET_STATE.setBits<FOCUSED_SUB_PATH_SET_INDEX, FOCUSED_SUB_PATH_SET_BITS>(1);
 
   SUB_PATH_ITERATION_COUNT_STATE.setBits<SUB_PATH_ITERATION_COUNT_INDEX, SUB_PATH_ITERATION_COUNT_BITS>(iterationCount);
+}
+
+void GraphPath::setParentPath(unsigned long int index) {
+  PARENT_PATH_STATE.setBits<PARENT_PATH_INDEX, POOL_INDEX_BITS>(index);
+}
+
+unsigned long int GraphPath::getParentPath() const {
+  return PARENT_PATH_STATE.getBits<PARENT_PATH_INDEX, POOL_INDEX_BITS>();
 }
 
 unsigned long int GraphPath::getFocusedSubPath() const {
@@ -152,4 +170,8 @@ void GraphPath::deserialize(std::istream &instream) {
 void GraphPath::cleanUp() {
   stateA.clear();
   stateB.clear();
+}
+
+bool GraphPath::isClean() const {
+  return stateA.isClean() && stateB.isClean();
 }

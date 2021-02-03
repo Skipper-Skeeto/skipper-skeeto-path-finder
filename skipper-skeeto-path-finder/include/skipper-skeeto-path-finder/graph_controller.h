@@ -1,9 +1,9 @@
 #pragma once
 
 #include "skipper-skeeto-path-finder/graph_common_state.h"
-#include "skipper-skeeto-path-finder/graph_path_pool.h"
 
 class GraphData;
+class GraphPathPool;
 
 class GraphController {
 public:
@@ -12,6 +12,13 @@ public:
   void start();
 
 private:
+  struct PathReferences {
+    GraphPath *parentPath = nullptr;
+    GraphPath *nextPath = nullptr;
+    GraphPath *previousPath = nullptr;
+    std::vector<GraphPath *> subPaths;
+  };
+
   static const unsigned long long int ALL_VERTICES_STATE_MASK;
 
   void setupStartRunner();
@@ -30,7 +37,7 @@ private:
 
   void splitAndRemove(GraphPathPool *pool, RunnerInfo *runnerInfo);
 
-  std::pair<unsigned long int, GraphPath *> movePathData(GraphPathPool *sourcePool, GraphPathPool *destinationPool, unsigned long int sourcePathIndex, unsigned long int destinationParentPathIndex);
+  unsigned long int groupPathTree(GraphPathPool *pool, unsigned long int originalPathIndex);
 
   std::string getPoolFileName(unsigned int runnerInfoIdentifier) const;
 
@@ -42,10 +49,13 @@ private:
 
   void deletePoolFile(const RunnerInfo *runnerInfo) const;
 
+  void swap(GraphPathPool *pool, unsigned long int pathIndexA, unsigned long int pathIndexB);
+
+  PathReferences getReferences(GraphPathPool *pool, const GraphPath *path) const;
+
+  void setNewIndex(GraphPathPool *pool, const PathReferences &pathReferences, unsigned long int newIndex);
+
   GraphCommonState commonState;
   const GraphData *data;
   std::string resultDirName;
-
-  mutable std::mutex tempPoolMutex;
-  GraphPathPool tempPool;
 };

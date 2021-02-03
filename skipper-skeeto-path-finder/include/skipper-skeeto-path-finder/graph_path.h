@@ -11,6 +11,8 @@ class GraphPath {
 public:
   static const unsigned char MAX_DISTANCE;
 
+  static void swap(GraphPath *pathA, GraphPath *pathB);
+
   void initialize(char vertexIndex, unsigned long int parentPathIndex, unsigned char minimumEndDistance);
 
   void initializeAsCopy(const GraphPath *sourcePath, unsigned long int parentPathIndex);
@@ -18,6 +20,10 @@ public:
   char getCurrentVertex() const;
 
   void updateFocusedSubPath(unsigned long int index, unsigned char iterationCount);
+
+  void setParentPath(unsigned long int index);
+
+  unsigned long int getParentPath() const;
 
   unsigned long int getFocusedSubPath() const;
 
@@ -52,6 +58,8 @@ public:
   void deserialize(std::istream &instream);
 
   void cleanUp();
+
+  bool isClean() const;
 
   GraphPath() = default;
 

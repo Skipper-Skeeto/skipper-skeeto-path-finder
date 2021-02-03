@@ -436,21 +436,39 @@ void GraphController::splitAndRemove(GraphPathPool *pool, RunnerInfo *runnerInfo
   std::list<RunnerInfo> runnerInfos;
   auto subRootPathIndex = rootPath->getFocusedSubPath();
   while (true) {
-    std::lock_guard<std::mutex> tempPoolGuard(tempPoolMutex);
-    tempPool.reset();
-
     auto subRunnerInfo = runnerInfo->makeSubRunner(rootPath->getCurrentVertex());
     subRunnerInfo.setHighScore(pool->getGraphPath(subRootPathIndex)->getBestEndDistance());
 
-    movePathData(pool, &tempPool, subRootPathIndex, 0);
+    pool->reset();
+    auto newSubPathIndex = groupPathTree(pool, subRootPathIndex);
+    auto newSubPath = pool->getGraphPath(newSubPathIndex);
+
+    auto originalParentPathIndex = newSubPath->getParentPath();
+    auto originalNextPathIndex = newSubPath->getNextPath();
+    auto originalPreviousPathIndex = newSubPath->getPreviousPath();
+
+    // Important to set parent and siblings to "default" since this will be our root next
+    // time it's deserialized. This is important next time we get to splitting up this
+    // sub path because the swap function needs to fix references and in that case it's
+    // really important they're not referencing an (then) invalid parent/siblings paths
+    newSubPath->setParentPath(0);
+    newSubPath->setNextPath(newSubPathIndex);
+    newSubPath->setPreviousPath(newSubPathIndex);
 
     runnerInfos.push_back(subRunnerInfo);
-    bool success = serializePool(&tempPool, &subRunnerInfo);
+    bool success = serializePool(pool, &subRunnerInfo);
     if (!success) {
       break;
     }
 
-    subRootPathIndex = pool->getGraphPath(subRootPathIndex)->getNextPath();
+    // Set back parent and siblings which is important when dealing with the remaining
+    // sub paths (since espcially the swap function otherwise gets totally confused)
+    newSubPath->setParentPath(originalParentPathIndex);
+    newSubPath->setNextPath(originalNextPathIndex);
+    newSubPath->setPreviousPath(originalPreviousPathIndex);
+
+    subRootPathIndex = originalNextPathIndex;
+    rootPath = pool->getGraphPath(originalParentPathIndex);
     if (subRootPathIndex == rootPath->getFocusedSubPath()) {
       break;
     }
@@ -460,50 +478,27 @@ void GraphController::splitAndRemove(GraphPathPool *pool, RunnerInfo *runnerInfo
   commonState.splitAndRemoveActiveRunnerInfo(runnerInfo, runnerInfos);
 }
 
-std::pair<unsigned long int, GraphPath *> GraphController::movePathData(GraphPathPool *sourcePool, GraphPathPool *destinationPool, unsigned long int sourcePathIndex, unsigned long int destinationParentPathIndex) {
-  auto sourcePath = sourcePool->getGraphPath(sourcePathIndex);
+unsigned long int GraphController::groupPathTree(GraphPathPool *pool, unsigned long int originalPathIndex) {
+  auto newPathIndex = pool->generateNewIndex();
 
-  auto destinationPathIndex = destinationPool->generateNewIndex();
-  auto destinationPath = destinationPool->getGraphPath(destinationPathIndex);
+  auto originalPath = *pool->getGraphPath(originalPathIndex);
 
-  destinationPath->initializeAsCopy(sourcePath, destinationParentPathIndex);
+  swap(pool, originalPathIndex, newPathIndex);
 
-  if (sourcePath->hasSetSubPath()) {
-
-    auto sourceSubPathStartIndex = sourcePath->getFocusedSubPath();
-
-    auto sourceSubPathIndex = sourceSubPathStartIndex;
-    unsigned long int destinationSubPathStartIndex, destinationSubPathPreviousIndex, destinationSubPathCurrentIndex;
-    GraphPath *destinationSubPathStart = nullptr, *destinationSubPathPrevious = nullptr, *destinationSubPathCurrent;
+  GraphPath *path = pool->getGraphPath(newPathIndex);
+  if (path->hasSetSubPath()) {
+    auto currentSubPathIndex = path->getFocusedSubPath();
     while (true) {
-      std::tie(destinationSubPathCurrentIndex, destinationSubPathCurrent) = movePathData(sourcePool, destinationPool, sourceSubPathIndex, destinationPathIndex);
+      auto newSubPathIndex = groupPathTree(pool, currentSubPathIndex);
 
-      if (destinationSubPathStart == nullptr) {
-        destinationSubPathStart = destinationSubPathCurrent;
-        destinationSubPathStartIndex = destinationSubPathCurrentIndex;
-
-        destinationPath->updateFocusedSubPath(destinationSubPathCurrentIndex, sourcePath->getSubPathIterationCount());
-      }
-
-      if (destinationSubPathPrevious != nullptr) {
-        destinationSubPathCurrent->setPreviousPath(destinationSubPathPreviousIndex);
-        destinationSubPathPrevious->setNextPath(destinationSubPathCurrentIndex);
-      }
-
-      destinationSubPathPrevious = destinationSubPathCurrent;
-      destinationSubPathPreviousIndex = destinationSubPathCurrentIndex;
-
-      // Note: If there's only one subpath next and previous will be the same as current - that's why we don't check in the while-condition
-      sourceSubPathIndex = sourcePool->getGraphPath(sourceSubPathIndex)->getNextPath();
-      if (sourceSubPathStartIndex == sourceSubPathIndex) {
-        destinationSubPathCurrent->setNextPath(destinationSubPathStartIndex);
-        destinationSubPathStart->setPreviousPath(destinationSubPathCurrentIndex);
+      currentSubPathIndex = pool->getGraphPath(newSubPathIndex)->getNextPath();
+      if (currentSubPathIndex == path->getFocusedSubPath()) {
         break;
       }
     }
   }
 
-  return std::make_pair(destinationPathIndex, destinationPath);
+  return newPathIndex;
 }
 
 std::string GraphController::getPoolFileName(unsigned int runnerInfoIdentifier) const {
@@ -537,4 +532,76 @@ void GraphController::deserializePool(GraphPathPool *pool, RunnerInfo *runnerInf
 void GraphController::deletePoolFile(const RunnerInfo *runnerInfo) const {
   std::string fileName = getPoolFileName(runnerInfo->getIdentifier());
   std::remove(fileName.c_str());
+}
+
+void GraphController::swap(GraphPathPool *pool, unsigned long int pathIndexA, unsigned long int pathIndexB) {
+  if (pathIndexA == pathIndexB) {
+    return;
+  }
+
+  auto pathA = pool->getGraphPath(pathIndexA);
+  auto pathB = pool->getGraphPath(pathIndexB);
+
+  // Important to get BOTH before we start alterting either, otherwise important info might be overriden
+  auto referencesA = getReferences(pool, pathA);
+  auto referencesB = getReferences(pool, pathB);
+
+  setNewIndex(pool, referencesA, pathIndexB);
+  setNewIndex(pool, referencesB, pathIndexA);
+
+  GraphPath::swap(pathA, pathB);
+}
+
+GraphController::PathReferences GraphController::getReferences(GraphPathPool *pool, const GraphPath *path) const {
+  PathReferences pathReferences;
+
+  if (path->isClean()) {
+    return pathReferences;
+  }
+
+  pathReferences.nextPath = pool->getGraphPath(path->getNextPath());
+  pathReferences.previousPath = pool->getGraphPath(path->getPreviousPath());
+
+  auto parentIndex = path->getParentPath();
+  if (parentIndex > 0) {
+    auto parent = pool->getGraphPath(parentIndex);
+    if (pool->getGraphPath(parent->getFocusedSubPath()) == path) {
+      pathReferences.parentPath = parent;
+    }
+  }
+
+  if (path->hasSetSubPath()) {
+    auto firstSubPathIndex = path->getFocusedSubPath();
+    auto currentSubPathIndex = firstSubPathIndex;
+
+    while (true) {
+      auto currentSubPath = pool->getGraphPath(currentSubPathIndex);
+      pathReferences.subPaths.push_back(currentSubPath);
+
+      currentSubPathIndex = currentSubPath->getNextPath();
+      if (currentSubPathIndex == firstSubPathIndex) {
+        break;
+      }
+    }
+  }
+
+  return pathReferences;
+}
+
+void GraphController::setNewIndex(GraphPathPool *pool, const PathReferences &pathReferences, unsigned long int newIndex) {
+  if (pathReferences.parentPath != nullptr) {
+    pathReferences.parentPath->updateFocusedSubPath(newIndex, pathReferences.parentPath->getSubPathIterationCount());
+  }
+
+  if (pathReferences.nextPath != nullptr) {
+    pathReferences.nextPath->setPreviousPath(newIndex);
+  }
+
+  if (pathReferences.previousPath != nullptr) {
+    pathReferences.previousPath->setNextPath(newIndex);
+  }
+
+  for (auto path : pathReferences.subPaths) {
+    path->setParentPath(newIndex);
+  }
 }

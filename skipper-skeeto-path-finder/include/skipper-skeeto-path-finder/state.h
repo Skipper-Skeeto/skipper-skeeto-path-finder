@@ -22,6 +22,8 @@ public:
 
   void clear();
 
+  bool isClean() const;
+
 private:
   unsigned long long int state{};
 };
