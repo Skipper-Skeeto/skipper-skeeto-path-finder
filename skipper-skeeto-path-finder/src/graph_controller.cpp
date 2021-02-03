@@ -64,7 +64,7 @@ void GraphController::start() {
 
       if (runnerInfo->getIdentifier() != oldRunnerInfoIdentifier) {
         if (oldRunnerInfoIdentifier != -1) {
-          bool success = serializePool(&pool, oldRunnerInfoIdentifier);
+          bool success = serializePool(&pool, oldRunnerInfoIdentifier, false);
           if (!success) {
             break;
           }
@@ -159,7 +159,7 @@ void GraphController::setupStartRunner() {
 
   RunnerInfo startRunnerInfo(std::vector<char>{});
 
-  serializePool(&tempPool, &startRunnerInfo);
+  serializePool(&tempPool, &startRunnerInfo, false);
 
   std::list<RunnerInfo> runnerInfos{startRunnerInfo};
   commonState.addRunnerInfos(runnerInfos);
@@ -455,8 +455,11 @@ void GraphController::splitAndRemove(GraphPathPool *pool, RunnerInfo *runnerInfo
     newSubPath->setNextPath(newSubPathIndex);
     newSubPath->setPreviousPath(newSubPathIndex);
 
+    // Note that we clear the pahts since there's no need to deal with their data when
+    // swapping paths in next subpath iteration. We will however setup this subpath again
+    // right under here since it's still going to be used in the loop
     runnerInfos.push_back(subRunnerInfo);
-    bool success = serializePool(pool, &subRunnerInfo);
+    bool success = serializePool(pool, &subRunnerInfo, true);
     if (!success) {
       break;
     }
@@ -505,14 +508,19 @@ std::string GraphController::getPoolFileName(unsigned int runnerInfoIdentifier) 
   return std::string(TEMP_PATHS_DIR) + "/" + std::to_string(runnerInfoIdentifier) + ".dat";
 }
 
-bool GraphController::serializePool(GraphPathPool *pool, RunnerInfo *runnerInfo) {
-  return serializePool(pool, runnerInfo->getIdentifier());
+bool GraphController::serializePool(GraphPathPool *pool, RunnerInfo *runnerInfo, bool clearSerializedPaths) {
+  return serializePool(pool, runnerInfo->getIdentifier(), clearSerializedPaths);
 }
 
-bool GraphController::serializePool(GraphPathPool *pool, unsigned int runnerInfoIdentifier) {
+bool GraphController::serializePool(GraphPathPool *pool, unsigned int runnerInfoIdentifier, bool clearSerializedPaths) {
   std::string fileName = getPoolFileName(runnerInfoIdentifier);
   std::ofstream dumpFile(fileName, std::ios::binary | std::ios::trunc);
-  pool->serialize(dumpFile);
+
+  if (clearSerializedPaths) {
+    pool->serializeAndClear(dumpFile);
+  } else {
+    pool->serialize(dumpFile);
+  }
 
   bool dumpSuccess = !dumpFile.fail();
 

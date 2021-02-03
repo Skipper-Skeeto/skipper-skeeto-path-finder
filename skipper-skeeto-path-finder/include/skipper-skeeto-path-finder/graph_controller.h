@@ -41,9 +41,9 @@ private:
 
   std::string getPoolFileName(unsigned int runnerInfoIdentifier) const;
 
-  bool serializePool(GraphPathPool *pool, RunnerInfo *runnerInfo);
+  bool serializePool(GraphPathPool *pool, RunnerInfo *runnerInfo, bool clearSerializedPaths);
 
-  bool serializePool(GraphPathPool *pool, unsigned int runnerInfoIdentifier);
+  bool serializePool(GraphPathPool *pool, unsigned int runnerInfoIdentifier, bool clearSerializedPaths);
 
   void deserializePool(GraphPathPool *pool, RunnerInfo *runnerInfo);
 

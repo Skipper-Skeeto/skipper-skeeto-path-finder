@@ -18,6 +18,8 @@ public:
 
   void serialize(std::ostream &outstream) const;
 
+  void serializeAndClear(std::ostream &outstream);
+
   void deserialize(std::istream &instream);
 
   void reset();
