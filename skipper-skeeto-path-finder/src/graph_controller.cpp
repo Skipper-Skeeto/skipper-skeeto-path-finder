@@ -17,27 +17,14 @@
 #include <iostream>
 #include <limits>
 #include <list>
-#include <sstream>
 #include <thread>
 
 const unsigned long long int GraphController::ALL_VERTICES_STATE_MASK = (1ULL << VERTICES_COUNT) - 1;
 
 #define FORCE_FINISH_THRESHOLD_DEPTH 10
 
-GraphController::GraphController(const GraphData *data) {
+GraphController::GraphController(const GraphData *data, const std::string &resultDir) : commonState(resultDir) {
   this->data = data;
-
-  // Do not use localtime(), see https://stackoverflow.com/a/38034148/2761541
-  std::time_t currentTime = std::time(nullptr);
-  std::ostringstream stringStream;
-  std::tm localTime{};
-#ifdef _WIN32
-  localtime_s(&localTime, &currentTime);
-#else
-  localtime_r(&currentTime, &localTime);
-#endif
-  stringStream << std::put_time(&localTime, "%Y%m%d-%H%M%S");
-  resultDirName = stringStream.str();
 }
 
 void GraphController::start() {
@@ -117,7 +104,7 @@ void GraphController::start() {
   while (!commonState.shouldStop()) {
     commonState.printStatus();
 
-    commonState.dumpGoodOnes(resultDirName);
+    commonState.dumpGoodOnes();
 
     std::this_thread::sleep_for(std::chrono::seconds(5));
   }
@@ -126,7 +113,7 @@ void GraphController::start() {
     threads[index].join();
   }
 
-  commonState.dumpGoodOnes(resultDirName);
+  commonState.dumpGoodOnes();
 
   commonState.printStatus();
 }

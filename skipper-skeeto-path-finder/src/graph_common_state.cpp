@@ -1,6 +1,5 @@
 #include "skipper-skeeto-path-finder/graph_common_state.h"
 
-#include "skipper-skeeto-path-finder/file_helper.h"
 #include "skipper-skeeto-path-finder/graph_path.h"
 #include "skipper-skeeto-path-finder/memory_mapped_file_pool.h"
 
@@ -13,7 +12,8 @@
 #include <psapi.h>
 #endif
 
-const char *GraphCommonState::DUMPED_GOOD_ONES_BASE_DIR = "results";
+GraphCommonState::GraphCommonState(const std::string &resultDir) : resultDir(resultDir) {
+}
 
 bool GraphCommonState::makesSenseToInitialize(const RunnerInfo *runnerInfo, const GraphPath *path) const {
   // If we're sure we won't get a better one, there's no reason to start at all
@@ -70,7 +70,7 @@ void GraphCommonState::updateLocalMax(RunnerInfo *runnerInfo) {
   runnerInfo->setLocalMaxDistance(maxDistance);
 }
 
-void GraphCommonState::dumpGoodOnes(const std::string &dirName) {
+void GraphCommonState::dumpGoodOnes() {
   std::lock_guard<std::mutex> guardFinalState(finalStateMutex);
   if (dumpedGoodOnes >= goodOnes.size()) {
     return;
@@ -78,11 +78,7 @@ void GraphCommonState::dumpGoodOnes(const std::string &dirName) {
 
   int newDumpedCount = goodOnes.size() - dumpedGoodOnes;
 
-  std::string dirPath = std::string(DUMPED_GOOD_ONES_BASE_DIR) + "/" + dirName;
-  std::string fileName = dirPath + "/" + std::to_string(maxDistance) + ".txt";
-
-  FileHelper::createDir(DUMPED_GOOD_ONES_BASE_DIR);
-  FileHelper::createDir(dirPath.c_str());
+  std::string fileName = resultDir + "/" + std::to_string(maxDistance) + ".txt";
 
   std::ofstream dumpFile(fileName);
   for (int index = 0; index < goodOnes.size(); ++index) {

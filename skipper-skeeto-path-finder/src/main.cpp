@@ -4,13 +4,16 @@
 #include "skipper-skeeto-path-finder/path_controller.h"
 #include "skipper-skeeto-path-finder/raw_data.h"
 #endif
+#include "skipper-skeeto-path-finder/file_helper.h"
 #include "skipper-skeeto-path-finder/graph_controller.h"
 #include "skipper-skeeto-path-finder/graph_data.h"
 
 #include "json/json.hpp"
 
 #include <fstream>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 
 #if USED_DATA_TYPE == DATA_TYPE_RAW
 #define DATA_FILE_SUFFIX "raw"
@@ -18,11 +21,46 @@
 #define DATA_FILE_SUFFIX "graph"
 #endif
 
+std::string getDateTime() {
+  // Do not use localtime(), see https://stackoverflow.com/a/38034148/2761541
+  std::time_t currentTime = std::time(nullptr);
+  std::tm localTime{};
+#ifdef _WIN32
+  localtime_s(&localTime, &currentTime);
+#else
+  localtime_r(&currentTime, &localTime);
+#endif
+
+  std::ostringstream stringStream;
+  stringStream << std::put_time(&localTime, "%Y%m%d-%H%M%S");
+
+  return stringStream.str();
+}
+
+std::pair<std::string, std::string> createResultDirs() {
+  auto baseResultDir = "results";
+  FileHelper::createDir(baseResultDir);
+
+  auto executionResultDir = std::string(baseResultDir) + "/" + getDateTime();
+  FileHelper::createDir(executionResultDir.c_str());
+
+  auto graphResultDir = executionResultDir + "/" + "graph";
+  FileHelper::createDir(graphResultDir.c_str());
+
+  auto finalResultDir = executionResultDir + "/" + "final";
+  FileHelper::createDir(finalResultDir.c_str());
+
+  return std::make_pair(graphResultDir, finalResultDir);
+}
+
 int main() {
   std::ifstream dataStream(std::string("../data/ss") + std::to_string(GAME_ID) + "_" DATA_FILE_SUFFIX ".json");
 
   nlohmann::json jsonData;
   dataStream >> jsonData;
+
+  std::string graphResultDir, finalResultDir;
+  std::tie(graphResultDir, finalResultDir) = createResultDirs();
 
   try {
 #if USED_DATA_TYPE == DATA_TYPE_RAW
@@ -33,7 +71,7 @@ int main() {
     GraphData graphData(jsonData);
 #endif
 
-    GraphController controller(&graphData);
+    GraphController controller(&graphData, graphResultDir);
     controller.start();
 
     std::cout << "Done" << std::endl;

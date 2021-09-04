@@ -18,6 +18,8 @@ class GraphPathPool;
 
 class GraphCommonState {
 public:
+  GraphCommonState(const std::string &resultDir);
+
   bool makesSenseToInitialize(const RunnerInfo *runnerInfo, const GraphPath *path) const;
 
   bool makesSenseToKeep(const RunnerInfo *runnerInfo, GraphPath *path, unsigned long long int visitedVerticesState);
@@ -26,7 +28,7 @@ public:
 
   void updateLocalMax(RunnerInfo *runnerInfo);
 
-  void dumpGoodOnes(const std::string &dirName);
+  void dumpGoodOnes();
 
   void printStatus();
 
@@ -53,9 +55,9 @@ public:
   bool shouldStop() const;
 
 private:
-  static const char *DUMPED_GOOD_ONES_BASE_DIR;
-
   bool checkForDuplicateState(GraphPath *path, unsigned long long int visitedVerticesState);
+
+  const std::string resultDir;
 
   mutable std::mutex finalStateMutex;
   mutable std::mutex runnerInfoMutex;

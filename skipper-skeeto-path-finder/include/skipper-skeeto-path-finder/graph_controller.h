@@ -7,7 +7,7 @@ class GraphPathPool;
 
 class GraphController {
 public:
-  GraphController(const GraphData *data);
+  GraphController(const GraphData *data, const std::string &resultDir);
 
   void start();
 
@@ -57,5 +57,4 @@ private:
 
   GraphCommonState commonState;
   const GraphData *data;
-  std::string resultDirName;
 };
