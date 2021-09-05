@@ -16,12 +16,6 @@ public:
 
   std::shared_ptr<Path> createFromNewRoom(const Room *room) const;
 
-  Path(std::istream &instream, std::shared_ptr<const Path> previousPath);
-
-  void deserialize(std::istream &instream);
-
-  void serialize(std::ostream &outstream) const;
-
   void pickUpItem(const Item *item);
 
   void pickUpItems(const std::vector<const Item *> &items);
