@@ -15,6 +15,7 @@ std::shared_ptr<Path> Path::createFromNewRoom(const Room *room) const {
   newPath->previousPath = shared_from_this();
   newPath->depth++;
 
+  newPath->actions.push_back(room);
   newPath->enteredRoomsCount = enteredRoomsCount + 1;
   newPath->state = getStateWithRoom(state, room->getUniqueIndex());
   newPath->foundItems = foundItems;
@@ -30,6 +31,7 @@ void Path::pickUpItem(const Item *item) {
 
   state |= (1ULL << (item->getStateIndex() + STATE_TASK_ITEM_START));
   foundItems |= (1ULL << item->getUniqueIndex());
+  actions.push_back(item);
 }
 
 void Path::pickUpItems(const std::vector<const Item *> &items) {
@@ -45,6 +47,7 @@ void Path::completeTask(const Task *task) {
 
   state |= (1ULL << (task->getStateIndex() + STATE_TASK_ITEM_START));
   completedTasks |= (1ULL << task->getUniqueIndex());
+  actions.push_back(task);
 }
 
 void Path::completeTasks(const std::vector<const Task *> &tasks) {
@@ -85,13 +88,15 @@ bool Path::hasPostRoom() const {
   return postRoom;
 }
 
-std::vector<std::shared_ptr<const Path>> Path::getRoute() const {
+std::vector<const Action *> Path::getAllActions() const {
   if (previousPath != nullptr) {
-    auto route = previousPath->getRoute();
-    route.push_back(shared_from_this());
-    return route;
+    auto allActions = previousPath->getAllActions();
+    for (auto action : actions) {
+      allActions.push_back(action);
+    }
+    return allActions;
   } else {
-    return std::vector<std::shared_ptr<const Path>>{shared_from_this()};
+    return actions;
   }
 }
 

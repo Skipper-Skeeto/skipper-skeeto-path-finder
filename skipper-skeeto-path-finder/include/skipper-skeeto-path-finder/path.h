@@ -40,7 +40,7 @@ public:
 
   bool hasPostRoom() const;
 
-  std::vector<std::shared_ptr<const Path>> getRoute() const;
+  std::vector<const Action *> getAllActions() const;
 
   unsigned char depth{0};
 
@@ -50,6 +50,7 @@ private:
   Path() = default;
 
   std::shared_ptr<const Path> previousPath;
+  std::vector<const Action *> actions;
   unsigned char enteredRoomsCount = 0;
   bool postRoom = false;
   RawState state{};

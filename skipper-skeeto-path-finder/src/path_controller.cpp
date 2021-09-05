@@ -214,11 +214,9 @@ void PathController::dumpResult(std::vector<std::shared_ptr<const Path>> paths) 
   for (int index = 0; index < paths.size(); ++index) {
     dumpFile << "PATH #" << index + 1 << "(of " << paths.size() << "):" << std::endl;
 
-    // TOOD: Add other actions
-    auto route = paths[index]->getRoute();
-    for (const auto &routePoint : route) {
-      auto room = rawData->getRoom(routePoint->getCurrentRoomIndex());
-      dumpFile << room->getStepDescription() << std::endl;
+    auto actions = paths[index]->getAllActions();
+    for (auto action : actions) {
+      dumpFile << action->getStepDescription() << std::endl;
     }
 
     dumpFile << std::endl
