@@ -17,6 +17,8 @@ public:
 
   int getUniqueIndex() const;
 
+  const Room *getRoom() const;
+
   void setStateIndex(int stateIndex);
 
   int getStateIndex() const;

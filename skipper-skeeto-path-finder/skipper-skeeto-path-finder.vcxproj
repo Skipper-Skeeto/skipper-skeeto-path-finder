@@ -20,7 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\skipper-skeeto-path-finder\action.h" />
-    <ClInclude Include="include\skipper-skeeto-path-finder\common_state.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\edge.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\raw_data.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\file_helper.h" />
@@ -38,14 +37,10 @@
     <ClInclude Include="include\skipper-skeeto-path-finder\room.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\runner_info.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\state.h" />
-    <ClInclude Include="include\skipper-skeeto-path-finder\sub_path.h" />
-    <ClInclude Include="include\skipper-skeeto-path-finder\sub_path_info.h" />
-    <ClInclude Include="include\skipper-skeeto-path-finder\sub_path_info_remaining.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\task.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\thread_info.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\common_state.cpp" />
     <ClCompile Include="src\raw_data.cpp" />
     <ClCompile Include="src\file_helper.cpp" />
     <ClCompile Include="src\graph_common_state.cpp" />
@@ -61,9 +56,6 @@
     <ClCompile Include="src\room.cpp" />
     <ClCompile Include="src\runner_info.cpp" />
     <ClCompile Include="src\state.cpp" />
-    <ClCompile Include="src\sub_path.cpp" />
-    <ClCompile Include="src\sub_path_info.cpp" />
-    <ClCompile Include="src\sub_path_info_remaining.cpp" />
     <ClCompile Include="src\task.cpp" />
     <ClCompile Include="src\thread_info.cpp" />
   </ItemGroup>

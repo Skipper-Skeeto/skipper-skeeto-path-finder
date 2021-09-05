@@ -97,6 +97,12 @@ void GraphCommonState::dumpGoodOnes() {
   std::cout << "Dumped " << newDumpedCount << " new good one(s) to " << fileName << std::endl;
 }
 
+std::vector<std::array<char, VERTICES_COUNT>> GraphCommonState::getGoodOnes() const {
+  std::lock_guard<std::mutex> guardFinalState(finalStateMutex);
+
+  return goodOnes;
+}
+
 void GraphCommonState::printStatus() {
   std::lock_guard<std::mutex> runnerInfoGuard(runnerInfoMutex);
   std::lock_guard<std::mutex> guardFinalState(finalStateMutex);

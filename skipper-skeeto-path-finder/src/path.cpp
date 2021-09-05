@@ -3,37 +3,27 @@
 #include "skipper-skeeto-path-finder/info.h"
 #include "skipper-skeeto-path-finder/item.h"
 #include "skipper-skeeto-path-finder/room.h"
-#include "skipper-skeeto-path-finder/sub_path.h"
 #include "skipper-skeeto-path-finder/task.h"
 
 Path::Path(const Room *startRoom) {
   state = getStateWithRoom(state, startRoom->getUniqueIndex());
 }
 
-Path::Path(const Path &path) {
-  previousPath = path.previousPath;
-  enteredRoomsCount = path.enteredRoomsCount;
-  state = path.state;
-  foundItems = path.foundItems;
-  completedTasks = path.completedTasks;
-  depth = path.depth;
+std::shared_ptr<Path> Path::createFromNewRoom(const Room *room) const {
+  auto newPath = std::shared_ptr<Path>(new Path());
 
-  // Note that we don't copy subPathInfo, since that should be clean
+  newPath->previousPath = shared_from_this();
+  newPath->depth++;
+
+  newPath->enteredRoomsCount = enteredRoomsCount + 1;
+  newPath->state = getStateWithRoom(state, room->getUniqueIndex());
+  newPath->foundItems = foundItems;
+  newPath->completedTasks = completedTasks;
+
+  return newPath;
 }
 
-Path Path::createFromSubPath(const SubPath *subPath) const {
-  Path path(*this);
-
-  path.previousPath = this;
-  path.depth++;
-
-  path.enteredRoomsCount += subPath->visitedRoomsCount();
-  path.state = getStateWithRoom(state, subPath->getLastRoomIndex());
-
-  return std::move(path);
-}
-
-Path::Path(std::istream &instream, const Path *previousPath) {
+Path::Path(std::istream &instream, std::shared_ptr<const Path> previousPath) {
   this->previousPath = previousPath;
 
   deserialize(instream);
@@ -46,8 +36,6 @@ void Path::deserialize(std::istream &instream) {
   instream.read(reinterpret_cast<char *>(&state), sizeof(state));
   instream.read(reinterpret_cast<char *>(&foundItems), sizeof(foundItems));
   instream.read(reinterpret_cast<char *>(&completedTasks), sizeof(completedTasks));
-
-  subPathInfo.deserialize(instream, this);
 }
 
 void Path::serialize(std::ostream &outstream) const {
@@ -57,12 +45,6 @@ void Path::serialize(std::ostream &outstream) const {
   outstream.write(reinterpret_cast<const char *>(&state), sizeof(state));
   outstream.write(reinterpret_cast<const char *>(&foundItems), sizeof(foundItems));
   outstream.write(reinterpret_cast<const char *>(&completedTasks), sizeof(completedTasks));
-
-  subPathInfo.serialize(outstream);
-}
-
-void Path::cleanUp() {
-  subPathInfo.cleanUp();
 }
 
 void Path::pickUpItem(const Item *item) {
@@ -127,13 +109,13 @@ bool Path::hasPostRoom() const {
   return postRoom;
 }
 
-std::vector<const Path *> Path::getRoute() const {
+std::vector<std::shared_ptr<const Path>> Path::getRoute() const {
   if (previousPath != nullptr) {
     auto route = previousPath->getRoute();
-    route.push_back(this);
+    route.push_back(shared_from_this());
     return route;
   } else {
-    return std::vector<const Path *>{this};
+    return std::vector<std::shared_ptr<const Path>>{shared_from_this()};
   }
 }
 

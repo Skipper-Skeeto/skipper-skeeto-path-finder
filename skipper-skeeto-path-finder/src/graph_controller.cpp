@@ -118,6 +118,10 @@ void GraphController::start() {
   commonState.printStatus();
 }
 
+std::vector<std::array<char, VERTICES_COUNT>> GraphController::getResult() const {
+  return commonState.getGoodOnes();
+}
+
 void GraphController::setupStartRunner() {
   GraphPathPool tempPool;
 

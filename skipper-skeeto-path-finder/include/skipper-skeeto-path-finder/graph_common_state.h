@@ -30,6 +30,8 @@ public:
 
   void dumpGoodOnes();
 
+  std::vector<std::array<char, VERTICES_COUNT>> getGoodOnes() const;
+
   void printStatus();
 
   void addRunnerInfos(std::list<RunnerInfo> runnerInfos);

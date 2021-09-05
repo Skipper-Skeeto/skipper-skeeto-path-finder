@@ -185,6 +185,14 @@ GraphData::GraphData(const RawData &rawData) {
         ++edgeIndex;
       }
     }
+
+    for (auto item : rawData.getItems()) {
+      verticesToRoomMap[item->getStateIndex()] = item->getRoom();
+    }
+
+    for (auto task : rawData.getTasks()) {
+      verticesToRoomMap[task->getStateIndex()] = task->getRoom();
+    }
   }
 
   if (edgeIndex != EDGES_COUNT) {
@@ -201,7 +209,11 @@ unsigned char GraphData::getStartIndex() const {
 }
 
 const std::vector<const Edge *> &GraphData::getEdgesForVertex(char vertexIndex) const {
-  return verticesMap[vertexIndex];
+  return verticesToEdgesMap[vertexIndex];
+}
+
+const Room *GraphData::getRoomForVertex(char vertexIndex) const {
+  return verticesToRoomMap[vertexIndex];
 }
 
 unsigned char GraphData::getMinimumEntryDistance(char vertexIndex) const {
@@ -214,7 +226,7 @@ nlohmann::json GraphData::toJson(const RawData &rawData) const {
   for (const auto &edge : edges) {
     int fromVertexIndex = -1;
     for (int vertexIndex = 0; vertexIndex < VERTICES_COUNT; ++vertexIndex) {
-      for (auto edgePtr : verticesMap[vertexIndex]) {
+      for (auto edgePtr : verticesToEdgesMap[vertexIndex]) {
         if (edgePtr == &edge) {
           fromVertexIndex = vertexIndex;
           break;
@@ -295,7 +307,7 @@ void GraphData::maybeAddEdge(std::vector<std::pair<int, unsigned long long int>>
 
 void GraphData::addEdgeToVertex(const Edge *edge, int fromVertexIndex) {
   // Insert edge into vertices map - note that we sort the shortest first
-  auto &edgesFromVertex = verticesMap[fromVertexIndex];
+  auto &edgesFromVertex = verticesToEdgesMap[fromVertexIndex];
   const auto &longerLengthIterator = std::upper_bound(
       edgesFromVertex.begin(),
       edgesFromVertex.end(),

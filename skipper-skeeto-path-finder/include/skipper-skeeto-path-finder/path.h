@@ -1,7 +1,5 @@
 #pragma once
 
-#include "skipper-skeeto-path-finder/sub_path_info.h"
-
 #include <array>
 #include <vector>
 
@@ -11,23 +9,18 @@ class Action;
 class Item;
 class Task;
 class Room;
-class SubPath;
 
-class Path {
+class Path : public std::enable_shared_from_this<Path> {
 public:
   Path(const Room *startRoom);
 
-  Path(const Path &path);
+  std::shared_ptr<Path> createFromNewRoom(const Room *room) const;
 
-  Path createFromSubPath(const SubPath *subPath) const;
-
-  Path(std::istream &instream, const Path *previousPath);
+  Path(std::istream &instream, std::shared_ptr<const Path> previousPath);
 
   void deserialize(std::istream &instream);
 
   void serialize(std::ostream &outstream) const;
-
-  void cleanUp();
 
   void pickUpItem(const Item *item);
 
@@ -53,16 +46,16 @@ public:
 
   bool hasPostRoom() const;
 
-  std::vector<const Path *> getRoute() const;
+  std::vector<std::shared_ptr<const Path>> getRoute() const;
 
   unsigned char depth{0};
-
-  SubPathInfo subPathInfo;
 
   static RawState getStateWithRoom(const RawState &state, int roomIndex);
 
 private:
-  const Path *previousPath = nullptr;
+  Path() = default;
+
+  std::shared_ptr<const Path> previousPath;
   unsigned char enteredRoomsCount = 0;
   bool postRoom = false;
   RawState state{};

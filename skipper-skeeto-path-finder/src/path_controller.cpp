@@ -1,343 +1,117 @@
 #include "skipper-skeeto-path-finder/path_controller.h"
 
-#include "skipper-skeeto-path-finder/common_state.h"
-#include "skipper-skeeto-path-finder/file_helper.h"
-#include "skipper-skeeto-path-finder/sub_path.h"
-#include "skipper-skeeto-path-finder/sub_path_info_remaining.h"
-#include "skipper-skeeto-path-finder/thread_info.h"
+#include "skipper-skeeto-path-finder/graph_data.h"
 
-#include <iostream>
-
-#include <ctime>
 #include <fstream>
 #include <iomanip>
+#include <iostream>
 #include <mutex>
-#include <sstream>
 #include <thread>
 
 const char *PathController::MEMORY_DUMP_DIR = "temp_memory_dump";
 
-PathController::PathController(const RawData *data) {
-  this->data = data;
-  this->commonState = new CommonState();
-
-  // Do not use localtime(), see https://stackoverflow.com/a/38034148/2761541
-  std::time_t currentTime = std::time(nullptr);
-  std::ostringstream stringStream;
-  std::tm localTime{};
-#ifdef _WIN32
-  localtime_s(&localTime, &currentTime);
-#else
-  localtime_r(&currentTime, &localTime);
-#endif
-  stringStream << std::put_time(&localTime, "%Y%m%d-%H%M%S");
-  resultDirName = stringStream.str();
-}
-
-PathController::~PathController() {
-  delete this->commonState;
+PathController::PathController(const RawData *rawData, const GraphData *graphData, const std::vector<std::array<char, VERTICES_COUNT>> graphPaths, const std::string &resultDir)
+    : rawData(rawData), graphData(graphData), graphPaths(graphPaths), resultDir(resultDir) {
 }
 
 void PathController::start() {
-  FileHelper::createDir(MEMORY_DUMP_DIR);
+  auto startPath = std::make_shared<Path>(rawData->getStartRoom());
 
-  Path startPath(data->getStartRoom());
+  performPossibleActions(startPath);
 
-  performPossibleActions(&startPath);
-
-  auto threadFunction = [this](Path *path) {
-    auto threadInfo = commonState->getCurrentThread();
-
-    //moveOnRecursive(path);
-    while (moveOnDistributed(path)) {
-      if (threadInfo->isPaused()) {
-        std::string fileName = std::string(MEMORY_DUMP_DIR) + "/" + std::to_string(threadInfo->getIdentifier()) + ".dat";
-        {
-          std::ofstream dumpFile(fileName, std::ios::binary | std::ios::trunc);
-          path->serialize(dumpFile);
-          path->cleanUp();
-        }
-        threadInfo->waitForUnpaused();
-        {
-          std::ifstream dumpFile(fileName, std::ios::binary);
-          path->deserialize(dumpFile);
-        }
-      }
-    }
-  };
-
-  distributeToThreads({&startPath}, {}, threadFunction);
-}
-
-void PathController::printResult() const {
-
-  auto goodOnes = commonState->getGoodOnes();
-  for (int index = 0; index < goodOnes.size(); ++index) {
-    std::cout << std::endl
-              << "PATH #" << index + 1 << ":" << std::endl;
-    for (const auto &step : goodOnes[index]) {
-      std::cout << step << std::endl;
-    }
-    std::cout << std::endl;
-  }
-}
-
-void PathController::moveOnRecursive(Path *path) {
-  while (findNewPath(path)) {
-    auto nextPathIterator = path->subPathInfo.getNextPath();
-    moveOnRecursive(*nextPathIterator);
-    path->subPathInfo.erase(nextPathIterator);
-  }
-}
-
-bool PathController::moveOnDistributed(Path *path) {
-  if (!path->subPathInfo.empty() && !commonState->makesSenseToContinueExistingPath(path)) {
-    return false;
-  }
-
-  bool foundNew = findNewPath(path);
-
-  if (foundNew && path->depth <= SubPathInfo::MAX_DEPTH) {
-
-    // In case it's one of the depths we are monitoring,
-    // we want to get the total paths as fast as possible
-    while (findNewPath(path)) {
-    }
-
-    if (path->depth == SubPathInfo::MAX_DEPTH) {
-      return true;
-    }
-  }
-
-  if (path->subPathInfo.empty()) {
-    return false;
-  }
-
-  auto nextPathIterator = path->subPathInfo.getNextPath();
-  bool continueWork = moveOnDistributed(*nextPathIterator);
-  if (!continueWork) {
-    path->subPathInfo.erase(nextPathIterator);
-  }
-
-  return true;
-}
-
-void PathController::distributeToThreads(const std::vector<Path *> paths, std::vector<Path *> parentPaths, const std::function<void(Path *)> &threadFunction) {
-  if (paths.size() < 20) {
-    std::vector<Path *> newPaths;
-
+  std::vector<std::shared_ptr<const Path>> allPaths;
+  for (auto graphPath : graphPaths) {
+    auto paths = moveOnRecursive(startPath, graphPath, 0);
     for (const auto &path : paths) {
-      while (findNewPath(path)) {
-        newPaths.push_back(*path->subPathInfo.getNextPath());
-      }
-
-      parentPaths.push_back(path);
-    }
-
-    distributeToThreads(newPaths, parentPaths, threadFunction);
-
-    return;
-  }
-
-  std::cout << "Spawning " << paths.size() << " threads with paths." << std::endl
-            << std::endl;
-
-  std::mutex controllerMutex;
-  auto handleParentThreadFunction = [this, threadFunction, &parentPaths, &controllerMutex](Path *path) {
-    // Make sure everything is set up correctly before we start computing
-    controllerMutex.lock();
-    controllerMutex.unlock();
-
-    threadFunction(path);
-
-    std::lock_guard<std::mutex> parentGuard(controllerMutex);
-    auto nodePath = path;
-    while (!parentPaths.empty() && nodePath->subPathInfo.empty()) {
-      auto parentIterator = std::find(parentPaths.begin(), parentPaths.end(), nodePath);
-      if (parentIterator != parentPaths.end()) {
-        parentPaths.erase(parentIterator);
-      }
-      for (auto potentialParent : parentPaths) {
-        bool erased = potentialParent->subPathInfo.erase(nodePath);
-        if (erased) {
-          nodePath = potentialParent;
-          break;
-        }
-      }
-    }
-
-    commonState->getCurrentThread()->setDone();
-  };
-
-  controllerMutex.lock();
-
-  unsigned char nextIdentifier = '0';
-  for (const auto &path : paths) {
-    std::thread thread(handleParentThreadFunction, path);
-    commonState->addThread(std::move(thread), nextIdentifier);
-
-    if (nextIdentifier == '9') {
-      nextIdentifier = 'A';
-    } else if (nextIdentifier == 'Z') {
-      nextIdentifier = 'a';
-    } else if (nextIdentifier == 'z') {
-      nextIdentifier = '!';
-    } else if (nextIdentifier == '/') {
-      nextIdentifier = ':';
-    } else if (nextIdentifier == '>') {
-      std::cout << "There wasn't enough identifiers for the threads..." << std::endl
-                << std::endl;
-      return;
-    } else if (nextIdentifier != '*') {
-      ++nextIdentifier;
+      allPaths.push_back(path);
     }
   }
 
-  controllerMutex.unlock();
-
-  while (commonState->hasThreads()) {
-    commonState->updateThreads();
-
-    commonState->printStatus();
-
-    commonState->dumpGoodOnes(resultDirName);
-
-    std::this_thread::sleep_for(std::chrono::seconds(5));
-  }
-
-  commonState->dumpGoodOnes(resultDirName);
+  dumpResult(allPaths);
 }
 
-bool PathController::findNewPath(Path *originPath) {
-  if (originPath->subPathInfo.remaining == nullptr) {
-    return false;
+std::vector<std::shared_ptr<const Path>> PathController::moveOnRecursive(std::shared_ptr<const Path> originPath, const std::array<char, VERTICES_COUNT> &graphPath, int reachedIndex) {
+  if (reachedIndex > graphPath.size() - 2) {
+    return std::vector<std::shared_ptr<const Path>>{originPath};
   }
 
-  while (originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.size() > 0) {
-    auto subPath = originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.back();
-    if (originPath->subPathInfo.remaining->nextRoomIndexesForFirstSubPath.empty()) {
-      const Room *currentRoom;
-      if (subPath.isEmpty()) {
-        auto currentRoomIndex = originPath->getCurrentRoomIndex();
+  auto nextIndex = reachedIndex + 1;
+  auto targetVertex = graphPath[nextIndex];
+  auto targetRoom = graphData->getRoomForVertex(targetVertex);
 
-        currentRoom = data->getRoom(currentRoomIndex);
+  std::vector<std::shared_ptr<const Path>> paths;
 
-        if (originPath->hasPostRoom()) {
-          auto tasks = data->getTasksForRoom(currentRoom);
-          for (const auto &task : tasks) {
-            if (task->getPostRoom() != nullptr) {
-              currentRoom = task->getPostRoom();
-            }
-          }
-        }
+  auto subPaths = findPaths(originPath, targetRoom);
+  for (auto subPath : subPaths) {
+    auto finalPaths = moveOnRecursive(subPath, graphPath, nextIndex);
+    for (const auto &finalPath : finalPaths) {
+      paths.push_back(finalPath);
+    }
+  }
 
-        originPath->subPathInfo.remaining->unavailableRooms[currentRoomIndex] = true;
+  return paths;
+}
+
+std::vector<std::shared_ptr<const Path>> PathController::findPaths(std::shared_ptr<const Path> originPath, const Room *targetRoom) {
+  if (originPath->getCurrentRoomIndex() == targetRoom->getUniqueIndex()) {
+    return std::vector<std::shared_ptr<const Path>>{originPath};
+  }
+
+  std::list<std::shared_ptr<const Path>> remainingPaths;
+  std::vector<std::shared_ptr<const Path>> completedPaths;
+
+  if (originPath->hasPostRoom()) {
+    auto tasks = rawData->getTasksForRoom(rawData->getRoom(originPath->getCurrentRoomIndex()));
+    for (const auto &task : tasks) {
+      if (task->getPostRoom() != nullptr) {
+        remainingPaths.push_back(originPath->createFromNewRoom(task->getPostRoom()));
+      }
+    }
+  } else {
+    remainingPaths.push_back(originPath);
+  }
+
+  while (!remainingPaths.empty()) {
+    auto path = remainingPaths.front();
+    remainingPaths.pop_front();
+
+    if (!completedPaths.empty() && completedPaths.back()->getVisitedRoomsCount() >= path->getVisitedRoomsCount()) {
+      continue;
+    }
+
+    const Room *currentRoom = rawData->getRoom(path->getCurrentRoomIndex());
+
+    auto nextRoomIndexes = currentRoom->getNextRoomIndexes();
+    for (auto nextRoomIndex : nextRoomIndexes) {
+      const Room *nextRoom = rawData->getRoom(nextRoomIndex);
+
+      auto enterRoomResult = canEnterRoom(originPath, nextRoom);
+      if (enterRoomResult == EnterRoomResult::CannotEnter) {
+        continue;
+      }
+
+      auto newPath = path->createFromNewRoom(nextRoom);
+
+      if (enterRoomResult == EnterRoomResult::CanEnterWithTaskObstacle) {
+        newPath->completeTask(nextRoom->getTaskObstacle());
+      } else if (enterRoomResult != EnterRoomResult::CanEnter) {
+        throw std::runtime_error("Unknown enter room result!");
+      }
+
+      performPossibleActions(newPath);
+
+      if (nextRoomIndex == targetRoom->getUniqueIndex()) {
+        completedPaths.push_back(newPath);
       } else {
-        currentRoom = data->getRoom(subPath.getLastRoomIndex());
+        remainingPaths.push_back(newPath);
       }
-
-      originPath->subPathInfo.remaining->nextRoomIndexesForFirstSubPath = currentRoom->getNextRoomIndexes();
     }
-
-    auto nextRoomIndexIterator = originPath->subPathInfo.remaining->nextRoomIndexesForFirstSubPath.begin();
-    const Room *nextRoom = data->getRoom(*nextRoomIndexIterator);
-    originPath->subPathInfo.remaining->nextRoomIndexesForFirstSubPath.erase(nextRoomIndexIterator);
-
-    if (originPath->subPathInfo.remaining->nextRoomIndexesForFirstSubPath.empty()) {
-
-      // After this iteration we should skip to next subPath
-      originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.pop_back();
-    }
-
-    if (originPath->subPathInfo.remaining->unavailableRooms[nextRoom->getUniqueIndex()]) {
-      // Room already reached or cannot be entered.
-      // We cannot have gotten here faster than the other steps getting here.
-      continue;
-    }
-
-    originPath->subPathInfo.remaining->unavailableRooms[nextRoom->getUniqueIndex()] = true;
-
-    auto enterRoomResult = canEnterRoom(originPath, nextRoom);
-    if (enterRoomResult == EnterRoomResult::CannotEnter) {
-      continue;
-    }
-
-    SubPath newSubPath(nextRoom, subPath);
-
-    if (!commonState->makesSenseToPerformActions(originPath, &newSubPath)) {
-      continue;
-    }
-
-    if (enterRoomResult == EnterRoomResult::CanEnterWithTaskObstacle) {
-      Path newPath = originPath->createFromSubPath(&newSubPath);
-      newPath.completeTask(nextRoom->getTaskObstacle());
-
-      performPossibleActions(&newPath);
-
-      if (submitIfDone(&newPath)) {
-        continue;
-      }
-
-      if (commonState->makesSenseToStartNewSubPath(&newPath)) {
-        originPath->subPathInfo.push_back(std::move(newPath));
-        return true;
-      }
-
-      continue;
-
-    } else if (enterRoomResult != EnterRoomResult::CanEnter) {
-      throw std::runtime_error("Unknown enter room result!");
-    }
-
-    auto possibleTasks = getPossibleTasks(originPath, nextRoom);
-    if (!possibleTasks.empty()) {
-      Path newPath = originPath->createFromSubPath(&newSubPath);
-
-      performPossibleActions(&newPath, possibleTasks);
-
-      if (submitIfDone(&newPath)) {
-        continue;
-      }
-
-      if (commonState->makesSenseToStartNewSubPath(&newPath)) {
-        originPath->subPathInfo.push_back(std::move(newPath));
-        return true;
-      }
-
-      continue;
-    }
-
-    auto possibleItems = getPossibleItems(originPath, nextRoom);
-    if (!possibleItems.empty()) {
-      Path newPath = originPath->createFromSubPath(&newSubPath);
-      newPath.pickUpItems(possibleItems);
-
-      if (submitIfDone(&newPath)) {
-        continue;
-      }
-
-      if (commonState->makesSenseToStartNewSubPath(&newPath)) {
-        originPath->subPathInfo.push_back(std::move(newPath));
-        return true;
-      }
-
-      continue;
-    }
-
-    if (!commonState->makesSenseToExpandSubPath(originPath, &newSubPath)) {
-      continue;
-    }
-
-    originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.insert(originPath->subPathInfo.remaining->remainingUnfinishedSubPaths.begin(), std::move(newSubPath));
   }
 
-  delete originPath->subPathInfo.remaining;
-  originPath->subPathInfo.remaining = nullptr;
-
-  return false;
+  return completedPaths;
 }
 
-PathController::EnterRoomResult PathController::canEnterRoom(const Path *path, const Room *room) const {
+PathController::EnterRoomResult PathController::canEnterRoom(std::shared_ptr<const Path> path, const Room *room) const {
   auto taskObstacle = room->getTaskObstacle();
   if (taskObstacle == nullptr) {
     return EnterRoomResult::CanEnter;
@@ -354,17 +128,12 @@ PathController::EnterRoomResult PathController::canEnterRoom(const Path *path, c
   }
 }
 
-void PathController::performPossibleActions(Path *path) {
-  auto currentRoom = data->getRoom(path->getCurrentRoomIndex());
-  performPossibleActions(path, getPossibleTasks(path, currentRoom));
-}
-
-void PathController::performPossibleActions(Path *path, std::vector<const Task *> possibleTasks) {
-  std::vector<const Task *> postRoomTasks;
-
-  auto currentRoom = data->getRoom(path->getCurrentRoomIndex());
+void PathController::performPossibleActions(std::shared_ptr<Path> path) {
+  auto currentRoom = rawData->getRoom(path->getCurrentRoomIndex());
+  auto possibleTasks = getPossibleTasks(path, currentRoom);
   auto possibleItems = getPossibleItems(path, currentRoom);
 
+  std::vector<const Task *> postRoomTasks;
   while (!possibleItems.empty() || (possibleTasks.size() - postRoomTasks.size()) > 0) {
     for (const auto &task : possibleTasks) {
       if (task->getPostRoom() != nullptr) {
@@ -390,10 +159,10 @@ void PathController::performPossibleActions(Path *path, std::vector<const Task *
   }
 }
 
-std::vector<const Task *> PathController::getPossibleTasks(const Path *path, const Room *room) const {
+std::vector<const Task *> PathController::getPossibleTasks(std::shared_ptr<const Path> path, const Room *room) const {
   std::vector<const Task *> possibleTasks;
 
-  for (const auto &task : data->getTasksForRoom(room)) {
+  for (const auto &task : rawData->getTasksForRoom(room)) {
     if (!path->hasCompletedTask(task) && canCompleteTask(path, task)) {
       possibleTasks.push_back(task);
     }
@@ -402,10 +171,10 @@ std::vector<const Task *> PathController::getPossibleTasks(const Path *path, con
   return possibleTasks;
 }
 
-std::vector<const Item *> PathController::getPossibleItems(const Path *path, const Room *room) const {
+std::vector<const Item *> PathController::getPossibleItems(std::shared_ptr<const Path> path, const Room *room) const {
   std::vector<const Item *> possibleItems;
 
-  for (const auto &item : data->getItemsForRoom(room)) {
+  for (const auto &item : rawData->getItemsForRoom(room)) {
     if (!path->hasFoundItem(item) && canPickUpItem(path, item)) {
       possibleItems.push_back(item);
     }
@@ -414,7 +183,7 @@ std::vector<const Item *> PathController::getPossibleItems(const Path *path, con
   return possibleItems;
 }
 
-bool PathController::canCompleteTask(const Path *path, const Task *task) const {
+bool PathController::canCompleteTask(std::shared_ptr<const Path> path, const Task *task) const {
   if (task->getTaskObstacle() != nullptr) {
     if (!path->hasCompletedTask(task->getTaskObstacle())) {
       return false;
@@ -430,7 +199,7 @@ bool PathController::canCompleteTask(const Path *path, const Task *task) const {
       });
 }
 
-bool PathController::canPickUpItem(const Path *path, const Item *item) const {
+bool PathController::canPickUpItem(std::shared_ptr<const Path> path, const Item *item) const {
   if (item->getTaskObstacle() == nullptr) {
     return true;
   }
@@ -438,133 +207,23 @@ bool PathController::canPickUpItem(const Path *path, const Item *item) const {
   return path->hasCompletedTask(item->getTaskObstacle());
 }
 
-bool PathController::submitIfDone(const Path *path) {
-  if (!path->isDone()) {
-    return false;
+void PathController::dumpResult(std::vector<std::shared_ptr<const Path>> paths) const {
+  std::string fileName = resultDir + "/final.txt";
+
+  std::ofstream dumpFile(fileName);
+  for (int index = 0; index < paths.size(); ++index) {
+    dumpFile << "PATH #" << index + 1 << "(of " << paths.size() << "):" << std::endl;
+
+    // TOOD: Add other actions
+    auto route = paths[index]->getRoute();
+    for (const auto &routePoint : route) {
+      auto room = rawData->getRoom(routePoint->getCurrentRoomIndex());
+      dumpFile << room->getStepDescription() << std::endl;
+    }
+
+    dumpFile << std::endl
+             << std::endl;
   }
 
-  auto stepsOfSteps = findFinalSteps(path);
-  commonState->addNewGoodOnes(stepsOfSteps, path->getVisitedRoomsCount());
-
-  return true;
-}
-
-std::vector<std::vector<const Action *>> PathController::findFinalSteps(const Path *finalPath) const {
-  std::vector<std::vector<const Action *>> stepsOfSteps{{}};
-  auto route = finalPath->getRoute();
-  auto lastPath = route.front();
-  auto lastRoom = data->getRoom(lastPath->getCurrentRoomIndex());
-
-  Path startPath(data->getStartRoom());
-  std::tie(stepsOfSteps, lastRoom) = performFinalStepsActions(stepsOfSteps, &startPath, lastRoom);
-
-  for (auto path : route) {
-    if (path->getCurrentRoomIndex() != lastRoom->getUniqueIndex()) {
-      auto targetRoom = data->getRoom(path->getCurrentRoomIndex());
-      stepsOfSteps = moveToFinalStepsRoom(stepsOfSteps, lastPath, lastRoom, targetRoom);
-      lastRoom = targetRoom;
-    }
-
-    std::tie(stepsOfSteps, lastRoom) = performFinalStepsActions(stepsOfSteps, lastPath, lastRoom);
-
-    lastPath = path;
-  }
-
-  return stepsOfSteps;
-}
-
-std::vector<std::vector<const Action *>> PathController::moveToFinalStepsRoom(const std::vector<std::vector<const Action *>> &currentStepsOfSteps, const Path *currentPath, const Room *currentRoom, const Room *targetRoom) const {
-  std::vector<std::vector<const Room *>> nextSubRoutes{{}};
-  bool foundRoom = false;
-
-  while (!foundRoom) {
-    auto remaningSubRoutes = nextSubRoutes;
-    nextSubRoutes.clear();
-
-    while (!remaningSubRoutes.empty()) {
-      auto nextRemaningSubRoute = remaningSubRoutes.back();
-      remaningSubRoutes.pop_back();
-
-      std::vector<const Room *> nextPossibleRooms;
-      if (nextRemaningSubRoute.empty()) {
-        nextPossibleRooms = currentRoom->getNextRooms();
-      } else {
-        nextPossibleRooms = nextRemaningSubRoute.back()->getNextRooms();
-      }
-
-      for (const auto &room : nextPossibleRooms) {
-        auto newSubRoute = nextRemaningSubRoute;
-        auto enterRoomResult = canEnterRoom(currentPath, room);
-        if (room == targetRoom) {
-          newSubRoute.push_back(room);
-          nextSubRoutes.push_back(newSubRoute);
-          foundRoom = true;
-        } else if (enterRoomResult == EnterRoomResult::CanEnter) {
-          newSubRoute.push_back(room);
-          nextSubRoutes.push_back(newSubRoute);
-        }
-      }
-    }
-  }
-
-  std::vector<std::vector<const Action *>> newStepsOfSteps;
-
-  for (const auto &subRoute : nextSubRoutes) {
-    if (subRoute.back() != targetRoom) {
-      continue;
-    }
-
-    for (auto newSteps : currentStepsOfSteps) {
-      for (const auto &room : subRoute) {
-        newSteps.push_back(room);
-      }
-
-      newStepsOfSteps.push_back(newSteps);
-    }
-  }
-
-  return newStepsOfSteps;
-}
-
-std::pair<std::vector<std::vector<const Action *>>, const Room *> PathController::performFinalStepsActions(const std::vector<std::vector<const Action *>> &currentStepsOfSteps, const Path *currentPath, const Room *currentRoom) const {
-  auto newStepsOfSteps = currentStepsOfSteps;
-  auto newRoom = currentRoom;
-
-  if (canEnterRoom(currentPath, currentRoom) == EnterRoomResult::CanEnterWithTaskObstacle) {
-    for (auto &steps : newStepsOfSteps) {
-      steps.push_back(currentRoom->getTaskObstacle());
-    }
-  }
-
-  const Task *postRoomTask = nullptr;
-  for (const auto &task : getPossibleTasks(currentPath, currentRoom)) {
-    if (task == currentRoom->getTaskObstacle()) {
-      continue;
-    }
-
-    if (task->getPostRoom() != nullptr) {
-      postRoomTask = task;
-    } else {
-      for (auto &steps : newStepsOfSteps) {
-        steps.push_back(task);
-      }
-    }
-  }
-
-  for (const auto &item : getPossibleItems(currentPath, currentRoom)) {
-    for (auto &steps : newStepsOfSteps) {
-      steps.push_back(item);
-    }
-  }
-
-  if (postRoomTask != nullptr) {
-    for (auto &steps : newStepsOfSteps) {
-      steps.push_back(postRoomTask);
-      steps.push_back(postRoomTask->getPostRoom());
-    }
-
-    newRoom = postRoomTask->getPostRoom();
-  }
-
-  return std::make_pair(newStepsOfSteps, newRoom);
+  std::cout << "Dumped " << paths.size() << " paths to " << fileName << std::endl;
 }

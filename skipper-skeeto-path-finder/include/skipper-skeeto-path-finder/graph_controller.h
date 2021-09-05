@@ -11,6 +11,8 @@ public:
 
   void start();
 
+  std::vector<std::array<char, VERTICES_COUNT>> getResult() const;
+
 private:
   struct PathReferences {
     GraphPath *parentPath = nullptr;

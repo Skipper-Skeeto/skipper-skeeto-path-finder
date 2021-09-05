@@ -74,6 +74,16 @@ int main() {
     GraphController controller(&graphData, graphResultDir);
     controller.start();
 
+#if USED_DATA_TYPE == DATA_TYPE_RAW
+    std::cout << "Done with graph" << std::endl;
+
+    auto graphResult = controller.getResult();
+
+    PathController pathController(&rawData, &graphData, graphResult, finalResultDir);
+
+    pathController.start();
+#endif
+
     std::cout << "Done" << std::endl;
   } catch (const std::exception &exception) {
     std::cout << "Caught exception: " << exception.what() << std::endl;

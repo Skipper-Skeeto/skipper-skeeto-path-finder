@@ -16,6 +16,10 @@ int Item::getUniqueIndex() const {
   return uniqueIndex;
 }
 
+const Room *Item::getRoom() const {
+  return room;
+}
+
 void Item::setStateIndex(int stateIndex) {
   this->stateIndex = stateIndex;
 }

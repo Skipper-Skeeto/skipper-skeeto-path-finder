@@ -1,21 +1,15 @@
 #pragma once
 
-#include "skipper-skeeto-path-finder/common_state.h"
 #include "skipper-skeeto-path-finder/path.h"
 #include "skipper-skeeto-path-finder/raw_data.h"
 
-#include <functional>
-#include <queue>
-#include <unordered_map>
+class GraphData;
 
 class PathController {
 public:
-  PathController(const RawData *data);
-  ~PathController();
+  PathController(const RawData *rawData, const GraphData *graphData, const std::vector<std::array<char, VERTICES_COUNT>> graphPaths, const std::string &resultDir);
 
   void start();
-
-  void printResult() const;
 
 private:
   static const char *MEMORY_DUMP_DIR;
@@ -26,38 +20,26 @@ private:
     CanEnterWithTaskObstacle,
   };
 
-  void moveOnRecursive(Path *path);
+  std::vector<std::shared_ptr<const Path>> moveOnRecursive(std::shared_ptr<const Path> originPath, const std::array<char, VERTICES_COUNT> &graphPath, int reachedIndex);
 
-  bool moveOnDistributed(Path *path);
+  std::vector<std::shared_ptr<const Path>> findPaths(std::shared_ptr<const Path> originPath, const Room *targetRoom);
 
-  void distributeToThreads(const std::vector<Path *> paths, std::vector<Path *> parentPaths, const std::function<void(Path *)> &threadFunction);
+  EnterRoomResult canEnterRoom(std::shared_ptr<const Path> path, const Room *room) const;
 
-  bool findNewPath(Path *originPath);
+  void performPossibleActions(std::shared_ptr<Path> path);
 
-  EnterRoomResult canEnterRoom(const Path *path, const Room *room) const;
+  std::vector<const Task *> getPossibleTasks(std::shared_ptr<const Path> path, const Room *room) const;
 
-  void performPossibleActions(Path *path);
+  std::vector<const Item *> getPossibleItems(std::shared_ptr<const Path> path, const Room *room) const;
 
-  void performPossibleActions(Path *path, std::vector<const Task *> possibleTasks);
+  bool canCompleteTask(std::shared_ptr<const Path> path, const Task *task) const;
 
-  std::vector<const Task *> getPossibleTasks(const Path *path, const Room *room) const;
+  bool canPickUpItem(std::shared_ptr<const Path> path, const Item *item) const;
 
-  std::vector<const Item *> getPossibleItems(const Path *path, const Room *room) const;
+  void dumpResult(std::vector<std::shared_ptr<const Path>> paths) const;
 
-  bool canCompleteTask(const Path *path, const Task *task) const;
-
-  bool canPickUpItem(const Path *path, const Item *item) const;
-
-  bool submitIfDone(const Path *path);
-
-  std::vector<std::vector<const Action *>> findFinalSteps(const Path *finalPath) const;
-
-  std::vector<std::vector<const Action *>> moveToFinalStepsRoom(const std::vector<std::vector<const Action *>> &currentStepsOfSteps, const Path *currentPath, const Room *currentRoom, const Room *targetRoom) const;
-
-  std::pair<std::vector<std::vector<const Action *>>, const Room *> performFinalStepsActions(const std::vector<std::vector<const Action *>> &currentStepsOfSteps, const Path *currentPath, const Room *currentRoom) const;
-
-  CommonState *commonState;
-  const RawData *data;
-
-  std::string resultDirName;
+  const RawData *rawData;
+  const GraphData *graphData;
+  const std::vector<std::array<char, VERTICES_COUNT>> graphPaths;
+  const std::string resultDir;
 };
