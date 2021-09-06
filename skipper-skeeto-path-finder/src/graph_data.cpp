@@ -195,11 +195,21 @@ GraphData::GraphData(const RawData &rawData) {
     }
 
     for (auto item : rawData.getItems()) {
-      verticesToFurthestRoomMap[item->getStateIndex()] = item->getRoom();
+      auto &furthestRoomForVertex = verticesToFurthestRoomMap[item->getStateIndex()];
+      if (furthestRoomForVertex != nullptr && furthestRoomForVertex != item->getRoom()) {
+        throw std::runtime_error("Did find more than one room for state");
+      }
+
+      furthestRoomForVertex = item->getRoom();
     }
 
     for (auto task : rawData.getTasks()) {
-      verticesToFurthestRoomMap[task->getStateIndex()] = task->getRoom();
+      auto &furthestRoomForVertex = verticesToFurthestRoomMap[task->getStateIndex()];
+      if (furthestRoomForVertex != nullptr && furthestRoomForVertex != task->getRoom()) {
+        throw std::runtime_error("Did find more than one room for state");
+      }
+
+      furthestRoomForVertex = task->getRoom();
     }
   }
 
