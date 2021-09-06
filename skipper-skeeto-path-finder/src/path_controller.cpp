@@ -19,15 +19,26 @@ void PathController::start() {
 
   performPossibleActions(startPath);
 
+  int visitedRoomsCount = 0;
+
   std::vector<std::shared_ptr<const Path>> allPaths;
   for (auto graphPath : graphPaths) {
     auto paths = moveOnRecursive(startPath, graphPath, 0);
     for (const auto &path : paths) {
       allPaths.push_back(path);
+
+      if (visitedRoomsCount == 0) {
+        visitedRoomsCount = path->getVisitedRoomsCount();
+      } else if (visitedRoomsCount != path->getVisitedRoomsCount()) {
+        std::cout << "WARNING: Found path length varies from the other found path(s): "
+                  << visitedRoomsCount << " vs. " << path->getVisitedRoomsCount() << std::endl;
+      }
     }
   }
 
   dumpResult(allPaths);
+
+  std::cout << "Found path length of " << visitedRoomsCount << " (this should match found distance of the graph)" << std::endl;
 }
 
 std::vector<std::shared_ptr<const Path>> PathController::moveOnRecursive(std::shared_ptr<const Path> originPath, const std::array<char, VERTICES_COUNT> &graphPath, int reachedIndex) {
