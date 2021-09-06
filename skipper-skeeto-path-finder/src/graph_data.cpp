@@ -187,11 +187,11 @@ GraphData::GraphData(const RawData &rawData) {
     }
 
     for (auto item : rawData.getItems()) {
-      verticesToRoomMap[item->getStateIndex()] = item->getRoom();
+      verticesToFurthestRoomMap[item->getStateIndex()] = item->getRoom();
     }
 
     for (auto task : rawData.getTasks()) {
-      verticesToRoomMap[task->getStateIndex()] = task->getRoom();
+      verticesToFurthestRoomMap[task->getStateIndex()] = task->getRoom();
     }
   }
 
@@ -212,8 +212,8 @@ const std::vector<const Edge *> &GraphData::getEdgesForVertex(char vertexIndex) 
   return verticesToEdgesMap[vertexIndex];
 }
 
-const Room *GraphData::getRoomForVertex(char vertexIndex) const {
-  return verticesToRoomMap[vertexIndex];
+const Room *GraphData::getFurthestRoomForVertex(char vertexIndex) const {
+  return verticesToFurthestRoomMap[vertexIndex];
 }
 
 unsigned char GraphData::getMinimumEntryDistance(char vertexIndex) const {

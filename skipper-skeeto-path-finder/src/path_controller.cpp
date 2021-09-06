@@ -37,7 +37,7 @@ std::vector<std::shared_ptr<const Path>> PathController::moveOnRecursive(std::sh
 
   auto nextIndex = reachedIndex + 1;
   auto targetVertex = graphPath[nextIndex];
-  auto targetRoom = graphData->getRoomForVertex(targetVertex);
+  auto targetRoom = graphData->getFurthestRoomForVertex(targetVertex);
 
   std::vector<std::shared_ptr<const Path>> paths;
 

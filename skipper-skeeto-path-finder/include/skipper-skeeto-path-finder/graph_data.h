@@ -21,7 +21,7 @@ public:
 
   const std::vector<const Edge *> &getEdgesForVertex(char vertexIndex) const;
 
-  const Room *getRoomForVertex(char vertexIndex) const;
+  const Room *getFurthestRoomForVertex(char vertexIndex) const;
 
   unsigned char getMinimumEntryDistance(char vertexIndex) const;
 
@@ -36,7 +36,7 @@ private:
 
   unsigned char startIndex;
   std::array<std::vector<const Edge *>, VERTICES_COUNT> verticesToEdgesMap{};
-  std::array<const Room *, VERTICES_COUNT> verticesToRoomMap{};
+  std::array<const Room *, VERTICES_COUNT> verticesToFurthestRoomMap{};
   std::array<Edge, EDGES_COUNT> edges{};
   std::array<unsigned char, VERTICES_COUNT> vertexMinimumEntryDistances{};
 };
