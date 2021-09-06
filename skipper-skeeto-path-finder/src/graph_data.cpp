@@ -6,7 +6,7 @@
 #include <list>
 #include <sstream>
 
-GraphData::GraphData(const nlohmann::json &jsonData) : startIndex(0) {
+GraphData::GraphData(const nlohmann::json &jsonData, const RawData &rawData) : startIndex(0) {
   int edgeIndex = 0;
   for (auto const &edgeData : jsonData) {
     if (edgeIndex >= EDGES_COUNT) {
@@ -27,6 +27,14 @@ GraphData::GraphData(const nlohmann::json &jsonData) : startIndex(0) {
 
     // Minus 1 because the vertices are 1-indexed
     auto fromVertexIndex = edgeData["from"].get<int>() - 1;
+
+    auto furthestRoom = rawData.getRoomByKey(edgeData["furthest_room"]);
+    auto &furthestRoomForVertex = verticesToFurthestRoomMap[edge->endVertexIndex];
+    if (furthestRoomForVertex != nullptr && furthestRoomForVertex != furthestRoom) {
+      // Note that this could be supported (the room should be bound to an edge), but just isn't implemented yet
+      throw std::runtime_error("Did find more than one room for vertex");
+    }
+    furthestRoomForVertex = furthestRoom;
 
     addEdgeToVertex(edge, fromVertexIndex);
 

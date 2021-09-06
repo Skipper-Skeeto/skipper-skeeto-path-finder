@@ -28,6 +28,8 @@ public:
 
   const Room *getRoom(int index) const;
 
+  const Room *getRoomByKey(const std::string &key) const;
+
   const Room *getStartRoom() const;
 
   std::vector<std::pair<unsigned char, State>> getStatesForRoom(const Room *room) const;

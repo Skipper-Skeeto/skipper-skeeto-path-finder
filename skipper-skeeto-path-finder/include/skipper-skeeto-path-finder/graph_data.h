@@ -13,7 +13,7 @@ class Room;
 
 class GraphData {
 public:
-  GraphData(const nlohmann::json &jsonData);
+  GraphData(const nlohmann::json &jsonData, const RawData &rawData);
 
   GraphData(const RawData &rawData);
 

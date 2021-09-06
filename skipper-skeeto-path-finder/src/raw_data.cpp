@@ -209,6 +209,16 @@ const Room *RawData::getRoom(int index) const {
   return rooms[index];
 }
 
+const Room *RawData::getRoomByKey(const std::string &key) const {
+  auto roomIterator = roomMapping.find(key);
+
+  if (roomIterator == roomMapping.end()) {
+    throw std::runtime_error("Could not find room with specific key");
+  }
+
+  return &roomIterator->second;
+}
+
 const Room *RawData::getStartRoom() const {
   auto roomIterator = roomMapping.find(std::string(START_ROOM));
   if (roomIterator == roomMapping.end()) {

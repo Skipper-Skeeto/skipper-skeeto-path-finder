@@ -1,12 +1,10 @@
 #include "skipper-skeeto-path-finder/info.h"
 
-#if USED_DATA_TYPE == DATA_TYPE_RAW
-#include "skipper-skeeto-path-finder/path_controller.h"
-#include "skipper-skeeto-path-finder/raw_data.h"
-#endif
 #include "skipper-skeeto-path-finder/file_helper.h"
 #include "skipper-skeeto-path-finder/graph_controller.h"
 #include "skipper-skeeto-path-finder/graph_data.h"
+#include "skipper-skeeto-path-finder/path_controller.h"
+#include "skipper-skeeto-path-finder/raw_data.h"
 
 #include "json/json.hpp"
 
@@ -14,12 +12,6 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-
-#if USED_DATA_TYPE == DATA_TYPE_RAW
-#define DATA_FILE_SUFFIX "raw"
-#elif USED_DATA_TYPE == DATA_TYPE_GRAPH
-#define DATA_FILE_SUFFIX "graph"
-#endif
 
 std::string getDateTime() {
   // Do not use localtime(), see https://stackoverflow.com/a/38034148/2761541
@@ -53,28 +45,30 @@ std::pair<std::string, std::string> createResultDirs() {
   return std::make_pair(graphResultDir, finalResultDir);
 }
 
-int main() {
-  std::ifstream dataStream(std::string("../data/ss") + std::to_string(GAME_ID) + "_" DATA_FILE_SUFFIX ".json");
+nlohmann::json loadJson(const char *type) {
+  std::ifstream dataStream(std::string("../data/ss") + std::to_string(GAME_ID) + "_" + type + ".json");
 
   nlohmann::json jsonData;
   dataStream >> jsonData;
 
+  return jsonData;
+}
+
+int main() {
   std::string graphResultDir, finalResultDir;
   std::tie(graphResultDir, finalResultDir) = createResultDirs();
 
   try {
+    RawData rawData(loadJson("raw"));
 #if USED_DATA_TYPE == DATA_TYPE_RAW
-    RawData rawData(jsonData);
-
     GraphData graphData(rawData);
 #elif USED_DATA_TYPE == DATA_TYPE_GRAPH
-    GraphData graphData(jsonData);
+    GraphData graphData(loadJson("graph"), rawData);
 #endif
 
     GraphController controller(&graphData, graphResultDir);
     controller.start();
 
-#if USED_DATA_TYPE == DATA_TYPE_RAW
     std::cout << "Done with graph" << std::endl;
 
     auto graphResult = controller.getResult();
@@ -82,7 +76,6 @@ int main() {
     PathController pathController(&rawData, &graphData, graphResult, finalResultDir);
 
     pathController.start();
-#endif
 
     std::cout << "Done" << std::endl;
   } catch (const std::exception &exception) {
