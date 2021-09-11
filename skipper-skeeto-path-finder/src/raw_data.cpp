@@ -61,8 +61,8 @@ RawData::RawData(const nlohmann::json &jsonData) {
     }
 
     std::vector<const Room *> rooms;
-    for (auto const &room : jsonRoomMapping.value()["connected_rooms"]) {
-      rooms.push_back(&roomMapping.find(room)->second);
+    for (auto const &connectedRoom : jsonRoomMapping.value()["connected_rooms"]) {
+      rooms.push_back(&roomMapping.find(connectedRoom)->second);
     }
 
     room.setupNextRooms(rooms);
@@ -94,15 +94,15 @@ RawData::RawData(const nlohmann::json &jsonData) {
 
   for (const auto &roomPair : roomMapping) {
     int noObstacleIndex = -1;
-    auto taskObstacle = roomPair.second.getTaskObstacle();
-    if (taskObstacle != nullptr && taskObstacle->getRoom() == &roomPair.second) {
-      noObstacleIndex = taskObstacle->getStateIndex();
+    auto roomTaskObstacle = roomPair.second.getTaskObstacle();
+    if (roomTaskObstacle != nullptr && roomTaskObstacle->getRoom() == &roomPair.second) {
+      noObstacleIndex = roomTaskObstacle->getStateIndex();
     }
 
     for (const auto &constItem : roomToItemsMapping.find(&roomPair.second)->second) {
-      auto taskObstacle = constItem->getTaskObstacle();
+      auto itemTaskObstacle = constItem->getTaskObstacle();
       auto &item = itemMapping.find(constItem->getKey())->second;
-      if (taskObstacle == nullptr) {
+      if (itemTaskObstacle == nullptr) {
         if (noObstacleIndex == -1) {
           for (auto task : roomToTasksMapping[&roomPair.second]) {
             if (task->getTaskObstacle() == nullptr && task->getItemsNeeded().empty()) {
@@ -115,8 +115,8 @@ RawData::RawData(const nlohmann::json &jsonData) {
           }
         }
         item.setStateIndex(noObstacleIndex);
-      } else if (taskObstacle->getRoom() == &roomPair.second) {
-        item.setStateIndex(taskObstacle->getStateIndex());
+      } else if (itemTaskObstacle->getRoom() == &roomPair.second) {
+        item.setStateIndex(itemTaskObstacle->getStateIndex());
       } else {
         item.setStateIndex(nextStateIndex++);
       }
