@@ -475,8 +475,6 @@ void GraphController::splitAndRemove(GraphPathPool *pool, RunnerInfo *runnerInfo
 unsigned long int GraphController::groupPathTree(GraphPathPool *pool, unsigned long int originalPathIndex) {
   auto newPathIndex = pool->generateNewIndex();
 
-  auto originalPath = *pool->getGraphPath(originalPathIndex);
-
   swap(pool, originalPathIndex, newPathIndex);
 
   GraphPath *path = pool->getGraphPath(newPathIndex);
