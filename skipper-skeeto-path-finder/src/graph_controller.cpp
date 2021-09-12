@@ -125,7 +125,7 @@ std::vector<std::array<char, VERTICES_COUNT>> GraphController::getResult() const
 void GraphController::setupStartRunner() {
   GraphPathPool tempPool;
 
-  commonState.logAddedPaths(0, 1);
+  commonState.registerAddedPaths(0, 1);
 
   auto startPathIndex = tempPool.generateNewIndex();
   auto startPath = tempPool.getGraphPath(startPathIndex);
@@ -167,7 +167,7 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
     }
 
     if (!forceFinish && !commonState.makesSenseToInitialize(runnerInfo, path)) {
-      commonState.logStartedPath(depth);
+      commonState.registerStartedPath(depth);
 
       return false;
     }
@@ -223,7 +223,7 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
       path->updateFocusedSubPath(nextSubPathIndex, subPathIterationCount - 1);
     }
 
-    commonState.logRemovePath(subDepth);
+    commonState.registerRemovedPath(subDepth);
 
     focusedSubPath->cleanUp();
 
@@ -318,13 +318,13 @@ bool GraphController::initializePath(GraphPathPool *pool, unsigned long int path
     }
   }
 
-  commonState.logStartedPath(depth);
+  commonState.registerStartedPath(depth);
 
   if (subPathsSorted.empty()) {
     path->updateFocusedSubPath(0, 0);
   } else {
     path->updateFocusedSubPath(subPathsSorted.front().first, subPathsSorted.size());
-    commonState.logAddedPaths(depth + 1, subPathsSorted.size());
+    commonState.registerAddedPaths(depth + 1, subPathsSorted.size());
   }
 
   return true;
@@ -409,10 +409,10 @@ void GraphController::logRemovedSubPaths(GraphPathPool *pool, GraphPath *path, i
     if (subPath->hasSetSubPath()) {
       logRemovedSubPaths(pool, subPath, subDepth);
     } else {
-      commonState.logStartedPath(subDepth);
+      commonState.registerStartedPath(subDepth);
     }
 
-    commonState.logRemovePath(subDepth);
+    commonState.registerRemovedPath(subDepth);
 
     nextSubPathIndex = subPath->getNextPath();
     if (nextSubPathIndex == initialSubPathIndex) {
@@ -514,7 +514,7 @@ bool GraphController::serializePool(GraphPathPool *pool, unsigned int runnerInfo
   bool dumpSuccess = !dumpFile.fail();
 
   if (!dumpSuccess) {
-    commonState.logPoolDumpFailed(runnerInfoIdentifier);
+    commonState.registerPoolDumpFailed(runnerInfoIdentifier);
   }
 
   return dumpSuccess;

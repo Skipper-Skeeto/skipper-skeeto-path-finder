@@ -226,7 +226,7 @@ int GraphCommonState::runnerInfoCount() const {
   return activeRunners.size() + passiveRunners.size();
 }
 
-void GraphCommonState::logAddedPaths(int depth, int number) {
+void GraphCommonState::registerAddedPaths(int depth, int number) {
   if (!appliesForLogging(depth)) {
     return;
   }
@@ -236,7 +236,7 @@ void GraphCommonState::logAddedPaths(int depth, int number) {
   addedPathsCount[depth] += number;
 }
 
-void GraphCommonState::logStartedPath(int depth) {
+void GraphCommonState::registerStartedPath(int depth) {
   if (!appliesForLogging(depth)) {
     return;
   }
@@ -246,7 +246,7 @@ void GraphCommonState::logStartedPath(int depth) {
   ++startedPathsCount[depth];
 }
 
-void GraphCommonState::logRemovePath(int depth) {
+void GraphCommonState::registerRemovedPath(int depth) {
   if (!appliesForLogging(depth)) {
     return;
   }
@@ -260,7 +260,7 @@ bool GraphCommonState::appliesForLogging(int depth) const {
   return depth < LOG_PATH_COUNT_MAX;
 }
 
-void GraphCommonState::logPoolDumpFailed(int runnerInfoIdentifier) {
+void GraphCommonState::registerPoolDumpFailed(int runnerInfoIdentifier) {
   std::lock_guard<std::mutex> stopGuard(stopMutex);
   std::lock_guard<std::mutex> guardPrint(printMutex);
 

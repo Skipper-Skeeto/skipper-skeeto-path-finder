@@ -44,15 +44,15 @@ public:
 
   int runnerInfoCount() const;
 
-  void logAddedPaths(int depth, int count);
+  void registerAddedPaths(int depth, int count);
 
-  void logStartedPath(int depth);
+  void registerStartedPath(int depth);
 
-  void logRemovePath(int depth);
+  void registerRemovedPath(int depth);
 
   bool appliesForLogging(int depth) const;
 
-  void logPoolDumpFailed(int runnerInfoIdentifier);
+  void registerPoolDumpFailed(int runnerInfoIdentifier);
 
   bool shouldStop() const;
 
