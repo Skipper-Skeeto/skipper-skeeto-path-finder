@@ -1,10 +1,13 @@
 #pragma once
 
+#define SKIPPER_SKEETO_1 0
+#define SKIPPER_SKEETO_2 1
+
 #define DATA_TYPE_RAW 0
 #define DATA_TYPE_GRAPH 1
 
 #define USED_DATA_TYPE DATA_TYPE_GRAPH
-#define GAME_ID 1
+#define GAME_VERSION SKIPPER_SKEETO_1
 
 #define THREAD_COUNT 8
 #define POOL_TOTAL_BYTES 4000000000
@@ -14,8 +17,9 @@
 #define TEMP_PATHS_DIR TEMP_DIR "/paths"
 #define TEMP_STATES_DIR TEMP_DIR "/states"
 
-#if GAME_ID == 1
+#if GAME_VERSION == SKIPPER_SKEETO_1
 
+#define FILE_IDENTIFIER "1"
 #define START_ROOM "Home"
 #define ROOM_COUNT 45
 #define ITEM_COUNT 40
@@ -36,8 +40,9 @@
 
 #endif
 
-#elif GAME_ID == 2
+#elif GAME_VERSION == SKIPPER_SKEETO_2
 
+#define FILE_IDENTIFIER "2"
 #define START_ROOM "main_hall"
 #define ROOM_COUNT 28
 #define ITEM_COUNT 29
