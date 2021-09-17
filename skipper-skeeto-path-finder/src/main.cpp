@@ -46,7 +46,7 @@ std::pair<std::string, std::string> createResultDirs() {
 }
 
 nlohmann::json loadJson(const char *type) {
-  std::ifstream dataStream(std::string("../data/ss") + FILE_IDENTIFIER + "_" + type + ".json");
+  std::ifstream dataStream(std::string("../data/ss_") + FILE_IDENTIFIER + "_" + type + ".json");
 
   nlohmann::json jsonData;
   dataStream >> jsonData;
