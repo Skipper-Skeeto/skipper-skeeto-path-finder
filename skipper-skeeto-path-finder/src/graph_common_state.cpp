@@ -196,11 +196,15 @@ void GraphCommonState::removeActiveRunnerInfo(RunnerInfo *runnerInfo) {
   std::lock_guard<std::mutex> runnerInfoGuard(runnerInfoMutex);
   std::lock_guard<std::mutex> guardPrint(printMutex);
 
-  std::cout << "Removing runner " << runnerInfo->getIdentifier() << std::endl;
+  auto depth = runnerInfo->getVisitedVerticesCount();
+
+  std::cout << "Removing runner " << runnerInfo->getIdentifier() << " at depth " << depth << std::endl;
 
   activeRunners.remove_if([runnerInfo](auto &activeRunnerInfo) {
     return runnerInfo == &activeRunnerInfo;
   });
+
+  registerRemovedPath(depth);
 }
 
 void GraphCommonState::splitAndRemoveActiveRunnerInfo(RunnerInfo *parentRunnerInfo, std::list<RunnerInfo> childRunnerInfos) {
