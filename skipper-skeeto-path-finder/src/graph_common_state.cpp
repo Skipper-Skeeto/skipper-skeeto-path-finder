@@ -119,14 +119,21 @@ void GraphCommonState::printStatus() {
   }
   std::cout << std::endl;
 
-  std::cout << "Paths [ Removed" << std::setw(25) << "| Splitted" << std::setw(24) << "| Started" << std::setw(23) << "| Added" << std::setw(6) << "]" << std::endl;
+  std::cout << "Paths [ Added" << std::setw(14)
+            << "| Started" << std::setw(25)
+            << "| Removed" << std::setw(26)
+            << "| Splitted" << std::setw(35)
+            << "| Removed + splitted" << std::setw(6)
+            << "]" << std::endl;
 
   for (int index = 0; index < LOG_PATH_COUNT_MAX; ++index) {
     std::cout << " - " << std::setw(2) << index << std::fixed << std::setprecision(2) << " ["
+              << std::setw(10) << addedPathsCount[index] << " | "
+              << std::setw(12) << startedPathsCount[index] << " (" << std::setw(6) << (addedPathsCount[index] > 0 ? (double)startedPathsCount[index] * 100 / addedPathsCount[index] : 0) << "%) | "
               << std::setw(12) << removedPathsCount[index] << " (" << std::setw(6) << (addedPathsCount[index] > 0 ? (double)removedPathsCount[index] * 100 / addedPathsCount[index] : 0) << "%) | "
               << std::setw(12) << splittedPathsCount[index] << " (" << std::setw(6) << (addedPathsCount[index] > 0 ? (double)splittedPathsCount[index] * 100 / addedPathsCount[index] : 0) << "%) | "
-              << std::setw(12) << startedPathsCount[index] << " (" << std::setw(6) << (addedPathsCount[index] > 0 ? (double)startedPathsCount[index] * 100 / addedPathsCount[index] : 0) << "%) | "
-              << std::setw(10) << addedPathsCount[index] << "]" << std::endl;
+              << std::setw(12) << removedPathsCount[index] + splittedPathsCount[index] << " (" << std::setw(6) << (addedPathsCount[index] > 0 ? (double)(removedPathsCount[index] + splittedPathsCount[index]) * 100 / addedPathsCount[index] : 0) << "%) "
+              << "]" << std::endl;
   }
 
   std::cout << std::endl;
