@@ -8,10 +8,6 @@
       "room": "Outside home",
       "task_obstacle": null
     },
-    "Handle": {
-      "room": "Bee home",
-      "task_obstacle": null
-    },
     "Elf hat": {
       "room": "Ladder",
       "task_obstacle": null
@@ -293,14 +289,6 @@
       "task_obstacle": null,
       "items_needed": [
         "Bucket"
-      ],
-      "post_room": null
-    },
-    "Fix well winch": {
-      "room": "Well top",
-      "task_obstacle": null,
-      "items_needed": [
-        "Handle"
       ],
       "post_room": null
     },
@@ -617,18 +605,11 @@
         "Statue bottom"
       ]
     },
-    "Well bottom": {
-      "task_obstacle": "Fix well winch",
-      "connected_rooms": [
-        "Well top"
-      ]
-    },
     "Well top": {
       "task_obstacle": null,
       "connected_rooms": [
         "Ant house",
-        "Rat corner",
-        "Well bottom"
+        "Rat corner"
       ]
     },
     "Ant house": {
