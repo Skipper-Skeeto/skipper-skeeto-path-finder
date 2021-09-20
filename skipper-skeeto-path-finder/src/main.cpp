@@ -66,24 +66,9 @@ int main() {
     GraphData graphData(loadJson("graph"), rawData);
 #endif
 
-    GraphController controller(&graphData, graphResultDir);
+    PathController pathController(&rawData, finalResultDir);
+    GraphController controller(&pathController, &graphData, graphResultDir);
     controller.start();
-
-    std::cout << "Done with graph" << std::endl;
-
-    auto graphResults = controller.getResult();
-    std::vector<std::array<const Room *, VERTICES_COUNT>> roomBasedGraphResult;
-    for (const auto &graphResult : graphResults) {
-      std::array<const Room *, VERTICES_COUNT> roomResult;
-      for (int index = 0; index < VERTICES_COUNT; ++index) {
-        roomResult[index] = graphData.getFurthestRoomForVertex(graphResult[index]);
-      };
-      roomBasedGraphResult.push_back(roomResult);
-    }
-
-    PathController pathController(&rawData, roomBasedGraphResult, finalResultDir);
-
-    pathController.start();
 
     std::cout << "Done" << std::endl;
   } catch (const std::exception &exception) {

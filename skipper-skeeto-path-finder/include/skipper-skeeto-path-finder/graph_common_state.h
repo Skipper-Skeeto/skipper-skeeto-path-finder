@@ -30,7 +30,7 @@ public:
 
   void dumpGoodOnes();
 
-  std::vector<std::array<char, VERTICES_COUNT>> getGoodOnes() const;
+  std::pair<std::vector<std::array<char, VERTICES_COUNT>>, int> getGoodOnes() const;
 
   void printStatus();
 

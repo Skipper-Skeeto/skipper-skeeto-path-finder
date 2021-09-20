@@ -5,9 +5,9 @@
 
 class PathController {
 public:
-  PathController(const RawData *rawData, const std::vector<std::array<const Room *, VERTICES_COUNT>> &graphPaths, const std::string &resultDir);
+  PathController(const RawData *rawData, const std::string &resultDir);
 
-  void start();
+  void resolveAndDumpResults(const std::vector<std::array<const Room *, VERTICES_COUNT>> &graphPaths, int expectedLength) const;
 
 private:
   static const char *MEMORY_DUMP_DIR;
@@ -18,13 +18,13 @@ private:
     CanEnterWithTaskObstacle,
   };
 
-  std::vector<std::shared_ptr<const Path>> moveOnRecursive(std::shared_ptr<const Path> originPath, const std::array<const Room *, VERTICES_COUNT> &graphPath, int reachedIndex);
+  std::vector<std::shared_ptr<const Path>> moveOnRecursive(std::shared_ptr<const Path> originPath, const std::array<const Room *, VERTICES_COUNT> &graphPath, int reachedIndex) const;
 
-  std::vector<std::shared_ptr<const Path>> findPaths(std::shared_ptr<const Path> originPath, const Room *targetRoom);
+  std::vector<std::shared_ptr<const Path>> findPaths(std::shared_ptr<const Path> originPath, const Room *targetRoom) const;
 
   EnterRoomResult canEnterRoom(std::shared_ptr<const Path> path, const Room *room) const;
 
-  void performPossibleActions(std::shared_ptr<Path> path);
+  void performPossibleActions(std::shared_ptr<Path> path) const;
 
   std::vector<const Task *> getPossibleTasks(std::shared_ptr<const Path> path, const Room *room) const;
 
@@ -34,9 +34,8 @@ private:
 
   bool canPickUpItem(std::shared_ptr<const Path> path, const Item *item) const;
 
-  void dumpResult(std::vector<std::shared_ptr<const Path>> paths) const;
+  void dumpResult(std::vector<std::shared_ptr<const Path>> paths, const std::string &fileName) const;
 
   const RawData *rawData;
-  const std::vector<std::array<const Room *, VERTICES_COUNT>> graphPaths;
   const std::string resultDir;
 };

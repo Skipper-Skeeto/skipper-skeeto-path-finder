@@ -4,14 +4,13 @@
 
 class GraphData;
 class GraphPathPool;
+class PathController;
 
 class GraphController {
 public:
-  GraphController(const GraphData *data, const std::string &resultDir);
+  GraphController(const PathController *pathController, const GraphData *data, const std::string &resultDir);
 
   void start();
-
-  std::vector<std::array<char, VERTICES_COUNT>> getResult() const;
 
 private:
   struct PathReferences {
@@ -61,4 +60,5 @@ private:
 
   GraphCommonState commonState;
   const GraphData *data;
+  const PathController *pathController;
 };

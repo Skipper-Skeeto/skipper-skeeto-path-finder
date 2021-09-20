@@ -8,11 +8,11 @@
 
 const char *PathController::MEMORY_DUMP_DIR = "temp_memory_dump";
 
-PathController::PathController(const RawData *rawData, const std::vector<std::array<const Room *, VERTICES_COUNT>> &graphPaths, const std::string &resultDir)
-    : rawData(rawData), graphPaths(graphPaths), resultDir(resultDir) {
+PathController::PathController(const RawData *rawData, const std::string &resultDir)
+    : rawData(rawData), resultDir(resultDir) {
 }
 
-void PathController::start() {
+void PathController::resolveAndDumpResults(const std::vector<std::array<const Room *, VERTICES_COUNT>> &graphPaths, int expectedLength) const {
   auto startPath = std::make_shared<Path>(rawData->getStartRoom());
 
   performPossibleActions(startPath);
@@ -34,12 +34,12 @@ void PathController::start() {
     }
   }
 
-  dumpResult(allPaths);
+  dumpResult(allPaths, std::to_string(expectedLength) + ".txt");
 
   std::cout << "Found path length of " << visitedRoomsCount << " (this should match found distance of the graph)" << std::endl;
 }
 
-std::vector<std::shared_ptr<const Path>> PathController::moveOnRecursive(std::shared_ptr<const Path> originPath, const std::array<const Room *, VERTICES_COUNT> &graphPath, int reachedIndex) {
+std::vector<std::shared_ptr<const Path>> PathController::moveOnRecursive(std::shared_ptr<const Path> originPath, const std::array<const Room *, VERTICES_COUNT> &graphPath, int reachedIndex) const {
   if (reachedIndex > graphPath.size() - 2) {
     return std::vector<std::shared_ptr<const Path>>{originPath};
   }
@@ -60,7 +60,7 @@ std::vector<std::shared_ptr<const Path>> PathController::moveOnRecursive(std::sh
   return paths;
 }
 
-std::vector<std::shared_ptr<const Path>> PathController::findPaths(std::shared_ptr<const Path> originPath, const Room *targetRoom) {
+std::vector<std::shared_ptr<const Path>> PathController::findPaths(std::shared_ptr<const Path> originPath, const Room *targetRoom) const {
   if (originPath->getCurrentRoomIndex() == targetRoom->getUniqueIndex()) {
     return std::vector<std::shared_ptr<const Path>>{originPath};
   }
@@ -136,7 +136,7 @@ PathController::EnterRoomResult PathController::canEnterRoom(std::shared_ptr<con
   }
 }
 
-void PathController::performPossibleActions(std::shared_ptr<Path> path) {
+void PathController::performPossibleActions(std::shared_ptr<Path> path) const {
   auto currentRoom = rawData->getRoom(path->getCurrentRoomIndex());
   auto possibleTasks = getPossibleTasks(path, currentRoom);
   auto possibleItems = getPossibleItems(path, currentRoom);
@@ -215,10 +215,10 @@ bool PathController::canPickUpItem(std::shared_ptr<const Path> path, const Item 
   return path->hasCompletedTask(item->getTaskObstacle());
 }
 
-void PathController::dumpResult(std::vector<std::shared_ptr<const Path>> paths) const {
-  std::string fileName = resultDir + "/final.txt";
+void PathController::dumpResult(std::vector<std::shared_ptr<const Path>> paths, const std::string &fileName) const {
+  std::string filePath = resultDir + "/" + fileName;
 
-  std::ofstream dumpFile(fileName);
+  std::ofstream dumpFile(filePath);
   for (int index = 0; index < paths.size(); ++index) {
     dumpFile << "PATH #" << index + 1 << "(of " << paths.size() << "):" << std::endl;
 
@@ -231,5 +231,5 @@ void PathController::dumpResult(std::vector<std::shared_ptr<const Path>> paths) 
              << std::endl;
   }
 
-  std::cout << "Dumped " << paths.size() << " paths to " << fileName << std::endl;
+  std::cout << "Dumped " << paths.size() << " paths to " << filePath << std::endl;
 }

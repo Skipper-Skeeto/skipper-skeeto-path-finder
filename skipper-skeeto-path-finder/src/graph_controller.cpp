@@ -6,6 +6,7 @@
 #include "skipper-skeeto-path-finder/graph_path.h"
 #include "skipper-skeeto-path-finder/graph_path_pool.h"
 #include "skipper-skeeto-path-finder/info.h"
+#include "skipper-skeeto-path-finder/path_controller.h"
 #include "skipper-skeeto-path-finder/runner_info.h"
 
 #include <bitset>
@@ -23,8 +24,8 @@ const unsigned long long int GraphController::ALL_VERTICES_STATE_MASK = (1ULL <<
 
 #define FORCE_FINISH_THRESHOLD_DEPTH 10
 
-GraphController::GraphController(const GraphData *data, const std::string &resultDir) : commonState(resultDir) {
-  this->data = data;
+GraphController::GraphController(const PathController *pathController, const GraphData *data, const std::string &resultDir)
+    : commonState(resultDir), data(data), pathController(pathController) {
 }
 
 void GraphController::start() {
@@ -112,10 +113,6 @@ void GraphController::start() {
   }
 
   printAndDump();
-}
-
-std::vector<std::array<char, VERTICES_COUNT>> GraphController::getResult() const {
-  return commonState.getGoodOnes();
 }
 
 void GraphController::setupStartRunner() {
@@ -598,8 +595,24 @@ void GraphController::setNewIndex(GraphPathPool *pool, const PathReferences &pat
     path->setParentPath(newIndex);
   }
 }
+
 void GraphController::printAndDump() {
   commonState.printStatus();
 
   commonState.dumpGoodOnes();
+
+  std::vector<std::array<char, VERTICES_COUNT>> graphResults;
+  int graphLength;
+  std::tie(graphResults, graphLength) = commonState.getGoodOnes();
+
+  std::vector<std::array<const Room *, VERTICES_COUNT>> roomBasedGraphResult;
+  for (const auto &graphResult : graphResults) {
+    std::array<const Room *, VERTICES_COUNT> roomResult;
+    for (int index = 0; index < VERTICES_COUNT; ++index) {
+      roomResult[index] = data->getFurthestRoomForVertex(graphResult[index]);
+    };
+    roomBasedGraphResult.push_back(roomResult);
+  }
+
+  pathController->resolveAndDumpResults(roomBasedGraphResult, graphLength);
 }

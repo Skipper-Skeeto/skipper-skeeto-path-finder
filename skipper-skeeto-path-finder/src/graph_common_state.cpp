@@ -97,10 +97,10 @@ void GraphCommonState::dumpGoodOnes() {
   std::cout << "Dumped " << newDumpedCount << " new good one(s) to " << fileName << std::endl;
 }
 
-std::vector<std::array<char, VERTICES_COUNT>> GraphCommonState::getGoodOnes() const {
+std::pair<std::vector<std::array<char, VERTICES_COUNT>>, int> GraphCommonState::getGoodOnes() const {
   std::lock_guard<std::mutex> guardFinalState(finalStateMutex);
 
-  return goodOnes;
+  return std::make_pair(goodOnes, maxDistance);
 }
 
 void GraphCommonState::printStatus() {
