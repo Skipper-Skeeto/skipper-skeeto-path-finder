@@ -88,7 +88,7 @@ std::vector<std::shared_ptr<const Path>> PathController::findPaths(std::shared_p
     for (auto nextRoomIndex : nextRoomIndexes) {
       const Room *nextRoom = rawData->getRoom(nextRoomIndex);
 
-      auto enterRoomResult = canEnterRoom(originPath, nextRoom);
+      auto enterRoomResult = canEnterRoom(path, nextRoom);
       if (enterRoomResult == EnterRoomResult::CannotEnter) {
         continue;
       }
