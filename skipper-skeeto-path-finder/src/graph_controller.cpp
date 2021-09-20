@@ -102,9 +102,7 @@ void GraphController::start() {
   }
 
   while (!commonState.shouldStop()) {
-    commonState.printStatus();
-
-    commonState.dumpGoodOnes();
+    printAndDump();
 
     std::this_thread::sleep_for(std::chrono::seconds(5));
   }
@@ -113,9 +111,7 @@ void GraphController::start() {
     threads[index].join();
   }
 
-  commonState.dumpGoodOnes();
-
-  commonState.printStatus();
+  printAndDump();
 }
 
 std::vector<std::array<char, VERTICES_COUNT>> GraphController::getResult() const {
@@ -601,4 +597,9 @@ void GraphController::setNewIndex(GraphPathPool *pool, const PathReferences &pat
   for (auto path : pathReferences.subPaths) {
     path->setParentPath(newIndex);
   }
+}
+void GraphController::printAndDump() {
+  commonState.printStatus();
+
+  commonState.dumpGoodOnes();
 }

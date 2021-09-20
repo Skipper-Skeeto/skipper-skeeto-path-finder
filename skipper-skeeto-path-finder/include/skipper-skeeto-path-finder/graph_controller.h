@@ -57,6 +57,8 @@ private:
 
   void setNewIndex(GraphPathPool *pool, const PathReferences &pathReferences, unsigned long int newIndex);
 
+  void printAndDump();
+
   GraphCommonState commonState;
   const GraphData *data;
 };
