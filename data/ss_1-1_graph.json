@@ -103,7 +103,7 @@
   {
     "from": 4,
     "to": 5,
-    "length": 0,
+    "length": 1,
     "conditions": [
       27,
       38
@@ -152,7 +152,7 @@
   {
     "from": 4,
     "to": 11,
-    "length": 1,
+    "length": 2,
     "conditions": [
       1
     ],
@@ -478,6 +478,7 @@
     "to": 17,
     "length": 2,
     "conditions": [
+      7,
       20
     ],
     "furthest_room": "Bench"
@@ -485,8 +486,9 @@
   {
     "from": 4,
     "to": 17,
-    "length": 1,
+    "length": 2,
     "conditions": [
+      7,
       20
     ],
     "furthest_room": "Bench"
@@ -496,6 +498,7 @@
     "to": 17,
     "length": 1,
     "conditions": [
+      7,
       20
     ],
     "furthest_room": "Bench"
@@ -505,6 +508,7 @@
     "to": 17,
     "length": 2,
     "conditions": [
+      7,
       20
     ],
     "furthest_room": "Bench"
@@ -514,6 +518,7 @@
     "to": 17,
     "length": 1,
     "conditions": [
+      7,
       20
     ],
     "furthest_room": "Bench"
@@ -762,7 +767,7 @@
   {
     "from": 4,
     "to": 1,
-    "length": 3,
+    "length": 4,
     "conditions": [],
     "furthest_room": "Outside home"
   },
@@ -981,77 +986,77 @@
     "to": 22,
     "length": 2,
     "conditions": [],
-    "furthest_room": "Playground sandbox"
+    "furthest_room": "Playground horse"
   },
   {
     "from": 14,
     "to": 22,
     "length": 4,
     "conditions": [],
-    "furthest_room": "Playground sandbox"
+    "furthest_room": "Playground horse"
   },
   {
     "from": 19,
     "to": 22,
     "length": 2,
     "conditions": [],
-    "furthest_room": "Playground sandbox"
+    "furthest_room": "Playground horse"
   },
   {
     "from": 20,
     "to": 22,
     "length": 3,
     "conditions": [],
-    "furthest_room": "Playground sandbox"
+    "furthest_room": "Playground horse"
   },
   {
     "from": 21,
     "to": 22,
     "length": 1,
     "conditions": [],
-    "furthest_room": "Playground sandbox"
+    "furthest_room": "Playground horse"
   },
   {
     "from": 23,
     "to": 22,
     "length": 1,
     "conditions": [],
-    "furthest_room": "Playground sandbox"
+    "furthest_room": "Playground horse"
   },
   {
     "from": 24,
     "to": 22,
     "length": 2,
     "conditions": [],
-    "furthest_room": "Playground sandbox"
+    "furthest_room": "Playground horse"
   },
   {
     "from": 34,
     "to": 22,
     "length": 4,
     "conditions": [],
-    "furthest_room": "Playground sandbox"
+    "furthest_room": "Playground horse"
   },
   {
     "from": 36,
     "to": 22,
     "length": 4,
     "conditions": [],
-    "furthest_room": "Playground sandbox"
+    "furthest_room": "Playground horse"
   },
   {
     "from": 37,
     "to": 22,
     "length": 3,
     "conditions": [],
-    "furthest_room": "Playground sandbox"
+    "furthest_room": "Playground horse"
   },
   {
     "from": 39,
     "to": 22,
     "length": 3,
     "conditions": [],
-    "furthest_room": "Playground sandbox"
+    "furthest_room": "Playground horse"
   },
   {
     "from": 6,
@@ -1098,7 +1103,7 @@
   {
     "from": 4,
     "to": 27,
-    "length": 2,
+    "length": 3,
     "conditions": [],
     "furthest_room": "Path bee"
   },
