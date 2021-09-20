@@ -1,7 +1,5 @@
 #include "skipper-skeeto-path-finder/path_controller.h"
 
-#include "skipper-skeeto-path-finder/graph_data.h"
-
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -10,8 +8,8 @@
 
 const char *PathController::MEMORY_DUMP_DIR = "temp_memory_dump";
 
-PathController::PathController(const RawData *rawData, const GraphData *graphData, const std::vector<std::array<char, VERTICES_COUNT>> graphPaths, const std::string &resultDir)
-    : rawData(rawData), graphData(graphData), graphPaths(graphPaths), resultDir(resultDir) {
+PathController::PathController(const RawData *rawData, const std::vector<std::array<const Room *, VERTICES_COUNT>> &graphPaths, const std::string &resultDir)
+    : rawData(rawData), graphPaths(graphPaths), resultDir(resultDir) {
 }
 
 void PathController::start() {
@@ -41,14 +39,13 @@ void PathController::start() {
   std::cout << "Found path length of " << visitedRoomsCount << " (this should match found distance of the graph)" << std::endl;
 }
 
-std::vector<std::shared_ptr<const Path>> PathController::moveOnRecursive(std::shared_ptr<const Path> originPath, const std::array<char, VERTICES_COUNT> &graphPath, int reachedIndex) {
+std::vector<std::shared_ptr<const Path>> PathController::moveOnRecursive(std::shared_ptr<const Path> originPath, const std::array<const Room *, VERTICES_COUNT> &graphPath, int reachedIndex) {
   if (reachedIndex > graphPath.size() - 2) {
     return std::vector<std::shared_ptr<const Path>>{originPath};
   }
 
   auto nextIndex = reachedIndex + 1;
-  auto targetVertex = graphPath[nextIndex];
-  auto targetRoom = graphData->getFurthestRoomForVertex(targetVertex);
+  auto targetRoom = graphPath[nextIndex];
 
   std::vector<std::shared_ptr<const Path>> paths;
 

@@ -3,11 +3,9 @@
 #include "skipper-skeeto-path-finder/path.h"
 #include "skipper-skeeto-path-finder/raw_data.h"
 
-class GraphData;
-
 class PathController {
 public:
-  PathController(const RawData *rawData, const GraphData *graphData, const std::vector<std::array<char, VERTICES_COUNT>> graphPaths, const std::string &resultDir);
+  PathController(const RawData *rawData, const std::vector<std::array<const Room *, VERTICES_COUNT>> &graphPaths, const std::string &resultDir);
 
   void start();
 
@@ -20,7 +18,7 @@ private:
     CanEnterWithTaskObstacle,
   };
 
-  std::vector<std::shared_ptr<const Path>> moveOnRecursive(std::shared_ptr<const Path> originPath, const std::array<char, VERTICES_COUNT> &graphPath, int reachedIndex);
+  std::vector<std::shared_ptr<const Path>> moveOnRecursive(std::shared_ptr<const Path> originPath, const std::array<const Room *, VERTICES_COUNT> &graphPath, int reachedIndex);
 
   std::vector<std::shared_ptr<const Path>> findPaths(std::shared_ptr<const Path> originPath, const Room *targetRoom);
 
@@ -39,7 +37,6 @@ private:
   void dumpResult(std::vector<std::shared_ptr<const Path>> paths) const;
 
   const RawData *rawData;
-  const GraphData *graphData;
-  const std::vector<std::array<char, VERTICES_COUNT>> graphPaths;
+  const std::vector<std::array<const Room *, VERTICES_COUNT>> graphPaths;
   const std::string resultDir;
 };

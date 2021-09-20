@@ -71,9 +71,17 @@ int main() {
 
     std::cout << "Done with graph" << std::endl;
 
-    auto graphResult = controller.getResult();
+    auto graphResults = controller.getResult();
+    std::vector<std::array<const Room *, VERTICES_COUNT>> roomBasedGraphResult;
+    for (const auto &graphResult : graphResults) {
+      std::array<const Room *, VERTICES_COUNT> roomResult;
+      for (int index = 0; index < VERTICES_COUNT; ++index) {
+        roomResult[index] = graphData.getFurthestRoomForVertex(graphResult[index]);
+      };
+      roomBasedGraphResult.push_back(roomResult);
+    }
 
-    PathController pathController(&rawData, &graphData, graphResult, finalResultDir);
+    PathController pathController(&rawData, roomBasedGraphResult, finalResultDir);
 
     pathController.start();
 
