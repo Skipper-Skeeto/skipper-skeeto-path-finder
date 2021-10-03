@@ -1,1654 +1,1775 @@
-[
-  {
-    "from": 36,
-    "to": 18,
-    "length": 0,
-    "conditions": [
-      2,
-      3
-    ],
-    "furthest_room": "Elf house"
-  },
-  {
-    "from": 28,
-    "to": 9,
-    "length": 2,
-    "conditions": [
-      12,
-      15,
-      20
-    ],
-    "furthest_room": "Tree trunk top"
-  },
-  {
-    "from": 25,
-    "to": 6,
-    "length": 3,
-    "conditions": [
-      14,
-      22
-    ],
-    "furthest_room": "Ant house"
-  },
-  {
-    "from": 37,
-    "to": 6,
-    "length": 3,
-    "conditions": [
-      14,
-      22
-    ],
-    "furthest_room": "Ant house"
-  },
-  {
-    "from": 35,
-    "to": 13,
-    "length": 1,
-    "conditions": [
-      1,
-      26
-    ],
-    "furthest_room": "Bat cave"
-  },
-  {
-    "from": 1,
-    "to": 4,
-    "length": 3,
-    "conditions": [
-      32,
-      34
-    ],
-    "furthest_room": "Rocket"
-  },
-  {
-    "from": 5,
-    "to": 4,
-    "length": 2,
-    "conditions": [
-      32,
-      34
-    ],
-    "furthest_room": "Rocket"
-  },
-  {
-    "from": 11,
-    "to": 4,
-    "length": 3,
-    "conditions": [
-      32,
-      34
-    ],
-    "furthest_room": "Rocket"
-  },
-  {
-    "from": 17,
-    "to": 4,
-    "length": 3,
-    "conditions": [
-      32,
-      34
-    ],
-    "furthest_room": "Rocket"
-  },
-  {
-    "from": 1,
-    "to": 5,
-    "length": 3,
-    "conditions": [
-      27,
-      38
-    ],
-    "furthest_room": "Trashbin"
-  },
-  {
-    "from": 4,
-    "to": 5,
-    "length": 1,
-    "conditions": [
-      27,
-      38
-    ],
-    "furthest_room": "Trashbin"
-  },
-  {
-    "from": 11,
-    "to": 5,
-    "length": 1,
-    "conditions": [
-      27,
-      38
-    ],
-    "furthest_room": "Trashbin"
-  },
-  {
-    "from": 17,
-    "to": 5,
-    "length": 1,
-    "conditions": [
-      27,
-      38
-    ],
-    "furthest_room": "Trashbin"
-  },
-  {
-    "from": 27,
-    "to": 5,
-    "length": 2,
-    "conditions": [
-      27,
-      38
-    ],
-    "furthest_room": "Trashbin"
-  },
-  {
-    "from": 1,
-    "to": 11,
-    "length": 4,
-    "conditions": [
-      1
-    ],
-    "furthest_room": "Cat corner"
-  },
-  {
-    "from": 4,
-    "to": 11,
-    "length": 2,
-    "conditions": [
-      1
-    ],
-    "furthest_room": "Cat corner"
-  },
-  {
-    "from": 5,
-    "to": 11,
-    "length": 1,
-    "conditions": [
-      1
-    ],
-    "furthest_room": "Cat corner"
-  },
-  {
-    "from": 17,
-    "to": 11,
-    "length": 2,
-    "conditions": [
-      1
-    ],
-    "furthest_room": "Cat corner"
-  },
-  {
-    "from": 25,
-    "to": 11,
-    "length": 1,
-    "conditions": [
-      1
-    ],
-    "furthest_room": "Cat corner"
-  },
-  {
-    "from": 27,
-    "to": 11,
-    "length": 3,
-    "conditions": [
-      1
-    ],
-    "furthest_room": "Cat corner"
-  },
-  {
-    "from": 15,
-    "to": 16,
-    "length": 1,
-    "conditions": [
-      5
-    ],
-    "furthest_room": "Statue head"
-  },
-  {
-    "from": 26,
-    "to": 12,
-    "length": 0,
-    "conditions": [
-      7
-    ],
-    "furthest_room": "Shed"
-  },
-  {
-    "from": 2,
-    "to": 14,
-    "length": 4,
-    "conditions": [
-      10
-    ],
-    "furthest_room": "Snake corner"
-  },
-  {
-    "from": 15,
-    "to": 14,
-    "length": 1,
-    "conditions": [
-      10
-    ],
-    "furthest_room": "Snake corner"
-  },
-  {
-    "from": 19,
-    "to": 14,
-    "length": 2,
-    "conditions": [
-      10
-    ],
-    "furthest_room": "Snake corner"
-  },
-  {
-    "from": 20,
-    "to": 14,
-    "length": 3,
-    "conditions": [
-      10
-    ],
-    "furthest_room": "Snake corner"
-  },
-  {
-    "from": 22,
-    "to": 14,
-    "length": 4,
-    "conditions": [
-      10
-    ],
-    "furthest_room": "Snake corner"
-  },
-  {
-    "from": 23,
-    "to": 14,
-    "length": 3,
-    "conditions": [
-      10
-    ],
-    "furthest_room": "Snake corner"
-  },
-  {
-    "from": 34,
-    "to": 14,
-    "length": 2,
-    "conditions": [
-      10
-    ],
-    "furthest_room": "Snake corner"
-  },
-  {
-    "from": 36,
-    "to": 14,
-    "length": 2,
-    "conditions": [
-      10
-    ],
-    "furthest_room": "Snake corner"
-  },
-  {
-    "from": 38,
-    "to": 14,
-    "length": 1,
-    "conditions": [
-      10
-    ],
-    "furthest_room": "Snake corner"
-  },
-  {
-    "from": 2,
-    "to": 24,
-    "length": 2,
-    "conditions": [
-      11,
-      30
-    ],
-    "furthest_room": "Owl house"
-  },
-  {
-    "from": 19,
-    "to": 24,
-    "length": 2,
-    "conditions": [
-      11,
-      30
-    ],
-    "furthest_room": "Owl house"
-  },
-  {
-    "from": 20,
-    "to": 24,
-    "length": 3,
-    "conditions": [
-      11,
-      30
-    ],
-    "furthest_room": "Owl house"
-  },
-  {
-    "from": 22,
-    "to": 24,
-    "length": 2,
-    "conditions": [
-      11,
-      30
-    ],
-    "furthest_room": "Owl house"
-  },
-  {
-    "from": 23,
-    "to": 24,
-    "length": 1,
-    "conditions": [
-      11,
-      30
-    ],
-    "furthest_room": "Owl house"
-  },
-  {
-    "from": 34,
-    "to": 24,
-    "length": 4,
-    "conditions": [
-      11,
-      30
-    ],
-    "furthest_room": "Owl house"
-  },
-  {
-    "from": 36,
-    "to": 24,
-    "length": 4,
-    "conditions": [
-      11,
-      30
-    ],
-    "furthest_room": "Owl house"
-  },
-  {
-    "from": 37,
-    "to": 24,
-    "length": 1,
-    "conditions": [
-      11,
-      30
-    ],
-    "furthest_room": "Owl house"
-  },
-  {
-    "from": 39,
-    "to": 24,
-    "length": 1,
-    "conditions": [
-      11,
-      30
-    ],
-    "furthest_room": "Owl house"
-  },
-  {
-    "from": 2,
-    "to": 39,
-    "length": 3,
-    "conditions": [
-      15
-    ],
-    "furthest_room": "Frog"
-  },
-  {
-    "from": 19,
-    "to": 39,
-    "length": 3,
-    "conditions": [
-      15
-    ],
-    "furthest_room": "Frog"
-  },
-  {
-    "from": 20,
-    "to": 39,
-    "length": 4,
-    "conditions": [
-      15
-    ],
-    "furthest_room": "Frog"
-  },
-  {
-    "from": 22,
-    "to": 39,
-    "length": 3,
-    "conditions": [
-      15
-    ],
-    "furthest_room": "Frog"
-  },
-  {
-    "from": 23,
-    "to": 39,
-    "length": 2,
-    "conditions": [
-      15
-    ],
-    "furthest_room": "Frog"
-  },
-  {
-    "from": 24,
-    "to": 39,
-    "length": 1,
-    "conditions": [
-      15
-    ],
-    "furthest_room": "Frog"
-  },
-  {
-    "from": 34,
-    "to": 39,
-    "length": 5,
-    "conditions": [
-      15
-    ],
-    "furthest_room": "Frog"
-  },
-  {
-    "from": 36,
-    "to": 39,
-    "length": 5,
-    "conditions": [
-      15
-    ],
-    "furthest_room": "Frog"
-  },
-  {
-    "from": 38,
-    "to": 39,
-    "length": 1,
-    "conditions": [
-      15
-    ],
-    "furthest_room": "Frog"
-  },
-  {
-    "from": 7,
-    "to": 8,
-    "length": 0,
-    "conditions": [
-      17
-    ],
-    "furthest_room": "Birds house"
-  },
-  {
-    "from": 1,
-    "to": 17,
-    "length": 2,
-    "conditions": [
-      7,
-      20
-    ],
-    "furthest_room": "Bench"
-  },
-  {
-    "from": 4,
-    "to": 17,
-    "length": 2,
-    "conditions": [
-      7,
-      20
-    ],
-    "furthest_room": "Bench"
-  },
-  {
-    "from": 5,
-    "to": 17,
-    "length": 1,
-    "conditions": [
-      7,
-      20
-    ],
-    "furthest_room": "Bench"
-  },
-  {
-    "from": 11,
-    "to": 17,
-    "length": 2,
-    "conditions": [
-      7,
-      20
-    ],
-    "furthest_room": "Bench"
-  },
-  {
-    "from": 27,
-    "to": 17,
-    "length": 1,
-    "conditions": [
-      7,
-      20
-    ],
-    "furthest_room": "Bench"
-  },
-  {
-    "from": 2,
-    "to": 23,
-    "length": 1,
-    "conditions": [
-      21
-    ],
-    "furthest_room": "Mushroom houses"
-  },
-  {
-    "from": 14,
-    "to": 23,
-    "length": 3,
-    "conditions": [
-      21
-    ],
-    "furthest_room": "Mushroom houses"
-  },
-  {
-    "from": 19,
-    "to": 23,
-    "length": 1,
-    "conditions": [
-      21
-    ],
-    "furthest_room": "Mushroom houses"
-  },
-  {
-    "from": 20,
-    "to": 23,
-    "length": 2,
-    "conditions": [
-      21
-    ],
-    "furthest_room": "Mushroom houses"
-  },
-  {
-    "from": 22,
-    "to": 23,
-    "length": 1,
-    "conditions": [
-      21
-    ],
-    "furthest_room": "Mushroom houses"
-  },
-  {
-    "from": 24,
-    "to": 23,
-    "length": 1,
-    "conditions": [
-      21
-    ],
-    "furthest_room": "Mushroom houses"
-  },
-  {
-    "from": 34,
-    "to": 23,
-    "length": 3,
-    "conditions": [
-      21
-    ],
-    "furthest_room": "Mushroom houses"
-  },
-  {
-    "from": 36,
-    "to": 23,
-    "length": 3,
-    "conditions": [
-      21
-    ],
-    "furthest_room": "Mushroom houses"
-  },
-  {
-    "from": 37,
-    "to": 23,
-    "length": 2,
-    "conditions": [
-      21
-    ],
-    "furthest_room": "Mushroom houses"
-  },
-  {
-    "from": 39,
-    "to": 23,
-    "length": 2,
-    "conditions": [
-      21
-    ],
-    "furthest_room": "Mushroom houses"
-  },
-  {
-    "from": 32,
-    "to": 31,
-    "length": 0,
-    "conditions": [
-      21
-    ],
-    "furthest_room": "Squirrel house"
-  },
-  {
-    "from": 37,
-    "to": 25,
-    "length": 2,
-    "conditions": [
-      22
-    ],
-    "furthest_room": "Outside shed"
-  },
-  {
-    "from": 25,
-    "to": 37,
-    "length": 2,
-    "conditions": [
-      22
-    ],
-    "furthest_room": "Path rose bush"
-  },
-  {
-    "from": 34,
-    "to": 10,
-    "length": 1,
-    "conditions": [
-      25
-    ],
-    "furthest_room": "Duck"
-  },
-  {
-    "from": 30,
-    "to": 29,
-    "length": 0,
-    "conditions": [
-      28
-    ],
-    "furthest_room": "Rabbit house"
-  },
-  {
-    "from": 2,
-    "to": 19,
-    "length": 2,
-    "conditions": [
-      35
-    ],
-    "furthest_room": "Bridge"
-  },
-  {
-    "from": 14,
-    "to": 19,
-    "length": 2,
-    "conditions": [
-      35
-    ],
-    "furthest_room": "Bridge"
-  },
-  {
-    "from": 20,
-    "to": 19,
-    "length": 1,
-    "conditions": [
-      35
-    ],
-    "furthest_room": "Bridge"
-  },
-  {
-    "from": 22,
-    "to": 19,
-    "length": 2,
-    "conditions": [
-      35
-    ],
-    "furthest_room": "Bridge"
-  },
-  {
-    "from": 23,
-    "to": 19,
-    "length": 1,
-    "conditions": [
-      35
-    ],
-    "furthest_room": "Bridge"
-  },
-  {
-    "from": 24,
-    "to": 19,
-    "length": 2,
-    "conditions": [
-      35
-    ],
-    "furthest_room": "Bridge"
-  },
-  {
-    "from": 34,
-    "to": 19,
-    "length": 2,
-    "conditions": [
-      35
-    ],
-    "furthest_room": "Bridge"
-  },
-  {
-    "from": 36,
-    "to": 19,
-    "length": 2,
-    "conditions": [
-      35
-    ],
-    "furthest_room": "Bridge"
-  },
-  {
-    "from": 37,
-    "to": 19,
-    "length": 3,
-    "conditions": [
-      35
-    ],
-    "furthest_room": "Bridge"
-  },
-  {
-    "from": 39,
-    "to": 19,
-    "length": 3,
-    "conditions": [
-      35
-    ],
-    "furthest_room": "Bridge"
-  },
-  {
-    "from": 21,
-    "to": 3,
-    "length": 2,
-    "conditions": [
-      36
-    ],
-    "furthest_room": "Flower bush"
-  },
-  {
-    "from": 2,
-    "to": 1,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Outside home"
-  },
-  {
-    "from": 4,
-    "to": 1,
-    "length": 4,
-    "conditions": [],
-    "furthest_room": "Outside home"
-  },
-  {
-    "from": 5,
-    "to": 1,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Outside home"
-  },
-  {
-    "from": 11,
-    "to": 1,
-    "length": 4,
-    "conditions": [],
-    "furthest_room": "Outside home"
-  },
-  {
-    "from": 17,
-    "to": 1,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Outside home"
-  },
-  {
-    "from": 1,
-    "to": 2,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Ladder"
-  },
-  {
-    "from": 14,
-    "to": 2,
-    "length": 4,
-    "conditions": [],
-    "furthest_room": "Ladder"
-  },
-  {
-    "from": 19,
-    "to": 2,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Ladder"
-  },
-  {
-    "from": 20,
-    "to": 2,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Ladder"
-  },
-  {
-    "from": 22,
-    "to": 2,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Ladder"
-  },
-  {
-    "from": 23,
-    "to": 2,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Ladder"
-  },
-  {
-    "from": 24,
-    "to": 2,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Ladder"
-  },
-  {
-    "from": 36,
-    "to": 2,
-    "length": 4,
-    "conditions": [],
-    "furthest_room": "Ladder"
-  },
-  {
-    "from": 37,
-    "to": 2,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Ladder"
-  },
-  {
-    "from": 39,
-    "to": 2,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Ladder"
-  },
-  {
-    "from": 8,
-    "to": 7,
-    "length": 0,
-    "conditions": [],
-    "furthest_room": "Birds house"
-  },
-  {
-    "from": 27,
-    "to": 7,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Birds house"
-  },
-  {
-    "from": 14,
-    "to": 15,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Statue bottom"
-  },
-  {
-    "from": 16,
-    "to": 15,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Statue bottom"
-  },
-  {
-    "from": 2,
-    "to": 20,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Lake bottom"
-  },
-  {
-    "from": 14,
-    "to": 20,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Lake bottom"
-  },
-  {
-    "from": 19,
-    "to": 20,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Lake bottom"
-  },
-  {
-    "from": 22,
-    "to": 20,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Lake bottom"
-  },
-  {
-    "from": 23,
-    "to": 20,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Lake bottom"
-  },
-  {
-    "from": 24,
-    "to": 20,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Lake bottom"
-  },
-  {
-    "from": 34,
-    "to": 20,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Lake bottom"
-  },
-  {
-    "from": 36,
-    "to": 20,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Lake bottom"
-  },
-  {
-    "from": 37,
-    "to": 20,
-    "length": 4,
-    "conditions": [],
-    "furthest_room": "Lake bottom"
-  },
-  {
-    "from": 39,
-    "to": 20,
-    "length": 4,
-    "conditions": [],
-    "furthest_room": "Lake bottom"
-  },
-  {
-    "from": 3,
-    "to": 21,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Playground sandbox"
-  },
-  {
-    "from": 22,
-    "to": 21,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Playground sandbox"
-  },
-  {
-    "from": 25,
-    "to": 21,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Playground sandbox"
-  },
-  {
-    "from": 2,
-    "to": 22,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Playground horse"
-  },
-  {
-    "from": 14,
-    "to": 22,
-    "length": 4,
-    "conditions": [],
-    "furthest_room": "Playground horse"
-  },
-  {
-    "from": 19,
-    "to": 22,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Playground horse"
-  },
-  {
-    "from": 20,
-    "to": 22,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Playground horse"
-  },
-  {
-    "from": 21,
-    "to": 22,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Playground horse"
-  },
-  {
-    "from": 23,
-    "to": 22,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Playground horse"
-  },
-  {
-    "from": 24,
-    "to": 22,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Playground horse"
-  },
-  {
-    "from": 34,
-    "to": 22,
-    "length": 4,
-    "conditions": [],
-    "furthest_room": "Playground horse"
-  },
-  {
-    "from": 36,
-    "to": 22,
-    "length": 4,
-    "conditions": [],
-    "furthest_room": "Playground horse"
-  },
-  {
-    "from": 37,
-    "to": 22,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Playground horse"
-  },
-  {
-    "from": 39,
-    "to": 22,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Playground horse"
-  },
-  {
-    "from": 6,
-    "to": 25,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Outside shed"
-  },
-  {
-    "from": 11,
-    "to": 25,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Outside shed"
-  },
-  {
-    "from": 21,
-    "to": 25,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Outside shed"
-  },
-  {
-    "from": 26,
-    "to": 25,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Outside shed"
-  },
-  {
-    "from": 12,
-    "to": 26,
-    "length": 0,
-    "conditions": [],
-    "furthest_room": "Shed"
-  },
-  {
-    "from": 25,
-    "to": 26,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Shed"
-  },
-  {
-    "from": 4,
-    "to": 27,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Path bee"
-  },
-  {
-    "from": 5,
-    "to": 27,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Path bee"
-  },
-  {
-    "from": 7,
-    "to": 27,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Path bee"
-  },
-  {
-    "from": 11,
-    "to": 27,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Path bee"
-  },
-  {
-    "from": 17,
-    "to": 27,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Path bee"
-  },
-  {
-    "from": 28,
-    "to": 27,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Path bee"
-  },
-  {
-    "from": 9,
-    "to": 28,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Snail corner"
-  },
-  {
-    "from": 27,
-    "to": 28,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Snail corner"
-  },
-  {
-    "from": 34,
-    "to": 28,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Snail corner"
-  },
-  {
-    "from": 29,
-    "to": 30,
-    "length": 0,
-    "conditions": [],
-    "furthest_room": "Rabbit house"
-  },
-  {
-    "from": 32,
-    "to": 30,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Rabbit house"
-  },
-  {
-    "from": 37,
-    "to": 30,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Rabbit house"
-  },
-  {
-    "from": 30,
-    "to": 32,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Squirrel house"
-  },
-  {
-    "from": 31,
-    "to": 32,
-    "length": 0,
-    "conditions": [],
-    "furthest_room": "Squirrel house"
-  },
-  {
-    "from": 38,
-    "to": 32,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Squirrel house"
-  },
-  {
-    "from": 10,
-    "to": 34,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Path bat"
-  },
-  {
-    "from": 14,
-    "to": 34,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Path bat"
-  },
-  {
-    "from": 19,
-    "to": 34,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Path bat"
-  },
-  {
-    "from": 20,
-    "to": 34,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Path bat"
-  },
-  {
-    "from": 22,
-    "to": 34,
-    "length": 4,
-    "conditions": [],
-    "furthest_room": "Path bat"
-  },
-  {
-    "from": 23,
-    "to": 34,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Path bat"
-  },
-  {
-    "from": 24,
-    "to": 34,
-    "length": 4,
-    "conditions": [],
-    "furthest_room": "Path bat"
-  },
-  {
-    "from": 28,
-    "to": 34,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Path bat"
-  },
-  {
-    "from": 35,
-    "to": 34,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Path bat"
-  },
-  {
-    "from": 36,
-    "to": 34,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Path bat"
-  },
-  {
-    "from": 37,
-    "to": 34,
-    "length": 5,
-    "conditions": [],
-    "furthest_room": "Path bat"
-  },
-  {
-    "from": 39,
-    "to": 34,
-    "length": 5,
-    "conditions": [],
-    "furthest_room": "Path bat"
-  },
-  {
-    "from": 13,
-    "to": 35,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Bat entry"
-  },
-  {
-    "from": 34,
-    "to": 35,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Bat entry"
-  },
-  {
-    "from": 2,
-    "to": 36,
-    "length": 4,
-    "conditions": [],
-    "furthest_room": "Elf house"
-  },
-  {
-    "from": 14,
-    "to": 36,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Elf house"
-  },
-  {
-    "from": 18,
-    "to": 36,
-    "length": 0,
-    "conditions": [],
-    "furthest_room": "Elf house"
-  },
-  {
-    "from": 19,
-    "to": 36,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Elf house"
-  },
-  {
-    "from": 20,
-    "to": 36,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Elf house"
-  },
-  {
-    "from": 22,
-    "to": 36,
-    "length": 4,
-    "conditions": [],
-    "furthest_room": "Elf house"
-  },
-  {
-    "from": 23,
-    "to": 36,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Elf house"
-  },
-  {
-    "from": 24,
-    "to": 36,
-    "length": 4,
-    "conditions": [],
-    "furthest_room": "Elf house"
-  },
-  {
-    "from": 34,
-    "to": 36,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Elf house"
-  },
-  {
-    "from": 37,
-    "to": 36,
-    "length": 5,
-    "conditions": [],
-    "furthest_room": "Elf house"
-  },
-  {
-    "from": 39,
-    "to": 36,
-    "length": 5,
-    "conditions": [],
-    "furthest_room": "Elf house"
-  },
-  {
-    "from": 2,
-    "to": 37,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Path rose bush"
-  },
-  {
-    "from": 6,
-    "to": 37,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Path rose bush"
-  },
-  {
-    "from": 19,
-    "to": 37,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Path rose bush"
-  },
-  {
-    "from": 20,
-    "to": 37,
-    "length": 4,
-    "conditions": [],
-    "furthest_room": "Path rose bush"
-  },
-  {
-    "from": 22,
-    "to": 37,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Path rose bush"
-  },
-  {
-    "from": 23,
-    "to": 37,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Path rose bush"
-  },
-  {
-    "from": 24,
-    "to": 37,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Path rose bush"
-  },
-  {
-    "from": 30,
-    "to": 37,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Path rose bush"
-  },
-  {
-    "from": 34,
-    "to": 37,
-    "length": 5,
-    "conditions": [],
-    "furthest_room": "Path rose bush"
-  },
-  {
-    "from": 36,
-    "to": 37,
-    "length": 5,
-    "conditions": [],
-    "furthest_room": "Path rose bush"
-  },
-  {
-    "from": 38,
-    "to": 37,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Path rose bush"
-  },
-  {
-    "from": 14,
-    "to": 38,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Path puddle"
-  },
-  {
-    "from": 32,
-    "to": 38,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Path puddle"
-  },
-  {
-    "from": 37,
-    "to": 38,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Path puddle"
-  },
-  {
-    "from": 39,
-    "to": 38,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Path puddle"
-  },
-  {
-    "from": 10,
-    "to": 2,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Ladder"
-  },
-  {
-    "from": 27,
-    "to": 2,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Ladder"
-  },
-  {
-    "from": 33,
-    "to": 2,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Ladder"
-  },
-  {
-    "from": 34,
-    "to": 2,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Ladder"
-  },
-  {
-    "from": 10,
-    "to": 4,
-    "length": 4,
-    "conditions": [
-      32,
-      34
-    ],
-    "furthest_room": "Rocket"
-  },
-  {
-    "from": 27,
-    "to": 4,
-    "length": 4,
-    "conditions": [
-      32,
-      34
-    ],
-    "furthest_room": "Rocket"
-  },
-  {
-    "from": 33,
-    "to": 4,
-    "length": 3,
-    "conditions": [
-      32,
-      34
-    ],
-    "furthest_room": "Rocket"
-  },
-  {
-    "from": 34,
-    "to": 4,
-    "length": 5,
-    "conditions": [
-      32,
-      34
-    ],
-    "furthest_room": "Rocket"
-  },
-  {
-    "from": 2,
-    "to": 10,
-    "length": 2,
-    "conditions": [
-      25
-    ],
-    "furthest_room": "Duck"
-  },
-  {
-    "from": 27,
-    "to": 10,
-    "length": 2,
-    "conditions": [
-      25
-    ],
-    "furthest_room": "Duck"
-  },
-  {
-    "from": 33,
-    "to": 10,
-    "length": 1,
-    "conditions": [
-      25
-    ],
-    "furthest_room": "Duck"
-  },
-  {
-    "from": 2,
-    "to": 27,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Path bee"
-  },
-  {
-    "from": 10,
-    "to": 27,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Path bee"
-  },
-  {
-    "from": 33,
-    "to": 27,
-    "length": 1,
-    "conditions": [],
-    "furthest_room": "Path bee"
-  },
-  {
-    "from": 2,
-    "to": 33,
-    "length": 1,
-    "conditions": [
-      37
-    ],
-    "furthest_room": "Bee home"
-  },
-  {
-    "from": 10,
-    "to": 33,
-    "length": 1,
-    "conditions": [
-      37
-    ],
-    "furthest_room": "Bee home"
-  },
-  {
-    "from": 27,
-    "to": 33,
-    "length": 1,
-    "conditions": [
-      37
-    ],
-    "furthest_room": "Bee home"
-  },
-  {
-    "from": 34,
-    "to": 33,
-    "length": 2,
-    "conditions": [
-      37
-    ],
-    "furthest_room": "Bee home"
-  },
-  {
-    "from": 2,
-    "to": 34,
-    "length": 3,
-    "conditions": [],
-    "furthest_room": "Path bat"
-  },
-  {
-    "from": 33,
-    "to": 34,
-    "length": 2,
-    "conditions": [],
-    "furthest_room": "Path bat"
-  }
-]
+{
+  "vertices": {
+    "1": {
+      "furthest_room": "Outside home"
+    },
+    "2": {
+      "furthest_room": "Ladder"
+    },
+    "3": {
+      "furthest_room": "Flower bush"
+    },
+    "4": {
+      "furthest_room": "Rocket"
+    },
+    "5": {
+      "furthest_room": "Trashbin"
+    },
+    "6": {
+      "furthest_room": "Ant house"
+    },
+    "7": {
+      "furthest_room": "Birds house"
+    },
+    "8": {
+      "furthest_room": "Birds house"
+    },
+    "9": {
+      "furthest_room": "Tree trunk top"
+    },
+    "10": {
+      "furthest_room": "Duck"
+    },
+    "11": {
+      "furthest_room": "Cat corner"
+    },
+    "12": {
+      "furthest_room": "Shed"
+    },
+    "13": {
+      "furthest_room": "Bat cave"
+    },
+    "14": {
+      "furthest_room": "Snake corner"
+    },
+    "15": {
+      "furthest_room": "Statue bottom"
+    },
+    "16": {
+      "furthest_room": "Statue head"
+    },
+    "17": {
+      "furthest_room": "Bench"
+    },
+    "18": {
+      "furthest_room": "Elf house"
+    },
+    "19": {
+      "furthest_room": "Bridge"
+    },
+    "20": {
+      "furthest_room": "Lake bottom"
+    },
+    "21": {
+      "furthest_room": "Playground sandbox"
+    },
+    "22": {
+      "furthest_room": "Playground horse"
+    },
+    "23": {
+      "furthest_room": "Mushroom houses"
+    },
+    "24": {
+      "furthest_room": "Owl house"
+    },
+    "25": {
+      "furthest_room": "Outside shed"
+    },
+    "26": {
+      "furthest_room": "Shed"
+    },
+    "27": {
+      "furthest_room": "Path bee"
+    },
+    "28": {
+      "furthest_room": "Snail corner"
+    },
+    "29": {
+      "furthest_room": "Rabbit house"
+    },
+    "30": {
+      "furthest_room": "Rabbit house"
+    },
+    "31": {
+      "furthest_room": "Squirrel house"
+    },
+    "32": {
+      "furthest_room": "Squirrel house"
+    },
+    "33": {
+      "furthest_room": "Bee home"
+    },
+    "34": {
+      "furthest_room": "Path bat"
+    },
+    "35": {
+      "furthest_room": "Bat entry"
+    },
+    "36": {
+      "furthest_room": "Elf house"
+    },
+    "37": {
+      "furthest_room": "Path rose bush"
+    },
+    "38": {
+      "furthest_room": "Path puddle"
+    },
+    "39": {
+      "furthest_room": "Frog"
+    }
+  },
+  "edges": [
+    {
+      "from": 36,
+      "to": 18,
+      "length": 0,
+      "conditions": [
+        2,
+        3
+      ],
+      "furthest_room": "Elf house"
+    },
+    {
+      "from": 28,
+      "to": 9,
+      "length": 2,
+      "conditions": [
+        12,
+        15,
+        20
+      ],
+      "furthest_room": "Tree trunk top"
+    },
+    {
+      "from": 25,
+      "to": 6,
+      "length": 3,
+      "conditions": [
+        14,
+        22
+      ],
+      "furthest_room": "Ant house"
+    },
+    {
+      "from": 37,
+      "to": 6,
+      "length": 3,
+      "conditions": [
+        14,
+        22
+      ],
+      "furthest_room": "Ant house"
+    },
+    {
+      "from": 35,
+      "to": 13,
+      "length": 1,
+      "conditions": [
+        1,
+        26
+      ],
+      "furthest_room": "Bat cave"
+    },
+    {
+      "from": 1,
+      "to": 4,
+      "length": 3,
+      "conditions": [
+        32,
+        34
+      ],
+      "furthest_room": "Rocket"
+    },
+    {
+      "from": 5,
+      "to": 4,
+      "length": 2,
+      "conditions": [
+        32,
+        34
+      ],
+      "furthest_room": "Rocket"
+    },
+    {
+      "from": 11,
+      "to": 4,
+      "length": 3,
+      "conditions": [
+        32,
+        34
+      ],
+      "furthest_room": "Rocket"
+    },
+    {
+      "from": 17,
+      "to": 4,
+      "length": 3,
+      "conditions": [
+        32,
+        34
+      ],
+      "furthest_room": "Rocket"
+    },
+    {
+      "from": 1,
+      "to": 5,
+      "length": 3,
+      "conditions": [
+        27,
+        38
+      ],
+      "furthest_room": "Trashbin"
+    },
+    {
+      "from": 4,
+      "to": 5,
+      "length": 1,
+      "conditions": [
+        27,
+        38
+      ],
+      "furthest_room": "Trashbin"
+    },
+    {
+      "from": 11,
+      "to": 5,
+      "length": 1,
+      "conditions": [
+        27,
+        38
+      ],
+      "furthest_room": "Trashbin"
+    },
+    {
+      "from": 17,
+      "to": 5,
+      "length": 1,
+      "conditions": [
+        27,
+        38
+      ],
+      "furthest_room": "Trashbin"
+    },
+    {
+      "from": 27,
+      "to": 5,
+      "length": 2,
+      "conditions": [
+        27,
+        38
+      ],
+      "furthest_room": "Trashbin"
+    },
+    {
+      "from": 1,
+      "to": 11,
+      "length": 4,
+      "conditions": [
+        1
+      ],
+      "furthest_room": "Cat corner"
+    },
+    {
+      "from": 4,
+      "to": 11,
+      "length": 2,
+      "conditions": [
+        1
+      ],
+      "furthest_room": "Cat corner"
+    },
+    {
+      "from": 5,
+      "to": 11,
+      "length": 1,
+      "conditions": [
+        1
+      ],
+      "furthest_room": "Cat corner"
+    },
+    {
+      "from": 17,
+      "to": 11,
+      "length": 2,
+      "conditions": [
+        1
+      ],
+      "furthest_room": "Cat corner"
+    },
+    {
+      "from": 25,
+      "to": 11,
+      "length": 1,
+      "conditions": [
+        1
+      ],
+      "furthest_room": "Cat corner"
+    },
+    {
+      "from": 27,
+      "to": 11,
+      "length": 3,
+      "conditions": [
+        1
+      ],
+      "furthest_room": "Cat corner"
+    },
+    {
+      "from": 15,
+      "to": 16,
+      "length": 1,
+      "conditions": [
+        5
+      ],
+      "furthest_room": "Statue head"
+    },
+    {
+      "from": 26,
+      "to": 12,
+      "length": 0,
+      "conditions": [
+        7
+      ],
+      "furthest_room": "Shed"
+    },
+    {
+      "from": 2,
+      "to": 14,
+      "length": 4,
+      "conditions": [
+        10
+      ],
+      "furthest_room": "Snake corner"
+    },
+    {
+      "from": 15,
+      "to": 14,
+      "length": 1,
+      "conditions": [
+        10
+      ],
+      "furthest_room": "Snake corner"
+    },
+    {
+      "from": 19,
+      "to": 14,
+      "length": 2,
+      "conditions": [
+        10
+      ],
+      "furthest_room": "Snake corner"
+    },
+    {
+      "from": 20,
+      "to": 14,
+      "length": 3,
+      "conditions": [
+        10
+      ],
+      "furthest_room": "Snake corner"
+    },
+    {
+      "from": 22,
+      "to": 14,
+      "length": 4,
+      "conditions": [
+        10
+      ],
+      "furthest_room": "Snake corner"
+    },
+    {
+      "from": 23,
+      "to": 14,
+      "length": 3,
+      "conditions": [
+        10
+      ],
+      "furthest_room": "Snake corner"
+    },
+    {
+      "from": 34,
+      "to": 14,
+      "length": 2,
+      "conditions": [
+        10
+      ],
+      "furthest_room": "Snake corner"
+    },
+    {
+      "from": 36,
+      "to": 14,
+      "length": 2,
+      "conditions": [
+        10
+      ],
+      "furthest_room": "Snake corner"
+    },
+    {
+      "from": 38,
+      "to": 14,
+      "length": 1,
+      "conditions": [
+        10
+      ],
+      "furthest_room": "Snake corner"
+    },
+    {
+      "from": 2,
+      "to": 24,
+      "length": 2,
+      "conditions": [
+        11,
+        30
+      ],
+      "furthest_room": "Owl house"
+    },
+    {
+      "from": 19,
+      "to": 24,
+      "length": 2,
+      "conditions": [
+        11,
+        30
+      ],
+      "furthest_room": "Owl house"
+    },
+    {
+      "from": 20,
+      "to": 24,
+      "length": 3,
+      "conditions": [
+        11,
+        30
+      ],
+      "furthest_room": "Owl house"
+    },
+    {
+      "from": 22,
+      "to": 24,
+      "length": 2,
+      "conditions": [
+        11,
+        30
+      ],
+      "furthest_room": "Owl house"
+    },
+    {
+      "from": 23,
+      "to": 24,
+      "length": 1,
+      "conditions": [
+        11,
+        30
+      ],
+      "furthest_room": "Owl house"
+    },
+    {
+      "from": 34,
+      "to": 24,
+      "length": 4,
+      "conditions": [
+        11,
+        30
+      ],
+      "furthest_room": "Owl house"
+    },
+    {
+      "from": 36,
+      "to": 24,
+      "length": 4,
+      "conditions": [
+        11,
+        30
+      ],
+      "furthest_room": "Owl house"
+    },
+    {
+      "from": 37,
+      "to": 24,
+      "length": 1,
+      "conditions": [
+        11,
+        30
+      ],
+      "furthest_room": "Owl house"
+    },
+    {
+      "from": 39,
+      "to": 24,
+      "length": 1,
+      "conditions": [
+        11,
+        30
+      ],
+      "furthest_room": "Owl house"
+    },
+    {
+      "from": 2,
+      "to": 39,
+      "length": 3,
+      "conditions": [
+        15
+      ],
+      "furthest_room": "Frog"
+    },
+    {
+      "from": 19,
+      "to": 39,
+      "length": 3,
+      "conditions": [
+        15
+      ],
+      "furthest_room": "Frog"
+    },
+    {
+      "from": 20,
+      "to": 39,
+      "length": 4,
+      "conditions": [
+        15
+      ],
+      "furthest_room": "Frog"
+    },
+    {
+      "from": 22,
+      "to": 39,
+      "length": 3,
+      "conditions": [
+        15
+      ],
+      "furthest_room": "Frog"
+    },
+    {
+      "from": 23,
+      "to": 39,
+      "length": 2,
+      "conditions": [
+        15
+      ],
+      "furthest_room": "Frog"
+    },
+    {
+      "from": 24,
+      "to": 39,
+      "length": 1,
+      "conditions": [
+        15
+      ],
+      "furthest_room": "Frog"
+    },
+    {
+      "from": 34,
+      "to": 39,
+      "length": 5,
+      "conditions": [
+        15
+      ],
+      "furthest_room": "Frog"
+    },
+    {
+      "from": 36,
+      "to": 39,
+      "length": 5,
+      "conditions": [
+        15
+      ],
+      "furthest_room": "Frog"
+    },
+    {
+      "from": 38,
+      "to": 39,
+      "length": 1,
+      "conditions": [
+        15
+      ],
+      "furthest_room": "Frog"
+    },
+    {
+      "from": 7,
+      "to": 8,
+      "length": 0,
+      "conditions": [
+        17
+      ],
+      "furthest_room": "Birds house"
+    },
+    {
+      "from": 1,
+      "to": 17,
+      "length": 2,
+      "conditions": [
+        7,
+        20
+      ],
+      "furthest_room": "Bench"
+    },
+    {
+      "from": 4,
+      "to": 17,
+      "length": 2,
+      "conditions": [
+        7,
+        20
+      ],
+      "furthest_room": "Bench"
+    },
+    {
+      "from": 5,
+      "to": 17,
+      "length": 1,
+      "conditions": [
+        7,
+        20
+      ],
+      "furthest_room": "Bench"
+    },
+    {
+      "from": 11,
+      "to": 17,
+      "length": 2,
+      "conditions": [
+        7,
+        20
+      ],
+      "furthest_room": "Bench"
+    },
+    {
+      "from": 27,
+      "to": 17,
+      "length": 1,
+      "conditions": [
+        7,
+        20
+      ],
+      "furthest_room": "Bench"
+    },
+    {
+      "from": 2,
+      "to": 23,
+      "length": 1,
+      "conditions": [
+        21
+      ],
+      "furthest_room": "Mushroom houses"
+    },
+    {
+      "from": 14,
+      "to": 23,
+      "length": 3,
+      "conditions": [
+        21
+      ],
+      "furthest_room": "Mushroom houses"
+    },
+    {
+      "from": 19,
+      "to": 23,
+      "length": 1,
+      "conditions": [
+        21
+      ],
+      "furthest_room": "Mushroom houses"
+    },
+    {
+      "from": 20,
+      "to": 23,
+      "length": 2,
+      "conditions": [
+        21
+      ],
+      "furthest_room": "Mushroom houses"
+    },
+    {
+      "from": 22,
+      "to": 23,
+      "length": 1,
+      "conditions": [
+        21
+      ],
+      "furthest_room": "Mushroom houses"
+    },
+    {
+      "from": 24,
+      "to": 23,
+      "length": 1,
+      "conditions": [
+        21
+      ],
+      "furthest_room": "Mushroom houses"
+    },
+    {
+      "from": 34,
+      "to": 23,
+      "length": 3,
+      "conditions": [
+        21
+      ],
+      "furthest_room": "Mushroom houses"
+    },
+    {
+      "from": 36,
+      "to": 23,
+      "length": 3,
+      "conditions": [
+        21
+      ],
+      "furthest_room": "Mushroom houses"
+    },
+    {
+      "from": 37,
+      "to": 23,
+      "length": 2,
+      "conditions": [
+        21
+      ],
+      "furthest_room": "Mushroom houses"
+    },
+    {
+      "from": 39,
+      "to": 23,
+      "length": 2,
+      "conditions": [
+        21
+      ],
+      "furthest_room": "Mushroom houses"
+    },
+    {
+      "from": 32,
+      "to": 31,
+      "length": 0,
+      "conditions": [
+        21
+      ],
+      "furthest_room": "Squirrel house"
+    },
+    {
+      "from": 37,
+      "to": 25,
+      "length": 2,
+      "conditions": [
+        22
+      ],
+      "furthest_room": "Outside shed"
+    },
+    {
+      "from": 25,
+      "to": 37,
+      "length": 2,
+      "conditions": [
+        22
+      ],
+      "furthest_room": "Path rose bush"
+    },
+    {
+      "from": 34,
+      "to": 10,
+      "length": 1,
+      "conditions": [
+        25
+      ],
+      "furthest_room": "Duck"
+    },
+    {
+      "from": 30,
+      "to": 29,
+      "length": 0,
+      "conditions": [
+        28
+      ],
+      "furthest_room": "Rabbit house"
+    },
+    {
+      "from": 2,
+      "to": 19,
+      "length": 2,
+      "conditions": [
+        35
+      ],
+      "furthest_room": "Bridge"
+    },
+    {
+      "from": 14,
+      "to": 19,
+      "length": 2,
+      "conditions": [
+        35
+      ],
+      "furthest_room": "Bridge"
+    },
+    {
+      "from": 20,
+      "to": 19,
+      "length": 1,
+      "conditions": [
+        35
+      ],
+      "furthest_room": "Bridge"
+    },
+    {
+      "from": 22,
+      "to": 19,
+      "length": 2,
+      "conditions": [
+        35
+      ],
+      "furthest_room": "Bridge"
+    },
+    {
+      "from": 23,
+      "to": 19,
+      "length": 1,
+      "conditions": [
+        35
+      ],
+      "furthest_room": "Bridge"
+    },
+    {
+      "from": 24,
+      "to": 19,
+      "length": 2,
+      "conditions": [
+        35
+      ],
+      "furthest_room": "Bridge"
+    },
+    {
+      "from": 34,
+      "to": 19,
+      "length": 2,
+      "conditions": [
+        35
+      ],
+      "furthest_room": "Bridge"
+    },
+    {
+      "from": 36,
+      "to": 19,
+      "length": 2,
+      "conditions": [
+        35
+      ],
+      "furthest_room": "Bridge"
+    },
+    {
+      "from": 37,
+      "to": 19,
+      "length": 3,
+      "conditions": [
+        35
+      ],
+      "furthest_room": "Bridge"
+    },
+    {
+      "from": 39,
+      "to": 19,
+      "length": 3,
+      "conditions": [
+        35
+      ],
+      "furthest_room": "Bridge"
+    },
+    {
+      "from": 21,
+      "to": 3,
+      "length": 2,
+      "conditions": [
+        36
+      ],
+      "furthest_room": "Flower bush"
+    },
+    {
+      "from": 2,
+      "to": 1,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Outside home"
+    },
+    {
+      "from": 4,
+      "to": 1,
+      "length": 4,
+      "conditions": [],
+      "furthest_room": "Outside home"
+    },
+    {
+      "from": 5,
+      "to": 1,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Outside home"
+    },
+    {
+      "from": 11,
+      "to": 1,
+      "length": 4,
+      "conditions": [],
+      "furthest_room": "Outside home"
+    },
+    {
+      "from": 17,
+      "to": 1,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Outside home"
+    },
+    {
+      "from": 1,
+      "to": 2,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Ladder"
+    },
+    {
+      "from": 14,
+      "to": 2,
+      "length": 4,
+      "conditions": [],
+      "furthest_room": "Ladder"
+    },
+    {
+      "from": 19,
+      "to": 2,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Ladder"
+    },
+    {
+      "from": 20,
+      "to": 2,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Ladder"
+    },
+    {
+      "from": 22,
+      "to": 2,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Ladder"
+    },
+    {
+      "from": 23,
+      "to": 2,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Ladder"
+    },
+    {
+      "from": 24,
+      "to": 2,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Ladder"
+    },
+    {
+      "from": 36,
+      "to": 2,
+      "length": 4,
+      "conditions": [],
+      "furthest_room": "Ladder"
+    },
+    {
+      "from": 37,
+      "to": 2,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Ladder"
+    },
+    {
+      "from": 39,
+      "to": 2,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Ladder"
+    },
+    {
+      "from": 8,
+      "to": 7,
+      "length": 0,
+      "conditions": [],
+      "furthest_room": "Birds house"
+    },
+    {
+      "from": 27,
+      "to": 7,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Birds house"
+    },
+    {
+      "from": 14,
+      "to": 15,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Statue bottom"
+    },
+    {
+      "from": 16,
+      "to": 15,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Statue bottom"
+    },
+    {
+      "from": 2,
+      "to": 20,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Lake bottom"
+    },
+    {
+      "from": 14,
+      "to": 20,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Lake bottom"
+    },
+    {
+      "from": 19,
+      "to": 20,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Lake bottom"
+    },
+    {
+      "from": 22,
+      "to": 20,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Lake bottom"
+    },
+    {
+      "from": 23,
+      "to": 20,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Lake bottom"
+    },
+    {
+      "from": 24,
+      "to": 20,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Lake bottom"
+    },
+    {
+      "from": 34,
+      "to": 20,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Lake bottom"
+    },
+    {
+      "from": 36,
+      "to": 20,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Lake bottom"
+    },
+    {
+      "from": 37,
+      "to": 20,
+      "length": 4,
+      "conditions": [],
+      "furthest_room": "Lake bottom"
+    },
+    {
+      "from": 39,
+      "to": 20,
+      "length": 4,
+      "conditions": [],
+      "furthest_room": "Lake bottom"
+    },
+    {
+      "from": 3,
+      "to": 21,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Playground sandbox"
+    },
+    {
+      "from": 22,
+      "to": 21,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Playground sandbox"
+    },
+    {
+      "from": 25,
+      "to": 21,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Playground sandbox"
+    },
+    {
+      "from": 2,
+      "to": 22,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Playground horse"
+    },
+    {
+      "from": 14,
+      "to": 22,
+      "length": 4,
+      "conditions": [],
+      "furthest_room": "Playground horse"
+    },
+    {
+      "from": 19,
+      "to": 22,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Playground horse"
+    },
+    {
+      "from": 20,
+      "to": 22,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Playground horse"
+    },
+    {
+      "from": 21,
+      "to": 22,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Playground horse"
+    },
+    {
+      "from": 23,
+      "to": 22,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Playground horse"
+    },
+    {
+      "from": 24,
+      "to": 22,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Playground horse"
+    },
+    {
+      "from": 34,
+      "to": 22,
+      "length": 4,
+      "conditions": [],
+      "furthest_room": "Playground horse"
+    },
+    {
+      "from": 36,
+      "to": 22,
+      "length": 4,
+      "conditions": [],
+      "furthest_room": "Playground horse"
+    },
+    {
+      "from": 37,
+      "to": 22,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Playground horse"
+    },
+    {
+      "from": 39,
+      "to": 22,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Playground horse"
+    },
+    {
+      "from": 6,
+      "to": 25,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Outside shed"
+    },
+    {
+      "from": 11,
+      "to": 25,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Outside shed"
+    },
+    {
+      "from": 21,
+      "to": 25,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Outside shed"
+    },
+    {
+      "from": 26,
+      "to": 25,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Outside shed"
+    },
+    {
+      "from": 12,
+      "to": 26,
+      "length": 0,
+      "conditions": [],
+      "furthest_room": "Shed"
+    },
+    {
+      "from": 25,
+      "to": 26,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Shed"
+    },
+    {
+      "from": 4,
+      "to": 27,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Path bee"
+    },
+    {
+      "from": 5,
+      "to": 27,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Path bee"
+    },
+    {
+      "from": 7,
+      "to": 27,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Path bee"
+    },
+    {
+      "from": 11,
+      "to": 27,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Path bee"
+    },
+    {
+      "from": 17,
+      "to": 27,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Path bee"
+    },
+    {
+      "from": 28,
+      "to": 27,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Path bee"
+    },
+    {
+      "from": 9,
+      "to": 28,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Snail corner"
+    },
+    {
+      "from": 27,
+      "to": 28,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Snail corner"
+    },
+    {
+      "from": 34,
+      "to": 28,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Snail corner"
+    },
+    {
+      "from": 29,
+      "to": 30,
+      "length": 0,
+      "conditions": [],
+      "furthest_room": "Rabbit house"
+    },
+    {
+      "from": 32,
+      "to": 30,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Rabbit house"
+    },
+    {
+      "from": 37,
+      "to": 30,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Rabbit house"
+    },
+    {
+      "from": 30,
+      "to": 32,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Squirrel house"
+    },
+    {
+      "from": 31,
+      "to": 32,
+      "length": 0,
+      "conditions": [],
+      "furthest_room": "Squirrel house"
+    },
+    {
+      "from": 38,
+      "to": 32,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Squirrel house"
+    },
+    {
+      "from": 10,
+      "to": 34,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Path bat"
+    },
+    {
+      "from": 14,
+      "to": 34,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Path bat"
+    },
+    {
+      "from": 19,
+      "to": 34,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Path bat"
+    },
+    {
+      "from": 20,
+      "to": 34,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Path bat"
+    },
+    {
+      "from": 22,
+      "to": 34,
+      "length": 4,
+      "conditions": [],
+      "furthest_room": "Path bat"
+    },
+    {
+      "from": 23,
+      "to": 34,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Path bat"
+    },
+    {
+      "from": 24,
+      "to": 34,
+      "length": 4,
+      "conditions": [],
+      "furthest_room": "Path bat"
+    },
+    {
+      "from": 28,
+      "to": 34,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Path bat"
+    },
+    {
+      "from": 35,
+      "to": 34,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Path bat"
+    },
+    {
+      "from": 36,
+      "to": 34,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Path bat"
+    },
+    {
+      "from": 37,
+      "to": 34,
+      "length": 5,
+      "conditions": [],
+      "furthest_room": "Path bat"
+    },
+    {
+      "from": 39,
+      "to": 34,
+      "length": 5,
+      "conditions": [],
+      "furthest_room": "Path bat"
+    },
+    {
+      "from": 13,
+      "to": 35,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Bat entry"
+    },
+    {
+      "from": 34,
+      "to": 35,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Bat entry"
+    },
+    {
+      "from": 2,
+      "to": 36,
+      "length": 4,
+      "conditions": [],
+      "furthest_room": "Elf house"
+    },
+    {
+      "from": 14,
+      "to": 36,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Elf house"
+    },
+    {
+      "from": 18,
+      "to": 36,
+      "length": 0,
+      "conditions": [],
+      "furthest_room": "Elf house"
+    },
+    {
+      "from": 19,
+      "to": 36,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Elf house"
+    },
+    {
+      "from": 20,
+      "to": 36,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Elf house"
+    },
+    {
+      "from": 22,
+      "to": 36,
+      "length": 4,
+      "conditions": [],
+      "furthest_room": "Elf house"
+    },
+    {
+      "from": 23,
+      "to": 36,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Elf house"
+    },
+    {
+      "from": 24,
+      "to": 36,
+      "length": 4,
+      "conditions": [],
+      "furthest_room": "Elf house"
+    },
+    {
+      "from": 34,
+      "to": 36,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Elf house"
+    },
+    {
+      "from": 37,
+      "to": 36,
+      "length": 5,
+      "conditions": [],
+      "furthest_room": "Elf house"
+    },
+    {
+      "from": 39,
+      "to": 36,
+      "length": 5,
+      "conditions": [],
+      "furthest_room": "Elf house"
+    },
+    {
+      "from": 2,
+      "to": 37,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Path rose bush"
+    },
+    {
+      "from": 6,
+      "to": 37,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Path rose bush"
+    },
+    {
+      "from": 19,
+      "to": 37,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Path rose bush"
+    },
+    {
+      "from": 20,
+      "to": 37,
+      "length": 4,
+      "conditions": [],
+      "furthest_room": "Path rose bush"
+    },
+    {
+      "from": 22,
+      "to": 37,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Path rose bush"
+    },
+    {
+      "from": 23,
+      "to": 37,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Path rose bush"
+    },
+    {
+      "from": 24,
+      "to": 37,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Path rose bush"
+    },
+    {
+      "from": 30,
+      "to": 37,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Path rose bush"
+    },
+    {
+      "from": 34,
+      "to": 37,
+      "length": 5,
+      "conditions": [],
+      "furthest_room": "Path rose bush"
+    },
+    {
+      "from": 36,
+      "to": 37,
+      "length": 5,
+      "conditions": [],
+      "furthest_room": "Path rose bush"
+    },
+    {
+      "from": 38,
+      "to": 37,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Path rose bush"
+    },
+    {
+      "from": 14,
+      "to": 38,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Path puddle"
+    },
+    {
+      "from": 32,
+      "to": 38,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Path puddle"
+    },
+    {
+      "from": 37,
+      "to": 38,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Path puddle"
+    },
+    {
+      "from": 39,
+      "to": 38,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Path puddle"
+    },
+    {
+      "from": 10,
+      "to": 2,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Ladder"
+    },
+    {
+      "from": 27,
+      "to": 2,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Ladder"
+    },
+    {
+      "from": 33,
+      "to": 2,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Ladder"
+    },
+    {
+      "from": 34,
+      "to": 2,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Ladder"
+    },
+    {
+      "from": 10,
+      "to": 4,
+      "length": 4,
+      "conditions": [
+        32,
+        34
+      ],
+      "furthest_room": "Rocket"
+    },
+    {
+      "from": 27,
+      "to": 4,
+      "length": 4,
+      "conditions": [
+        32,
+        34
+      ],
+      "furthest_room": "Rocket"
+    },
+    {
+      "from": 33,
+      "to": 4,
+      "length": 3,
+      "conditions": [
+        32,
+        34
+      ],
+      "furthest_room": "Rocket"
+    },
+    {
+      "from": 34,
+      "to": 4,
+      "length": 5,
+      "conditions": [
+        32,
+        34
+      ],
+      "furthest_room": "Rocket"
+    },
+    {
+      "from": 2,
+      "to": 10,
+      "length": 2,
+      "conditions": [
+        25
+      ],
+      "furthest_room": "Duck"
+    },
+    {
+      "from": 27,
+      "to": 10,
+      "length": 2,
+      "conditions": [
+        25
+      ],
+      "furthest_room": "Duck"
+    },
+    {
+      "from": 33,
+      "to": 10,
+      "length": 1,
+      "conditions": [
+        25
+      ],
+      "furthest_room": "Duck"
+    },
+    {
+      "from": 2,
+      "to": 27,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Path bee"
+    },
+    {
+      "from": 10,
+      "to": 27,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Path bee"
+    },
+    {
+      "from": 33,
+      "to": 27,
+      "length": 1,
+      "conditions": [],
+      "furthest_room": "Path bee"
+    },
+    {
+      "from": 2,
+      "to": 33,
+      "length": 1,
+      "conditions": [
+        37
+      ],
+      "furthest_room": "Bee home"
+    },
+    {
+      "from": 10,
+      "to": 33,
+      "length": 1,
+      "conditions": [
+        37
+      ],
+      "furthest_room": "Bee home"
+    },
+    {
+      "from": 27,
+      "to": 33,
+      "length": 1,
+      "conditions": [
+        37
+      ],
+      "furthest_room": "Bee home"
+    },
+    {
+      "from": 34,
+      "to": 33,
+      "length": 2,
+      "conditions": [
+        37
+      ],
+      "furthest_room": "Bee home"
+    },
+    {
+      "from": 2,
+      "to": 34,
+      "length": 3,
+      "conditions": [],
+      "furthest_room": "Path bat"
+    },
+    {
+      "from": 33,
+      "to": 34,
+      "length": 2,
+      "conditions": [],
+      "furthest_room": "Path bat"
+    }
+  ]
+}

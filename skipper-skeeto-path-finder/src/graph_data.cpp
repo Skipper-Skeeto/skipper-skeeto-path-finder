@@ -7,14 +7,34 @@
 #include <sstream>
 
 GraphData::GraphData(const nlohmann::json &jsonData, const RawData &rawData) : startIndex(0) {
-  int edgeIndex = 0;
-  for (auto const &edgeData : jsonData) {
-    if (edgeIndex >= EDGES_COUNT) {
-      std::stringstream stringStream;
-      stringStream << "Predefined edges count (" << EDGES_COUNT << ") is too small, it should be increased";
-      throw std::runtime_error(stringStream.str());
-    }
+  auto rawVertices = jsonData["vertices"];
+  if (rawVertices.size() > VERTICES_COUNT) {
+    std::stringstream stringStream;
+    stringStream << "Predefined vertices count (" << VERTICES_COUNT << ") does not match actual (" << rawVertices.size() << ")";
+    throw std::runtime_error(stringStream.str());
+  }
 
+  auto rawEdges = jsonData["edges"];
+  if (rawEdges.size() > EDGES_COUNT) {
+    std::stringstream stringStream;
+    stringStream << "Predefined edges count (" << EDGES_COUNT << ") does not match actual (" << rawEdges.size() << ")";
+    throw std::runtime_error(stringStream.str());
+  }
+
+  for (auto rawVertexIterator = rawVertices.begin(); rawVertexIterator != rawVertices.end(); ++rawVertexIterator) {
+    // Minus 1 because the vertices are 1-indexed
+    auto vertexIndex = std::stoi(rawVertexIterator.key()) - 1;
+
+    auto furthestRoom = rawData.getRoomByKey(rawVertexIterator.value()["furthest_room"]);
+    auto &furthestRoomForVertex = verticesToFurthestRoomMap[vertexIndex];
+    if (furthestRoomForVertex != nullptr) {
+      throw std::runtime_error("Did find more than one room for vertex");
+    }
+    furthestRoomForVertex = furthestRoom;
+  }
+
+  int edgeIndex = 0;
+  for (auto const &edgeData : rawEdges) {
     auto edge = &edges[edgeIndex];
 
     // Minus 1 because the vertices are 1-indexed
@@ -27,14 +47,6 @@ GraphData::GraphData(const nlohmann::json &jsonData, const RawData &rawData) : s
 
     // Minus 1 because the vertices are 1-indexed
     auto fromVertexIndex = edgeData["from"].get<int>() - 1;
-
-    auto furthestRoom = rawData.getRoomByKey(edgeData["furthest_room"]);
-    auto &furthestRoomForVertex = verticesToFurthestRoomMap[edge->endVertexIndex];
-    if (furthestRoomForVertex != nullptr && furthestRoomForVertex != furthestRoom) {
-      // Note that this could be supported (the room should be bound to an edge), but just isn't implemented yet
-      throw std::runtime_error("Did find more than one room for vertex");
-    }
-    furthestRoomForVertex = furthestRoom;
 
     addEdgeToVertex(edge, fromVertexIndex);
 
