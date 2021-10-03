@@ -6,7 +6,8 @@
 #include <list>
 #include <sstream>
 
-GraphData::GraphData(const nlohmann::json &jsonData, const RawData &rawData) : startIndex(0) {
+GraphData::GraphData(const nlohmann::json &jsonData, const RawData &rawData)
+    : startIndex(0), startLength(jsonData["start_length"]) {
   auto rawVertices = jsonData["vertices"];
   if (rawVertices.size() > VERTICES_COUNT) {
     std::stringstream stringStream;
@@ -26,11 +27,12 @@ GraphData::GraphData(const nlohmann::json &jsonData, const RawData &rawData) : s
     auto vertexIndex = std::stoi(rawVertexIterator.key()) - 1;
 
     auto furthestRoom = rawData.getRoomByKey(rawVertexIterator.value()["furthest_room"]);
-    auto &furthestRoomForVertex = verticesToFurthestRoomMap[vertexIndex];
-    if (furthestRoomForVertex != nullptr) {
+    auto &vertexInfo = vertices[vertexIndex];
+    if (vertexInfo.furthestRoom != nullptr) {
       throw std::runtime_error("Did find more than one room for vertex");
     }
-    furthestRoomForVertex = furthestRoom;
+    vertexInfo.furthestRoom = furthestRoom;
+    vertexInfo.oneTime = rawVertexIterator.value()["one_time"];
   }
 
   int edgeIndex = 0;
@@ -76,6 +78,7 @@ GraphData::GraphData(const RawData &rawData) {
     throw std::runtime_error("Don't know how to handle start room without item without obstacle");
   }
   startIndex = startItem->getStateIndex();
+  startLength = 0;
 
   int edgeIndex = 0;
   for (int currentStateIndex = 0; currentStateIndex < STATE_TASK_ITEM_SIZE; ++currentStateIndex) {
@@ -207,7 +210,7 @@ GraphData::GraphData(const RawData &rawData) {
     }
 
     for (auto item : rawData.getItems()) {
-      auto &furthestRoomForVertex = verticesToFurthestRoomMap[item->getStateIndex()];
+      auto &furthestRoomForVertex = vertices[item->getStateIndex()].furthestRoom;
       if (furthestRoomForVertex != nullptr && furthestRoomForVertex != item->getRoom()) {
         throw std::runtime_error("Did find more than one room for state");
       }
@@ -216,7 +219,7 @@ GraphData::GraphData(const RawData &rawData) {
     }
 
     for (auto task : rawData.getTasks()) {
-      auto &furthestRoomForVertex = verticesToFurthestRoomMap[task->getStateIndex()];
+      auto &furthestRoomForVertex = vertices[task->getStateIndex()].furthestRoom;
       if (furthestRoomForVertex != nullptr && furthestRoomForVertex != task->getRoom()) {
         throw std::runtime_error("Did find more than one room for state");
       }
@@ -238,12 +241,20 @@ unsigned char GraphData::getStartIndex() const {
   return startIndex;
 }
 
+unsigned char GraphData::getStartLength() const {
+  return startLength;
+}
+
 const std::vector<const Edge *> &GraphData::getEdgesForVertex(char vertexIndex) const {
   return verticesToEdgesMap[vertexIndex];
 }
 
 const Room *GraphData::getFurthestRoomForVertex(char vertexIndex) const {
-  return verticesToFurthestRoomMap[vertexIndex];
+  return vertices[vertexIndex].furthestRoom;
+}
+
+bool GraphData::isOneTime(char vertexIndex) const {
+  return vertices[vertexIndex].oneTime;
 }
 
 unsigned char GraphData::getMinimumEntryDistance(char vertexIndex) const {

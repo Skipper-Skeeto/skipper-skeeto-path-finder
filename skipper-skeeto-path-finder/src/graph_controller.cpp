@@ -125,7 +125,7 @@ void GraphController::setupStartRunner() {
 
   auto startVertexIndex = data->getStartIndex();
 
-  unsigned char minimumEndDistance = 0;
+  unsigned char minimumEndDistance = data->getStartLength();
   for (int index = 0; index < VERTICES_COUNT; ++index) {
     if (index == startVertexIndex) {
       // We already visited this so it shouldn't affect minimum distance
@@ -253,6 +253,10 @@ bool GraphController::initializePath(GraphPathPool *pool, unsigned long int path
             nextVertices[endVertexIndex] = newDistance;
           }
         } else if (hasVisitedVertex(visitedVerticesState, endVertexIndex)) {
+          if (data->isOneTime(endVertexIndex)) {
+            continue;
+          }
+
           if (visitedVertices[endVertexIndex] < 0 || newDistance < visitedVertices[endVertexIndex]) {
             visitedVertices[endVertexIndex] = newDistance;
             ++unresovedVertices;
