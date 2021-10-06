@@ -67,7 +67,12 @@ std::vector<std::shared_ptr<const Path>> PathController::findPaths(std::shared_p
     auto tasks = rawData->getTasksForRoom(rawData->getRoom(originPath->getCurrentRoomIndex()));
     for (const auto &task : tasks) {
       if (task->getPostRoom() != nullptr) {
-        remainingPaths.push_back(originPath->createFromNewRoom(task->getPostRoom()));
+        auto newPath = originPath->createFromNewRoom(task->getPostRoom());
+        if (newPath->getCurrentRoomIndex() == targetRoom->getUniqueIndex()) {
+          completedPaths.push_back(newPath);
+        } else {
+          remainingPaths.push_back(newPath);
+        }
       }
     }
   } else {
