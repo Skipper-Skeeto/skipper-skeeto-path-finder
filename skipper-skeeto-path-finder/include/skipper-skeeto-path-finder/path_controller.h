@@ -36,7 +36,7 @@ private:
 
   bool canPickUpItem(std::shared_ptr<const Path> path, const Item *item) const;
 
-  void dumpResult(std::vector<std::shared_ptr<const Path>> paths, const std::string &fileName) const;
+  void dumpResult(const std::vector<std::pair<std::shared_ptr<const Path>, std::string>> &pathInfos, const std::string &fileName) const;
 
   const RawData *rawData;
   const std::string resultDir;

@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <iostream>
 #include <mutex>
+#include <sstream>
 #include <thread>
 
 const char *PathController::MEMORY_DUMP_DIR = "temp_memory_dump";
@@ -19,17 +20,22 @@ void PathController::resolveAndDumpResults(const std::vector<std::array<const Ve
 
   performPossibleActions(startPath, nullptr);
 
-  std::vector<std::shared_ptr<const Path>> allPaths;
+  std::vector<std::pair<std::shared_ptr<const Path>, std::string>> allPaths;
   for (auto graphPath : graphPaths) {
     auto paths = moveOnRecursive(startPath, graphPath, 0);
     for (const auto &path : paths) {
-      allPaths.push_back(path);
-
+      std::string warning;
       if (expectedLength != path->getVisitedRoomsCount()) {
-        std::cout << "WARNING: Found path length (" << std::to_string(path->getVisitedRoomsCount()) << ") "
-                  << "varies from the expected (" << expectedLength << ")! "
-                  << "Found path will be dumped to the expected length." << std::endl;
+        std::stringstream warningStream;
+        warningStream << "WARNING: Found path length (" << std::to_string(path->getVisitedRoomsCount()) << ") "
+                      << "varies from the expected (" << expectedLength << ")!";
+
+        warning = warningStream.str();
+
+        std::cout << warning << " Found path will be dumped to the expected length." << std::endl;
       }
+
+      allPaths.push_back(std::make_pair(path, warning));
     }
   }
 
@@ -245,14 +251,22 @@ bool PathController::canPickUpItem(std::shared_ptr<const Path> path, const Item 
   return path->hasCompletedTask(item->getTaskObstacle());
 }
 
-void PathController::dumpResult(std::vector<std::shared_ptr<const Path>> paths, const std::string &fileName) const {
+void PathController::dumpResult(const std::vector<std::pair<std::shared_ptr<const Path>, std::string>> &pathInfos, const std::string &fileName) const {
   std::string filePath = resultDir + "/" + fileName;
 
   std::ofstream dumpFile(filePath);
-  for (int index = 0; index < paths.size(); ++index) {
-    dumpFile << "PATH #" << index + 1 << "(of " << paths.size() << "):" << std::endl;
+  for (int index = 0; index < pathInfos.size(); ++index) {
+    auto pathInfo = pathInfos[index];
 
-    auto actions = paths[index]->getAllActions();
+    dumpFile << "PATH #" << index + 1 << "(of " << pathInfos.size() << ")";
+
+    if (!pathInfo.second.empty()) {
+      dumpFile << " - (" << pathInfo.second << ")";
+    }
+
+    dumpFile << ":" << std::endl;
+
+    auto actions = pathInfo.first->getAllActions();
     for (auto action : actions) {
       dumpFile << action->getStepDescription() << std::endl;
     }
@@ -261,5 +275,5 @@ void PathController::dumpResult(std::vector<std::shared_ptr<const Path>> paths, 
              << std::endl;
   }
 
-  std::cout << "Dumped " << paths.size() << " paths to " << filePath << std::endl;
+  std::cout << "Dumped " << pathInfos.size() << " paths to " << filePath << std::endl;
 }
