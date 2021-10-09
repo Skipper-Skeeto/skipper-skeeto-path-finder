@@ -511,42 +511,54 @@
       "from": 6,
       "to": 14,
       "length": 2,
-      "conditions": [],
+      "conditions": [
+        1
+      ],
       "furthest_room": "Cat corner"
     },
     {
       "from": 7,
       "to": 14,
       "length": 2,
-      "conditions": [],
+      "conditions": [
+        1
+      ],
       "furthest_room": "Cat corner"
     },
     {
       "from": 8,
       "to": 14,
       "length": 1,
-      "conditions": [],
+      "conditions": [
+        1
+      ],
       "furthest_room": "Cat corner"
     },
     {
       "from": 20,
       "to": 14,
       "length": 2,
-      "conditions": [],
+      "conditions": [
+        1
+      ],
       "furthest_room": "Cat corner"
     },
     {
       "from": 31,
       "to": 14,
       "length": 1,
-      "conditions": [],
+      "conditions": [
+        1
+      ],
       "furthest_room": "Cat corner"
     },
     {
       "from": 33,
       "to": 14,
       "length": 3,
-      "conditions": [],
+      "conditions": [
+        1
+      ],
       "furthest_room": "Cat corner"
     },
     {
