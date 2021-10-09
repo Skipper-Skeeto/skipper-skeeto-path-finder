@@ -32,7 +32,15 @@ GraphData::GraphData(const nlohmann::json &jsonData, const RawData &rawData)
       throw std::runtime_error("Did find more than one room for vertex");
     }
     vertexInfo.furthestRoom = furthestRoom;
-    vertexInfo.oneTime = rawVertexIterator.value()["one_time"];
+    vertexInfo.isOneTime = rawVertexIterator.value()["one_time"];
+
+    for (auto itemKey : rawVertexIterator.value()["items"]) {
+      vertexInfo.items.push_back(rawData.getItemByKey(itemKey));
+    }
+
+    for (auto taskKey : rawVertexIterator.value()["tasks"]) {
+      vertexInfo.tasks.push_back(rawData.getTaskByKey(taskKey));
+    }
   }
 
   int edgeIndex = 0;
@@ -210,7 +218,11 @@ GraphData::GraphData(const RawData &rawData) {
     }
 
     for (auto item : rawData.getItems()) {
-      auto &furthestRoomForVertex = vertices[item->getStateIndex()].furthestRoom;
+      auto &vertex = vertices[item->getStateIndex()];
+
+      vertex.items.push_back(item);
+
+      auto &furthestRoomForVertex = vertex.furthestRoom;
       if (furthestRoomForVertex != nullptr && furthestRoomForVertex != item->getRoom()) {
         throw std::runtime_error("Did find more than one room for state");
       }
@@ -219,7 +231,17 @@ GraphData::GraphData(const RawData &rawData) {
     }
 
     for (auto task : rawData.getTasks()) {
-      auto &furthestRoomForVertex = vertices[task->getStateIndex()].furthestRoom;
+      auto &vertex = vertices[task->getStateIndex()];
+
+      vertex.tasks.push_back(task);
+
+      if (task->getPostRoom() != nullptr) {
+        // As a rule of thumb it shouldn't be visited more than once as it could be used as a "shortcut"
+        // if post room isn't a regular connected room
+        vertex.isOneTime = true;
+      }
+
+      auto &furthestRoomForVertex = vertex.furthestRoom;
       if (furthestRoomForVertex != nullptr && furthestRoomForVertex != task->getRoom()) {
         throw std::runtime_error("Did find more than one room for state");
       }
@@ -249,12 +271,8 @@ const std::vector<const Edge *> &GraphData::getEdgesForVertex(char vertexIndex) 
   return verticesToEdgesMap[vertexIndex];
 }
 
-const Room *GraphData::getFurthestRoomForVertex(char vertexIndex) const {
-  return vertices[vertexIndex].furthestRoom;
-}
-
-bool GraphData::isOneTime(char vertexIndex) const {
-  return vertices[vertexIndex].oneTime;
+const Vertex *GraphData::getVertex(char vertexIndex) const {
+  return &vertices[vertexIndex];
 }
 
 unsigned char GraphData::getMinimumEntryDistance(char vertexIndex) const {

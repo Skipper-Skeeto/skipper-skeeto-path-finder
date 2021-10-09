@@ -1,5 +1,7 @@
 #include "skipper-skeeto-path-finder/path_controller.h"
 
+#include "skipper-skeeto-path-finder/vertex.h"
+
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -12,10 +14,10 @@ PathController::PathController(const RawData *rawData, const std::string &result
     : rawData(rawData), resultDir(resultDir) {
 }
 
-void PathController::resolveAndDumpResults(const std::vector<std::array<const Room *, VERTICES_COUNT>> &graphPaths, int expectedLength) const {
+void PathController::resolveAndDumpResults(const std::vector<std::array<const Vertex *, VERTICES_COUNT>> &graphPaths, int expectedLength) const {
   auto startPath = std::make_shared<Path>(rawData->getStartRoom());
 
-  performPossibleActions(startPath);
+  performPossibleActions(startPath, nullptr);
 
   std::vector<std::shared_ptr<const Path>> allPaths;
   for (auto graphPath : graphPaths) {
@@ -34,17 +36,17 @@ void PathController::resolveAndDumpResults(const std::vector<std::array<const Ro
   dumpResult(allPaths, std::to_string(expectedLength) + ".txt");
 }
 
-std::vector<std::shared_ptr<const Path>> PathController::moveOnRecursive(std::shared_ptr<const Path> originPath, const std::array<const Room *, VERTICES_COUNT> &graphPath, int reachedIndex) const {
+std::vector<std::shared_ptr<const Path>> PathController::moveOnRecursive(std::shared_ptr<Path> originPath, const std::array<const Vertex *, VERTICES_COUNT> &graphPath, int reachedIndex) const {
   if (reachedIndex > graphPath.size() - 2) {
     return std::vector<std::shared_ptr<const Path>>{originPath};
   }
 
   auto nextIndex = reachedIndex + 1;
-  auto targetRoom = graphPath[nextIndex];
+  auto targetVertex = graphPath[nextIndex];
 
   std::vector<std::shared_ptr<const Path>> paths;
 
-  auto subPaths = findPaths(originPath, targetRoom);
+  auto subPaths = findPaths(originPath, targetVertex);
   for (auto subPath : subPaths) {
     auto finalPaths = moveOnRecursive(subPath, graphPath, nextIndex);
     for (const auto &finalPath : finalPaths) {
@@ -55,13 +57,31 @@ std::vector<std::shared_ptr<const Path>> PathController::moveOnRecursive(std::sh
   return paths;
 }
 
-std::vector<std::shared_ptr<const Path>> PathController::findPaths(std::shared_ptr<const Path> originPath, const Room *targetRoom) const {
+std::vector<std::shared_ptr<Path>> PathController::findPaths(std::shared_ptr<Path> originPath, const Vertex *targetVertex) const {
+  auto targetRoom = targetVertex->furthestRoom;
+  const Task *postRoomTask = nullptr;
+  for (auto task : targetVertex->tasks) {
+    if (task->getPostRoom() != nullptr) {
+      if (postRoomTask != nullptr) {
+        throw std::runtime_error("There was more than one post room task associated with a single vertex!");
+      }
+
+      postRoomTask = task;
+    }
+  }
+
   if (originPath->getCurrentRoomIndex() == targetRoom->getUniqueIndex()) {
-    return std::vector<std::shared_ptr<const Path>>{originPath};
+
+    // This is needed as the last iteration might not have dealt with
+    // the post room task if the vertex didn't include it (see reason
+    // in performPossibleActions()
+    performPossibleActions(originPath, postRoomTask);
+
+    return std::vector<std::shared_ptr<Path>>{originPath};
   }
 
   std::list<std::shared_ptr<const Path>> remainingPaths;
-  std::vector<std::shared_ptr<const Path>> completedPaths;
+  std::vector<std::shared_ptr<Path>> completedPaths;
 
   if (originPath->hasPostRoom()) {
     auto tasks = rawData->getTasksForRoom(rawData->getRoom(originPath->getCurrentRoomIndex()));
@@ -106,7 +126,7 @@ std::vector<std::shared_ptr<const Path>> PathController::findPaths(std::shared_p
         throw std::runtime_error("Unknown enter room result!");
       }
 
-      performPossibleActions(newPath);
+      performPossibleActions(newPath, postRoomTask);
 
       if (nextRoomIndex == targetRoom->getUniqueIndex()) {
         completedPaths.push_back(newPath);
@@ -136,16 +156,26 @@ PathController::EnterRoomResult PathController::canEnterRoom(std::shared_ptr<con
   }
 }
 
-void PathController::performPossibleActions(std::shared_ptr<Path> path) const {
+void PathController::performPossibleActions(std::shared_ptr<Path> path, const Task *possiblePostRoomTask) const {
   auto currentRoom = rawData->getRoom(path->getCurrentRoomIndex());
   auto possibleTasks = getPossibleTasks(path, currentRoom);
   auto possibleItems = getPossibleItems(path, currentRoom);
 
+  int ignoredPostRooms = 0;
   std::vector<const Task *> postRoomTasks;
-  while (!possibleItems.empty() || (possibleTasks.size() - postRoomTasks.size()) > 0) {
+  while (!possibleItems.empty() || (possibleTasks.size() - postRoomTasks.size() - ignoredPostRooms) > 0) {
     for (const auto &task : possibleTasks) {
       if (task->getPostRoom() != nullptr) {
-        postRoomTasks.push_back(task);
+
+        // We need to check this as there might be more vertices for one room
+        // and if the vertex we're dealing with currently isn't the one that
+        // has a post room task it could be fatal for the route as we might be
+        // lead on a wrong path after solving this task
+        if (task == possiblePostRoomTask) {
+          postRoomTasks.push_back(task);
+        } else {
+          ++ignoredPostRooms;
+        }
       } else {
         path->completeTask(task);
       }

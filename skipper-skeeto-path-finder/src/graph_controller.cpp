@@ -8,6 +8,7 @@
 #include "skipper-skeeto-path-finder/info.h"
 #include "skipper-skeeto-path-finder/path_controller.h"
 #include "skipper-skeeto-path-finder/runner_info.h"
+#include "skipper-skeeto-path-finder/vertex.h"
 
 #include <bitset>
 #include <chrono>
@@ -253,7 +254,7 @@ bool GraphController::initializePath(GraphPathPool *pool, unsigned long int path
             nextVertices[endVertexIndex] = newDistance;
           }
         } else if (hasVisitedVertex(visitedVerticesState, endVertexIndex)) {
-          if (data->isOneTime(endVertexIndex)) {
+          if (data->getVertex(endVertexIndex)->isOneTime) {
             continue;
           }
 
@@ -609,14 +610,14 @@ void GraphController::printAndDump() {
   int graphLength;
   std::tie(graphResults, graphLength) = commonState.getGoodOnes();
 
-  std::vector<std::array<const Room *, VERTICES_COUNT>> roomBasedGraphResult;
+  std::vector<std::array<const Vertex *, VERTICES_COUNT>> vertexBasedGraphResult;
   for (const auto &graphResult : graphResults) {
-    std::array<const Room *, VERTICES_COUNT> roomResult;
+    std::array<const Vertex *, VERTICES_COUNT> roomResult;
     for (int index = 0; index < VERTICES_COUNT; ++index) {
-      roomResult[index] = data->getFurthestRoomForVertex(graphResult[index]);
+      roomResult[index] = data->getVertex(graphResult[index]);
     };
-    roomBasedGraphResult.push_back(roomResult);
+    vertexBasedGraphResult.push_back(roomResult);
   }
 
-  pathController->resolveAndDumpResults(roomBasedGraphResult, graphLength);
+  pathController->resolveAndDumpResults(vertexBasedGraphResult, graphLength);
 }

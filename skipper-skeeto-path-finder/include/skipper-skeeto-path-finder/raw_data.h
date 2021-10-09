@@ -21,6 +21,10 @@ public:
   std::vector<const Item *> getItems() const;
 
   std::vector<const Task *> getTasks() const;
+    
+  const Item *getItemByKey(const std::string &key) const;
+
+  const Task *getTaskByKey(const std::string &key) const;
 
   const std::vector<const Item *> &getItemsForRoom(const Room *room) const;
 

@@ -39,6 +39,7 @@
     <ClInclude Include="include\skipper-skeeto-path-finder\state.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\task.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\thread_info.h" />
+    <ClInclude Include="include\skipper-skeeto-path-finder\vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\raw_data.cpp" />

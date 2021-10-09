@@ -197,6 +197,26 @@ std::vector<const Task *> RawData::getTasks() const {
   return tasks;
 }
 
+const Item *RawData::getItemByKey(const std::string &key) const {
+  auto itemIterator = itemMapping.find(key);
+
+  if (itemIterator == itemMapping.end()) {
+    throw std::runtime_error("Could not find item with specific key");
+  }
+
+  return &itemIterator->second;
+}
+
+const Task *RawData::getTaskByKey(const std::string &key) const {
+  auto taskIterator = taskMapping.find(key);
+
+  if (taskIterator == taskMapping.end()) {
+    throw std::runtime_error("Could not find task with specific key");
+  }
+
+  return &taskIterator->second;
+}
+
 const std::vector<const Item *> &RawData::getItemsForRoom(const Room *room) const {
   return roomToItemsMapping.find(room)->second;
 }
