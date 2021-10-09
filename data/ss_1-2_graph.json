@@ -2,186 +2,408 @@
   "start_length": 2,
   "vertices": {
     "1": {
+      "tasks": [],
+      "items": [
+        "Dog",
+        "Coin",
+        "Letter",
+        "Elf hat"
+      ],
       "furthest_room": "Ladder",
       "one_time": false
     },
     "2": {
+      "tasks": [
+        "Repair ladder",
+        "Unlock hideout closet"
+      ],
+      "items": [
+        "Fishing pole"
+      ],
       "furthest_room": "Ladder",
       "one_time": false
     },
     "3": {
+      "tasks": [
+        "Throw coin in well"
+      ],
+      "items": [
+        "Cake",
+        "Diving mask"
+      ],
       "furthest_room": "Well top",
       "one_time": false
     },
     "4": {
+      "tasks": [
+        "Scare fox"
+      ],
+      "items": [
+        "Blue stick",
+        "Flowers"
+      ],
       "furthest_room": "Flower bush",
       "one_time": false
     },
     "5": {
+      "tasks": [
+        "Throw cake at fly"
+      ],
+      "items": [
+        "Green key"
+      ],
       "furthest_room": "Fly",
       "one_time": false
     },
     "6": {
+      "tasks": [
+        "Help rocket mouse"
+      ],
+      "items": [],
       "furthest_room": "Rocket",
       "one_time": true
     },
     "7": {
+      "tasks": [],
+      "items": [
+        "Red stick"
+      ],
       "furthest_room": "Rocket",
       "one_time": false
     },
     "8": {
+      "tasks": [
+        "Throw away trash"
+      ],
+      "items": [
+        "Nose"
+      ],
       "furthest_room": "Trashbin",
       "one_time": false
     },
     "9": {
+      "tasks": [
+        "Fix well winch",
+        "Help ant queen"
+      ],
+      "items": [],
       "furthest_room": "Ant house",
       "one_time": false
     },
     "10": {
+      "tasks": [
+        "Talk with birds mother"
+      ],
+      "items": [
+        "Yellow key"
+      ],
       "furthest_room": "Birds house",
       "one_time": false
     },
     "11": {
+      "tasks": [
+        "Deliver chick"
+      ],
+      "items": [],
       "furthest_room": "Birds house",
       "one_time": false
     },
     "12": {
+      "tasks": [
+        "Help snail",
+        "Remove witch",
+        "Visit tree trunk top"
+      ],
+      "items": [],
       "furthest_room": "Tree trunk top",
       "one_time": false
     },
     "13": {
+      "tasks": [
+        "Help duck"
+      ],
+      "items": [
+        "Needle"
+      ],
       "furthest_room": "Duck",
       "one_time": false
     },
     "14": {
+      "tasks": [
+        "Scare cat"
+      ],
+      "items": [
+        "Book"
+      ],
       "furthest_room": "Cat corner",
       "one_time": false
     },
     "15": {
+      "tasks": [
+        "Unlock left closet"
+      ],
+      "items": [
+        "Gas"
+      ],
       "furthest_room": "Shed",
       "one_time": false
     },
     "16": {
+      "tasks": [
+        "Light up cave",
+        "Help bat"
+      ],
+      "items": [],
       "furthest_room": "Bat cave",
       "one_time": false
     },
     "17": {
+      "tasks": [
+        "Let down snake"
+      ],
+      "items": [
+        "Green stick",
+        "Crown"
+      ],
       "furthest_room": "Snake corner",
       "one_time": false
     },
     "18": {
+      "tasks": [],
+      "items": [
+        "Garlic box",
+        "Strawberries"
+      ],
       "furthest_room": "Statue bottom",
       "one_time": false
     },
     "19": {
+      "tasks": [
+        "Fix statue"
+      ],
+      "items": [],
       "furthest_room": "Statue head",
       "one_time": false
     },
     "20": {
+      "tasks": [
+        "Find chick"
+      ],
+      "items": [],
       "furthest_room": "Bench",
       "one_time": false
     },
     "21": {
+      "tasks": [
+        "Help elfs"
+      ],
+      "items": [],
       "furthest_room": "Elf house",
       "one_time": false
     },
     "22": {
+      "tasks": [
+        "Help fish"
+      ],
+      "items": [],
       "furthest_room": "Bridge",
       "one_time": false
     },
     "23": {
+      "tasks": [
+        "Dive"
+      ],
+      "items": [
+        "Worm",
+        "Horn"
+      ],
       "furthest_room": "Lake bottom",
       "one_time": false
     },
     "24": {
+      "tasks": [],
+      "items": [
+        "Nut",
+        "Dummy"
+      ],
       "furthest_room": "Playground sandbox",
       "one_time": false
     },
     "25": {
+      "tasks": [],
+      "items": [
+        "Sheet"
+      ],
       "furthest_room": "Playground horse",
       "one_time": false
     },
     "26": {
+      "tasks": [
+        "Help ant mom"
+      ],
+      "items": [],
       "furthest_room": "Mushroom houses",
       "one_time": false
     },
     "27": {
+      "tasks": [
+        "Help owl"
+      ],
+      "items": [],
       "furthest_room": "Owl house",
       "one_time": false
     },
     "28": {
+      "tasks": [],
+      "items": [
+        "Radio"
+      ],
       "furthest_room": "Owl house",
       "one_time": false
     },
     "29": {
+      "tasks": [
+        "Help monkey"
+      ],
+      "items": [
+        "Yellow stick"
+      ],
       "furthest_room": "Wall",
       "one_time": false
     },
     "30": {
+      "tasks": [],
+      "items": [
+        "Handle"
+      ],
       "furthest_room": "Bee home",
       "one_time": false
     },
     "31": {
+      "tasks": [],
+      "items": [
+        "Mirror"
+      ],
       "furthest_room": "Outside shed",
       "one_time": false
     },
     "32": {
+      "tasks": [],
+      "items": [
+        "Flashlight"
+      ],
       "furthest_room": "Shed",
       "one_time": false
     },
     "33": {
+      "tasks": [],
+      "items": [
+        "Can"
+      ],
       "furthest_room": "Path bee",
       "one_time": false
     },
     "34": {
+      "tasks": [],
+      "items": [
+        "Pants"
+      ],
       "furthest_room": "Snail corner",
       "one_time": false
     },
     "35": {
+      "tasks": [
+        "Help rabbit"
+      ],
+      "items": [],
       "furthest_room": "Rabbit house",
       "one_time": false
     },
     "36": {
+      "tasks": [],
+      "items": [
+        "Glasses"
+      ],
       "furthest_room": "Rabbit house",
       "one_time": false
     },
     "37": {
+      "tasks": [
+        "Help squirrel"
+      ],
+      "items": [],
       "furthest_room": "Squirrel house",
       "one_time": false
     },
     "38": {
+      "tasks": [],
+      "items": [
+        "Helmet"
+      ],
       "furthest_room": "Squirrel house",
       "one_time": false
     },
     "39": {
+      "tasks": [
+        "Help bee"
+      ],
+      "items": [],
       "furthest_room": "Bee home",
       "one_time": false
     },
     "40": {
+      "tasks": [],
+      "items": [
+        "Broom"
+      ],
       "furthest_room": "Path bat",
       "one_time": false
     },
     "41": {
+      "tasks": [],
+      "items": [
+        "Ludo cube"
+      ],
       "furthest_room": "Bat entry",
       "one_time": false
     },
     "42": {
+      "tasks": [],
+      "items": [
+        "Purple stick"
+      ],
       "furthest_room": "Path elf house",
       "one_time": false
     },
     "43": {
+      "tasks": [],
+      "items": [
+        "Trumpet"
+      ],
       "furthest_room": "Elf house",
       "one_time": false
     },
     "44": {
+      "tasks": [],
+      "items": [
+        "Bucket"
+      ],
       "furthest_room": "Path rose bush",
       "one_time": false
     },
     "45": {
+      "tasks": [],
+      "items": [
+        "Diaper"
+      ],
       "furthest_room": "Path puddle",
       "one_time": false
     },
     "46": {
+      "tasks": [
+        "Help frog"
+      ],
+      "items": [],
       "furthest_room": "Frog",
       "one_time": false
     }
