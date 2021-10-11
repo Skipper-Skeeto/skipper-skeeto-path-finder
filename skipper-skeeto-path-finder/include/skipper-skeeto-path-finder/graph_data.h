@@ -35,6 +35,8 @@ public:
 private:
   static void maybeAddEdge(std::vector<std::pair<int, unsigned long long int>> &edges, int length, unsigned long long int condition);
 
+  int getIndexForVertex(const std::string &key) const;
+
   void addEdgeToVertex(const Edge *edge, int fromVertexIndex);
 
   void setupMinimumEntryDistances();

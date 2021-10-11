@@ -133,19 +133,19 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\data\ss_1-2_raw.json">
+    <None Include="..\data\graph\ss_1-2_graph.json">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\data\ss_2_raw.json">
+    <None Include="..\data\graph\ss_1-1_graph.json">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\data\ss_1-1_graph.json">
+    <None Include="..\data\raw\ss_1-2_raw.json">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\data\ss_1-1_raw.json">
+    <None Include="..\data\raw\ss_2_raw.json">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\data\ss_1-2_graph.json">
+    <None Include="..\data\raw\ss_1-1_raw.json">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

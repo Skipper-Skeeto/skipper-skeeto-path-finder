@@ -7,31 +7,27 @@
 #include <sstream>
 
 GraphData::GraphData(const nlohmann::json &jsonData, const RawData &rawData)
-    : startIndex(0), startLength(jsonData["start_length"]) {
+    : startLength(jsonData["start_length"]) {
   auto rawVertices = jsonData["vertices"];
-  if (rawVertices.size() > VERTICES_COUNT) {
+  if (rawVertices.size() != VERTICES_COUNT) {
     std::stringstream stringStream;
     stringStream << "Predefined vertices count (" << VERTICES_COUNT << ") does not match actual (" << rawVertices.size() << ")";
     throw std::runtime_error(stringStream.str());
   }
 
   auto rawEdges = jsonData["edges"];
-  if (rawEdges.size() > EDGES_COUNT) {
+  if (rawEdges.size() != EDGES_COUNT) {
     std::stringstream stringStream;
     stringStream << "Predefined edges count (" << EDGES_COUNT << ") does not match actual (" << rawEdges.size() << ")";
     throw std::runtime_error(stringStream.str());
   }
 
-  for (auto rawVertexIterator = rawVertices.begin(); rawVertexIterator != rawVertices.end(); ++rawVertexIterator) {
-    // Minus 1 because the vertices are 1-indexed
-    auto vertexIndex = std::stoi(rawVertexIterator.key()) - 1;
-
-    auto furthestRoom = rawData.getRoomByKey(rawVertexIterator.value()["furthest_room"]);
+  int vertexIndex = 0;
+  for (auto rawVertexIterator = rawVertices.begin(); rawVertexIterator != rawVertices.end(); ++rawVertexIterator, ++vertexIndex) {
     auto &vertexInfo = vertices[vertexIndex];
-    if (vertexInfo.furthestRoom != nullptr) {
-      throw std::runtime_error("Did find more than one room for vertex");
-    }
-    vertexInfo.furthestRoom = furthestRoom;
+
+    vertexInfo.key = rawVertexIterator.key();
+    vertexInfo.furthestRoom = rawData.getRoomByKey(rawVertexIterator.value()["furthest_room"]);
     vertexInfo.isOneTime = rawVertexIterator.value()["one_time"];
 
     for (auto itemKey : rawVertexIterator.value()["items"]) {
@@ -43,20 +39,19 @@ GraphData::GraphData(const nlohmann::json &jsonData, const RawData &rawData)
     }
   }
 
+  startIndex = getIndexForVertex(START_VERTEX);
+
   int edgeIndex = 0;
   for (auto const &edgeData : rawEdges) {
     auto edge = &edges[edgeIndex];
 
-    // Minus 1 because the vertices are 1-indexed
-    edge->endVertexIndex = edgeData["to"].get<int>() - 1;
+    edge->endVertexIndex = getIndexForVertex(edgeData["to"]);
     edge->length = edgeData["length"];
-    for (auto const &conditionNumber : edgeData["conditions"]) {
-      // Minus 1 because the vertices are 1-indexed
-      edge->condition |= (1ULL << (conditionNumber.get<int>() - 1));
+    for (auto const &vertexKey : edgeData["conditions"]) {
+      edge->condition |= (1ULL << getIndexForVertex(vertexKey));
     }
 
-    // Minus 1 because the vertices are 1-indexed
-    auto fromVertexIndex = edgeData["from"].get<int>() - 1;
+    auto fromVertexIndex = getIndexForVertex(edgeData["from"]);
 
     addEdgeToVertex(edge, fromVertexIndex);
 
@@ -362,6 +357,18 @@ void GraphData::maybeAddEdge(std::vector<std::pair<int, unsigned long long int>>
   if (shouldAdd) {
     edges.emplace_back(length, condition);
   }
+}
+
+int GraphData::getIndexForVertex(const std::string &key) const {
+  for (int vertexIndex = 0; vertexIndex < VERTICES_COUNT; ++vertexIndex) {
+    if (vertices[vertexIndex].key == key) {
+      return vertexIndex;
+    }
+  }
+
+  std::stringstream stream;
+  stream << "Vertex with key " << key << " could not be found";
+  throw std::runtime_error(stream.str());
 }
 
 void GraphData::addEdgeToVertex(const Edge *edge, int fromVertexIndex) {

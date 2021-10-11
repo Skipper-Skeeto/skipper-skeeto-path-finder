@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
 class Room;
@@ -8,6 +9,8 @@ class Task;
 
 class Vertex {
 public:
+  std::string key;
+
   const Room *furthestRoom = nullptr;
 
   bool isOneTime = false;
