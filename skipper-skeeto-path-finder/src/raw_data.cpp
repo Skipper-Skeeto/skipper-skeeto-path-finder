@@ -122,6 +122,12 @@ RawData::RawData(const nlohmann::json &jsonData) {
       }
     }
   }
+    
+  auto roomIterator = roomMapping.find(jsonData["start_room"]);
+  if (roomIterator == roomMapping.end()) {
+    throw std::runtime_error("Could not find start room");
+  }
+  startRoom = &roomIterator->second;
 
   if (ROOM_COUNT != roomMapping.size()) {
     std::stringstream stringStream;
@@ -240,11 +246,7 @@ const Room *RawData::getRoomByKey(const std::string &key) const {
 }
 
 const Room *RawData::getStartRoom() const {
-  auto roomIterator = roomMapping.find(std::string(START_ROOM));
-  if (roomIterator == roomMapping.end()) {
-    throw std::runtime_error("Could not find start room");
-  }
-  return &roomIterator->second;
+  return startRoom;
 }
 
 std::vector<std::pair<unsigned char, State>> RawData::getStatesForRoom(const Room *room) const {

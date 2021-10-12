@@ -39,7 +39,7 @@ GraphData::GraphData(const nlohmann::json &jsonData, const RawData &rawData)
     }
   }
 
-  startIndex = getIndexForVertex(START_VERTEX);
+  startIndex = getIndexForVertex(jsonData["start_vertex"]);
 
   int edgeIndex = 0;
   for (auto const &edgeData : rawEdges) {

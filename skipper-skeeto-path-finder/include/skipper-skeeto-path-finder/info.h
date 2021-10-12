@@ -21,7 +21,6 @@
 #if GAME_VERSION == SKIPPER_SKEETO_1_1
 
 #define FILE_IDENTIFIER "1-1"
-#define START_ROOM "home"
 #define ROOM_COUNT 43
 #define ITEM_COUNT 28
 #define TASK_COUNT 26
@@ -35,7 +34,6 @@
 
 #elif USED_DATA_TYPE == DATA_TYPE_GRAPH
 
-#define START_VERTEX "start"
 #define VERTICES_COUNT 39
 #define EDGES_COUNT 205
 
@@ -44,7 +42,6 @@
 #elif GAME_VERSION == SKIPPER_SKEETO_1_2
 
 #define FILE_IDENTIFIER "1-2"
-#define START_ROOM "home"
 #define ROOM_COUNT 45
 #define ITEM_COUNT 40
 #define TASK_COUNT 33
@@ -59,7 +56,6 @@
 
 #elif USED_DATA_TYPE == DATA_TYPE_GRAPH
 
-#define START_VERTEX "start"
 #define VERTICES_COUNT 46
 #define EDGES_COUNT 175
 
@@ -68,7 +64,6 @@
 #elif GAME_VERSION == SKIPPER_SKEETO_2
 
 #define FILE_IDENTIFIER "2"
-#define START_ROOM "main_hall"
 #define ROOM_COUNT 28
 #define ITEM_COUNT 29
 #define TASK_COUNT 21

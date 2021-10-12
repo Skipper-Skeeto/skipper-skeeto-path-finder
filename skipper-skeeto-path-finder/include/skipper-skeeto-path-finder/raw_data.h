@@ -21,7 +21,7 @@ public:
   std::vector<const Item *> getItems() const;
 
   std::vector<const Task *> getTasks() const;
-    
+
   const Item *getItemByKey(const std::string &key) const;
 
   const Task *getTaskByKey(const std::string &key) const;
@@ -39,6 +39,8 @@ public:
   std::vector<std::pair<unsigned char, State>> getStatesForRoom(const Room *room) const;
 
 private:
+  const Room *startRoom;
+
   std::map<std::string, Room> roomMapping;
   std::map<std::string, Item> itemMapping;
   std::map<std::string, Task> taskMapping;
