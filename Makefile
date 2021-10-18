@@ -16,7 +16,8 @@ CPPFLAGS ?= $(INC_FLAGS) -MMD -MP -O3 -march=native
 LFLAGS = -L${BOOST_ROOT}/lib
 
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
-	$(CXX) -pthread $(OBJS) -o $@ $(LDFLAGS) -static $(LFLAGS) $(LIBS)
+	$(CXX) -pthread $(OBJS) -o $@ $(LDFLAGS) -static $(LFLAGS) $(LIBS) \
+		-lrt -Wl,--whole-archive -lpthread -Wl,--no-whole-archive  # Avoid segmentation fault when joining the threads. See https://stackoverflow.com/a/45271521
 
 $(BUILD_DIR)/%.cpp.o: %.cpp
 	$(MKDIR_P) $(dir $@)
