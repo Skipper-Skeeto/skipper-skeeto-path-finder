@@ -5,12 +5,12 @@
 #include <string>
 #include <vector>
 
-class Room;
+class Scene;
 class Item;
 
 class Task : public Action {
 public:
-  Task(const std::string &key, int uniqueIndex, const Room *room, const std::vector<const Item *> &itemsNeeded, const Room *postRoom);
+  Task(const std::string &key, int uniqueIndex, const Scene *scene, const std::vector<const Item *> &itemsNeeded, const Scene *postScene);
 
   virtual std::string getStepDescription() const;
 
@@ -18,11 +18,11 @@ public:
 
   int getUniqueIndex() const;
 
-  const Room *getRoom() const;
+  const Scene *getScene() const;
 
   const std::vector<const Item *> &getItemsNeeded() const;
 
-  const Room *getPostRoom() const;
+  const Scene *getPostScene() const;
 
   void setStateIndex(int stateIndex);
 
@@ -36,8 +36,8 @@ private:
   std::string key;
   int uniqueIndex;
   int stateIndex = -1;
-  const Room *room;
+  const Scene *scene;
   const Task *taskObstacle = nullptr;
   std::vector<const Item *> itemsNeeded;
-  const Room *postRoom;
+  const Scene *postScene;
 };

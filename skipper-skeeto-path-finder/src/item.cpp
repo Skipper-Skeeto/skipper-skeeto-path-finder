@@ -1,7 +1,7 @@
 #include "skipper-skeeto-path-finder/item.h"
 
-Item::Item(const std::string &key, int uniqueIndex, const Room *room)
-    : key(key), uniqueIndex(uniqueIndex), room(room) {
+Item::Item(const std::string &key, int uniqueIndex, const Scene *scene)
+    : key(key), uniqueIndex(uniqueIndex), scene(scene) {
 }
 
 std::string Item::getStepDescription() const {
@@ -16,8 +16,8 @@ int Item::getUniqueIndex() const {
   return uniqueIndex;
 }
 
-const Room *Item::getRoom() const {
-  return room;
+const Scene *Item::getScene() const {
+  return scene;
 }
 
 void Item::setStateIndex(int stateIndex) {

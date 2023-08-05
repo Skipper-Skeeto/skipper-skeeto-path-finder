@@ -7,9 +7,9 @@
 
 class Task;
 
-class Room : public Action {
+class Scene : public Action {
 public:
-  Room(const std::string &key, int uniqueIndex);
+  Scene(const std::string &key, int uniqueIndex);
 
   virtual std::string getStepDescription() const;
 
@@ -21,16 +21,16 @@ public:
 
   const Task *getTaskObstacle() const;
 
-  void setupNextRooms(const std::vector<const Room *> &rooms);
+  void setupNextScenes(const std::vector<const Scene *> &scenes);
 
-  const std::vector<const Room *> &getNextRooms() const;
+  const std::vector<const Scene *> &getNextScenes() const;
 
-  const std::vector<unsigned char> &getNextRoomIndexes() const;
+  const std::vector<unsigned char> &getNextSceneIndexes() const;
 
 private:
   std::string key;
   int uniqueIndex;
   const Task *taskObstacle = nullptr;
-  std::vector<const Room *> rooms;
-  std::vector<unsigned char> roomIndexes;
+  std::vector<const Scene *> scenes;
+  std::vector<unsigned char> sceneIndexes;
 };

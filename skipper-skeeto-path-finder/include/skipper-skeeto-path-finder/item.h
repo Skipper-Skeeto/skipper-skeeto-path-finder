@@ -4,12 +4,12 @@
 
 #include <string>
 
-class Room;
+class Scene;
 class Task;
 
 class Item : public Action {
 public:
-  Item(const std::string &key, int uniqueIndex, const Room *room);
+  Item(const std::string &key, int uniqueIndex, const Scene *scene);
 
   virtual std::string getStepDescription() const;
 
@@ -17,7 +17,7 @@ public:
 
   int getUniqueIndex() const;
 
-  const Room *getRoom() const;
+  const Scene *getScene() const;
 
   void setStateIndex(int stateIndex);
 
@@ -31,6 +31,6 @@ private:
   std::string key;
   int uniqueIndex;
   int stateIndex = -1;
-  const Room *room;
+  const Scene *scene;
   const Task *taskObstacle = nullptr;
 };

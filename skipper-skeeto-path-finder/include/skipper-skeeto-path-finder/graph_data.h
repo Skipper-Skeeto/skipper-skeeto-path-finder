@@ -12,7 +12,6 @@
 class RawData;
 class Item;
 class Task;
-class Room;
 
 class GraphData {
 public:

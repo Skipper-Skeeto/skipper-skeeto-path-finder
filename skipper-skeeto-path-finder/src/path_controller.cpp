@@ -17,7 +17,7 @@ PathController::PathController(const RawData *rawData, const std::string &result
 }
 
 void PathController::resolveAndDumpResults(const std::vector<std::array<const Vertex *, VERTICES_COUNT>> &graphPaths, int expectedLength) const {
-  auto startPath = std::make_shared<Path>(rawData->getStartRoom());
+  auto startPath = std::make_shared<Path>(rawData->getStartScene());
 
   performPossibleActions(startPath, nullptr);
 
@@ -26,9 +26,9 @@ void PathController::resolveAndDumpResults(const std::vector<std::array<const Ve
     auto paths = moveOnRecursive(startPath, graphPath, 0);
     for (const auto &path : paths) {
       std::string warning;
-      if (expectedLength != path->getVisitedRoomsCount()) {
+      if (expectedLength != path->getVisitedScenesCount()) {
         std::stringstream warningStream;
-        warningStream << "WARNING: Found path length (" << std::to_string(path->getVisitedRoomsCount()) << ") "
+        warningStream << "WARNING: Found path length (" << std::to_string(path->getVisitedScenesCount()) << ") "
                       << "varies from the expected (" << expectedLength << ")!";
 
         warning = warningStream.str();
@@ -65,24 +65,24 @@ std::vector<std::shared_ptr<const Path>> PathController::moveOnRecursive(std::sh
 }
 
 std::vector<std::shared_ptr<Path>> PathController::findPaths(std::shared_ptr<Path> originPath, const Vertex *targetVertex) const {
-  auto targetRoom = targetVertex->furthestRoom;
-  const Task *postRoomTask = nullptr;
+  auto targetScene = targetVertex->furthestScene;
+  const Task *postSceneTask = nullptr;
   for (auto task : targetVertex->tasks) {
-    if (task->getPostRoom() != nullptr) {
-      if (postRoomTask != nullptr) {
-        throw std::runtime_error("There was more than one post room task associated with a single vertex!");
+    if (task->getPostScene() != nullptr) {
+      if (postSceneTask != nullptr) {
+        throw std::runtime_error("There was more than one post scene task associated with a single vertex!");
       }
 
-      postRoomTask = task;
+      postSceneTask = task;
     }
   }
 
-  if (originPath->getCurrentRoomIndex() == targetRoom->getUniqueIndex()) {
+  if (originPath->getCurrentSceneIndex() == targetScene->getUniqueIndex()) {
 
     // This is needed as the last iteration might not have dealt with
-    // the post room task if the vertex didn't include it (see reason
+    // the post scene task if the vertex didn't include it (see reason
     // in performPossibleActions()
-    performPossibleActions(originPath, postRoomTask);
+    performPossibleActions(originPath, postSceneTask);
 
     return std::vector<std::shared_ptr<Path>>{originPath};
   }
@@ -90,12 +90,12 @@ std::vector<std::shared_ptr<Path>> PathController::findPaths(std::shared_ptr<Pat
   std::list<std::shared_ptr<const Path>> remainingPaths;
   std::vector<std::shared_ptr<Path>> completedPaths;
 
-  if (originPath->hasPostRoom()) {
-    auto tasks = rawData->getTasksForRoom(rawData->getRoom(originPath->getCurrentRoomIndex()));
+  if (originPath->hasPostScene()) {
+    auto tasks = rawData->getTasksForScene(rawData->getScene(originPath->getCurrentSceneIndex()));
     for (const auto &task : tasks) {
-      if (task->getPostRoom() != nullptr) {
-        auto newPath = originPath->createFromNewRoom(task->getPostRoom());
-        if (newPath->getCurrentRoomIndex() == targetRoom->getUniqueIndex()) {
+      if (task->getPostScene() != nullptr) {
+        auto newPath = originPath->createFromNewScene(task->getPostScene());
+        if (newPath->getCurrentSceneIndex() == targetScene->getUniqueIndex()) {
           completedPaths.push_back(newPath);
         } else {
           remainingPaths.push_back(newPath);
@@ -110,32 +110,32 @@ std::vector<std::shared_ptr<Path>> PathController::findPaths(std::shared_ptr<Pat
     auto path = remainingPaths.front();
     remainingPaths.pop_front();
 
-    if (!completedPaths.empty() && completedPaths.back()->getVisitedRoomsCount() >= path->getVisitedRoomsCount()) {
+    if (!completedPaths.empty() && completedPaths.back()->getVisitedScenesCount() >= path->getVisitedScenesCount()) {
       continue;
     }
 
-    const Room *currentRoom = rawData->getRoom(path->getCurrentRoomIndex());
+    const Scene *currentScene = rawData->getScene(path->getCurrentSceneIndex());
 
-    auto nextRoomIndexes = currentRoom->getNextRoomIndexes();
-    for (auto nextRoomIndex : nextRoomIndexes) {
-      const Room *nextRoom = rawData->getRoom(nextRoomIndex);
+    auto nextSceneIndexes = currentScene->getNextSceneIndexes();
+    for (auto nextSceneIndex : nextSceneIndexes) {
+      const Scene *nextScene = rawData->getScene(nextSceneIndex);
 
-      auto enterRoomResult = canEnterRoom(path, nextRoom);
-      if (enterRoomResult == EnterRoomResult::CannotEnter) {
+      auto enterSceneResult = canEnterScene(path, nextScene);
+      if (enterSceneResult == EnterSceneResult::CannotEnter) {
         continue;
       }
 
-      auto newPath = path->createFromNewRoom(nextRoom);
+      auto newPath = path->createFromNewScene(nextScene);
 
-      if (enterRoomResult == EnterRoomResult::CanEnterWithTaskObstacle) {
-        newPath->completeTask(nextRoom->getTaskObstacle());
-      } else if (enterRoomResult != EnterRoomResult::CanEnter) {
-        throw std::runtime_error("Unknown enter room result!");
+      if (enterSceneResult == EnterSceneResult::CanEnterWithTaskObstacle) {
+        newPath->completeTask(nextScene->getTaskObstacle());
+      } else if (enterSceneResult != EnterSceneResult::CanEnter) {
+        throw std::runtime_error("Unknown enter scene result!");
       }
 
-      performPossibleActions(newPath, postRoomTask);
+      performPossibleActions(newPath, postSceneTask);
 
-      if (nextRoomIndex == targetRoom->getUniqueIndex()) {
+      if (nextSceneIndex == targetScene->getUniqueIndex()) {
         completedPaths.push_back(newPath);
       } else {
         remainingPaths.push_back(newPath);
@@ -146,42 +146,42 @@ std::vector<std::shared_ptr<Path>> PathController::findPaths(std::shared_ptr<Pat
   return completedPaths;
 }
 
-PathController::EnterRoomResult PathController::canEnterRoom(std::shared_ptr<const Path> path, const Room *room) const {
-  auto taskObstacle = room->getTaskObstacle();
+PathController::EnterSceneResult PathController::canEnterScene(std::shared_ptr<const Path> path, const Scene *scene) const {
+  auto taskObstacle = scene->getTaskObstacle();
   if (taskObstacle == nullptr) {
-    return EnterRoomResult::CanEnter;
+    return EnterSceneResult::CanEnter;
   }
 
   if (path->hasCompletedTask(taskObstacle)) {
-    return EnterRoomResult::CanEnter;
+    return EnterSceneResult::CanEnter;
   }
 
-  if (taskObstacle->getRoom() == room && canCompleteTask(path, taskObstacle)) {
-    return EnterRoomResult::CanEnterWithTaskObstacle;
+  if (taskObstacle->getScene() == scene && canCompleteTask(path, taskObstacle)) {
+    return EnterSceneResult::CanEnterWithTaskObstacle;
   } else {
-    return EnterRoomResult::CannotEnter;
+    return EnterSceneResult::CannotEnter;
   }
 }
 
-void PathController::performPossibleActions(std::shared_ptr<Path> path, const Task *possiblePostRoomTask) const {
-  auto currentRoom = rawData->getRoom(path->getCurrentRoomIndex());
-  auto possibleTasks = getPossibleTasks(path, currentRoom);
-  auto possibleItems = getPossibleItems(path, currentRoom);
+void PathController::performPossibleActions(std::shared_ptr<Path> path, const Task *possiblePostSceneTask) const {
+  auto currentScene = rawData->getScene(path->getCurrentSceneIndex());
+  auto possibleTasks = getPossibleTasks(path, currentScene);
+  auto possibleItems = getPossibleItems(path, currentScene);
 
-  int ignoredPostRooms = 0;
-  std::vector<const Task *> postRoomTasks;
-  while (!possibleItems.empty() || (possibleTasks.size() - postRoomTasks.size() - ignoredPostRooms) > 0) {
+  int ignoredPostScenes = 0;
+  std::vector<const Task *> postSceneTasks;
+  while (!possibleItems.empty() || (possibleTasks.size() - postSceneTasks.size() - ignoredPostScenes) > 0) {
     for (const auto &task : possibleTasks) {
-      if (task->getPostRoom() != nullptr) {
+      if (task->getPostScene() != nullptr) {
 
-        // We need to check this as there might be more vertices for one room
+        // We need to check this as there might be more vertices for one scene
         // and if the vertex we're dealing with currently isn't the one that
-        // has a post room task it could be fatal for the route as we might be
+        // has a post scene task it could be fatal for the route as we might be
         // lead on a wrong path after solving this task
-        if (task == possiblePostRoomTask) {
-          postRoomTasks.push_back(task);
+        if (task == possiblePostSceneTask) {
+          postSceneTasks.push_back(task);
         } else {
-          ++ignoredPostRooms;
+          ++ignoredPostScenes;
         }
       } else {
         path->completeTask(task);
@@ -190,24 +190,24 @@ void PathController::performPossibleActions(std::shared_ptr<Path> path, const Ta
 
     path->pickUpItems(possibleItems);
 
-    possibleTasks = getPossibleTasks(path, currentRoom);
-    possibleItems = getPossibleItems(path, currentRoom);
+    possibleTasks = getPossibleTasks(path, currentScene);
+    possibleItems = getPossibleItems(path, currentScene);
   }
 
-  for (const auto &task : postRoomTasks) {
+  for (const auto &task : postSceneTasks) {
     path->completeTask(task);
-    path->setPostRoomState(true);
+    path->setPostSceneState(true);
 
-    // We moved room, if there was more than one in postRoomTasks it would be for the wrong room!
-    // TODO: To make this more generic, if there could be more than one post room, split into seperate paths
+    // We moved scene, if there was more than one in postSceneTasks it would be for the wrong scene!
+    // TODO: To make this more generic, if there could be more than one post scene, split into seperate paths
     return;
   }
 }
 
-std::vector<const Task *> PathController::getPossibleTasks(std::shared_ptr<const Path> path, const Room *room) const {
+std::vector<const Task *> PathController::getPossibleTasks(std::shared_ptr<const Path> path, const Scene *scene) const {
   std::vector<const Task *> possibleTasks;
 
-  for (const auto &task : rawData->getTasksForRoom(room)) {
+  for (const auto &task : rawData->getTasksForScene(scene)) {
     if (!path->hasCompletedTask(task) && canCompleteTask(path, task)) {
       possibleTasks.push_back(task);
     }
@@ -216,10 +216,10 @@ std::vector<const Task *> PathController::getPossibleTasks(std::shared_ptr<const
   return possibleTasks;
 }
 
-std::vector<const Item *> PathController::getPossibleItems(std::shared_ptr<const Path> path, const Room *room) const {
+std::vector<const Item *> PathController::getPossibleItems(std::shared_ptr<const Path> path, const Scene *scene) const {
   std::vector<const Item *> possibleItems;
 
-  for (const auto &item : rawData->getItemsForRoom(room)) {
+  for (const auto &item : rawData->getItemsForScene(scene)) {
     if (!path->hasFoundItem(item) && canPickUpItem(path, item)) {
       possibleItems.push_back(item);
     }

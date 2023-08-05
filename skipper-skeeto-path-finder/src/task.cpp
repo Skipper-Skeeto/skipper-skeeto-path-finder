@@ -1,7 +1,7 @@
 #include "skipper-skeeto-path-finder/task.h"
 
-Task::Task(const std::string &key, int uniqueIndex, const Room *room, const std::vector<const Item *> &itemsNeeded, const Room *postRoom)
-    : key(key), uniqueIndex(uniqueIndex), room(room), itemsNeeded(itemsNeeded), postRoom(postRoom) {
+Task::Task(const std::string &key, int uniqueIndex, const Scene *scene, const std::vector<const Item *> &itemsNeeded, const Scene *postScene)
+    : key(key), uniqueIndex(uniqueIndex), scene(scene), itemsNeeded(itemsNeeded), postScene(postScene) {
 }
 
 std::string Task::getStepDescription() const {
@@ -16,16 +16,16 @@ int Task::getUniqueIndex() const {
   return uniqueIndex;
 }
 
-const Room *Task::getRoom() const {
-  return room;
+const Scene *Task::getScene() const {
+  return scene;
 }
 
 const std::vector<const Item *> &Task::getItemsNeeded() const {
   return itemsNeeded;
 }
 
-const Room *Task::getPostRoom() const {
-  return postRoom;
+const Scene *Task::getPostScene() const {
+  return postScene;
 }
 
 void Task::setStateIndex(int stateIndex) {

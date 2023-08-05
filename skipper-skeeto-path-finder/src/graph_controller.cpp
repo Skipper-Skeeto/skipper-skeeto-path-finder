@@ -654,11 +654,11 @@ void GraphController::printAndDump() {
 
   std::vector<std::array<const Vertex *, VERTICES_COUNT>> vertexBasedGraphResult;
   for (const auto &graphResult : graphResults) {
-    std::array<const Vertex *, VERTICES_COUNT> roomResult;
+    std::array<const Vertex *, VERTICES_COUNT> sceneResult;
     for (int index = 0; index < VERTICES_COUNT; ++index) {
-      roomResult[index] = data->getVertex(graphResult[index]);
+      sceneResult[index] = data->getVertex(graphResult[index]);
     };
-    vertexBasedGraphResult.push_back(roomResult);
+    vertexBasedGraphResult.push_back(sceneResult);
   }
 
   pathController->resolveAndDumpResults(vertexBasedGraphResult, graphLength);

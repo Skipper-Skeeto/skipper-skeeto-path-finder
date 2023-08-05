@@ -27,7 +27,7 @@ GraphData::GraphData(const nlohmann::json &jsonData, const RawData &rawData)
     auto &vertexInfo = vertices[vertexIndex];
 
     vertexInfo.key = rawVertexIterator.key();
-    vertexInfo.furthestRoom = rawData.getRoomByKey(rawVertexIterator.value()["furthest_room"]);
+    vertexInfo.furthestScene = rawData.getSceneByKey(rawVertexIterator.value()["furthest_scene"]);
     vertexInfo.isOneTime = rawVertexIterator.value()["one_time"];
 
     for (auto itemKey : rawVertexIterator.value()["items"]) {
@@ -68,9 +68,9 @@ GraphData::GraphData(const nlohmann::json &jsonData, const RawData &rawData)
 }
 
 GraphData::GraphData(const RawData &rawData) {
-  auto startRoom = rawData.getStartRoom();
+  auto startScene = rawData.getStartScene();
   const Item *startItem = nullptr;
-  for (auto item : rawData.getItemsForRoom(startRoom)) {
+  for (auto item : rawData.getItemsForScene(startScene)) {
     if (item->getTaskObstacle() == nullptr) {
       startItem = item;
       break;
@@ -78,71 +78,71 @@ GraphData::GraphData(const RawData &rawData) {
   }
 
   if (startItem == nullptr) {
-    throw std::runtime_error("Don't know how to handle start room without item without obstacle");
+    throw std::runtime_error("Don't know how to handle start scene without item without obstacle");
   }
   startIndex = startItem->getStateIndex();
   startLength = 0;
 
   int edgeIndex = 0;
   for (int currentStateIndex = 0; currentStateIndex < STATE_TASK_ITEM_SIZE; ++currentStateIndex) {
-    const Room *rootRoom = nullptr;
+    const Scene *rootScene = nullptr;
     int startEdgeLengh = 0;
-    for (auto room : rawData.getRooms()) {
-      for (auto roomState : rawData.getStatesForRoom(room)) {
-        if (roomState.first == currentStateIndex) {
-          for (auto task : rawData.getTasksForRoom(room)) {
-            if (task->getStateIndex() == currentStateIndex && task->getPostRoom() != nullptr) {
-              rootRoom = task->getPostRoom();
+    for (auto scene : rawData.getScenes()) {
+      for (auto sceneState : rawData.getStatesForScene(scene)) {
+        if (sceneState.first == currentStateIndex) {
+          for (auto task : rawData.getTasksForScene(scene)) {
+            if (task->getStateIndex() == currentStateIndex && task->getPostScene() != nullptr) {
+              rootScene = task->getPostScene();
               startEdgeLengh = 10; // TODO: Find better solution
               break;
             }
           }
 
-          if (rootRoom == nullptr) {
-            rootRoom = room;
+          if (rootScene == nullptr) {
+            rootScene = scene;
           }
           break;
         }
       }
-      if (rootRoom != nullptr) {
+      if (rootScene != nullptr) {
         break;
       }
     }
 
     std::array<std::vector<std::pair<int, unsigned long long int>>, STATE_TASK_ITEM_SIZE> foundEdges{};
 
-    std::list<std::tuple<const Room *, int, unsigned long long int, int>> unresolvedRooms;
-    unresolvedRooms.emplace_back(rootRoom, startEdgeLengh, 0, -1);
+    std::list<std::tuple<const Scene *, int, unsigned long long int, int>> unresolvedScenes;
+    unresolvedScenes.emplace_back(rootScene, startEdgeLengh, 0, -1);
 
-    while (!unresolvedRooms.empty()) {
-      auto currentRoomTuple = unresolvedRooms.front();
-      auto currentRoom = std::get<0>(currentRoomTuple);
-      auto edgeLengh = std::get<1>(currentRoomTuple);
-      auto extraConditions = std::get<2>(currentRoomTuple);
-      auto previousRoomIndex = std::get<3>(currentRoomTuple);
-      unresolvedRooms.pop_front();
+    while (!unresolvedScenes.empty()) {
+      auto currentSceneTuple = unresolvedScenes.front();
+      auto currentScene = std::get<0>(currentSceneTuple);
+      auto edgeLengh = std::get<1>(currentSceneTuple);
+      auto extraConditions = std::get<2>(currentSceneTuple);
+      auto previousSceneIndex = std::get<3>(currentSceneTuple);
+      unresolvedScenes.pop_front();
 
       bool keepLooking = true;
-      if (currentRoom->getTaskObstacle() != nullptr && currentRoom != rootRoom) {
-        if (currentRoom->getTaskObstacle()->getRoom() == currentRoom) {
-          // We have to solve this task to enter the room - and after it's solved, we can always travel via it
+      if (currentScene->getTaskObstacle() != nullptr && currentScene != rootScene) {
+        if (currentScene->getTaskObstacle()->getScene() == currentScene) {
+          // We have to solve this task to enter the scene - and after it's solved, we can always travel via it
           keepLooking = false;
 
           auto conditions = extraConditions;
-          for (auto item : currentRoom->getTaskObstacle()->getItemsNeeded()) {
+          for (auto item : currentScene->getTaskObstacle()->getItemsNeeded()) {
             conditions |= (1ULL << item->getStateIndex());
           }
 
-          if (currentRoom->getTaskObstacle()->getTaskObstacle() != nullptr) {
-            conditions |= (1ULL << currentRoom->getTaskObstacle()->getTaskObstacle()->getStateIndex());
+          if (currentScene->getTaskObstacle()->getTaskObstacle() != nullptr) {
+            conditions |= (1ULL << currentScene->getTaskObstacle()->getTaskObstacle()->getStateIndex());
           }
 
-          maybeAddEdge(foundEdges[currentRoom->getTaskObstacle()->getStateIndex()], edgeLengh, conditions);
+          maybeAddEdge(foundEdges[currentScene->getTaskObstacle()->getStateIndex()], edgeLengh, conditions);
         } else {
           int foundStateWithoutCondition = false;
-          for (auto state : rawData.getStatesForRoom(currentRoom)) {
+          for (auto state : rawData.getStatesForScene(currentScene)) {
             auto conditionForState = state.second.getBits<0, STATE_TASK_ITEM_SIZE>();
-            auto conditionForEdge = extraConditions | conditionForState | (1ULL << currentRoom->getTaskObstacle()->getStateIndex());
+            auto conditionForEdge = extraConditions | conditionForState | (1ULL << currentScene->getTaskObstacle()->getStateIndex());
 
             maybeAddEdge(foundEdges[state.first], edgeLengh, conditionForEdge);
 
@@ -153,22 +153,22 @@ GraphData::GraphData(const RawData &rawData) {
 
           // We need a state without condition to finish this "path" since we want to be able to
           // go to a state continue from it without fulfilling any extra conditions (other than
-          // the task obstacle of the room(s))
+          // the task obstacle of the scene(s))
           if (foundStateWithoutCondition) {
             keepLooking = false;
           } else {
-            extraConditions |= (1ULL << currentRoom->getTaskObstacle()->getStateIndex());
+            extraConditions |= (1ULL << currentScene->getTaskObstacle()->getStateIndex());
           }
         }
       } else {
-        for (auto roomState : rawData.getStatesForRoom(currentRoom)) {
-          if (roomState.first == currentStateIndex) {
+        for (auto sceneState : rawData.getStatesForScene(currentScene)) {
+          if (sceneState.first == currentStateIndex) {
             continue;
           }
 
-          auto condition = roomState.second.getBits<0, STATE_TASK_ITEM_SIZE>();
+          auto condition = sceneState.second.getBits<0, STATE_TASK_ITEM_SIZE>();
 
-          maybeAddEdge(foundEdges[roomState.first], edgeLengh, condition | extraConditions);
+          maybeAddEdge(foundEdges[sceneState.first], edgeLengh, condition | extraConditions);
 
           if (condition == 0) {
             // This state can always be reached so we can just continue from it
@@ -178,16 +178,16 @@ GraphData::GraphData(const RawData &rawData) {
       }
 
       if (keepLooking) {
-        for (auto nextRoom : currentRoom->getNextRooms()) {
-          if (nextRoom->getUniqueIndex() == previousRoomIndex) {
+        for (auto nextScene : currentScene->getNextScenes()) {
+          if (nextScene->getUniqueIndex() == previousSceneIndex) {
             continue;
           }
 
-          unresolvedRooms.emplace_back(nextRoom, edgeLengh + 1, extraConditions, currentRoom->getUniqueIndex());
+          unresolvedScenes.emplace_back(nextScene, edgeLengh + 1, extraConditions, currentScene->getUniqueIndex());
         }
       }
 
-      // Remember post room
+      // Remember post scene
     }
 
     for (int endVertexIndex = 0; endVertexIndex < STATE_TASK_ITEM_SIZE; ++endVertexIndex) {
@@ -217,12 +217,12 @@ GraphData::GraphData(const RawData &rawData) {
 
       vertex.items.push_back(item);
 
-      auto &furthestRoomForVertex = vertex.furthestRoom;
-      if (furthestRoomForVertex != nullptr && furthestRoomForVertex != item->getRoom()) {
-        throw std::runtime_error("Did find more than one room for state");
+      auto &furthestSceneForVertex = vertex.furthestScene;
+      if (furthestSceneForVertex != nullptr && furthestSceneForVertex != item->getScene()) {
+        throw std::runtime_error("Did find more than one scene for state");
       }
 
-      furthestRoomForVertex = item->getRoom();
+      furthestSceneForVertex = item->getScene();
     }
 
     for (auto task : rawData.getTasks()) {
@@ -230,18 +230,18 @@ GraphData::GraphData(const RawData &rawData) {
 
       vertex.tasks.push_back(task);
 
-      if (task->getPostRoom() != nullptr) {
+      if (task->getPostScene() != nullptr) {
         // As a rule of thumb it shouldn't be visited more than once as it could be used as a "shortcut"
-        // if post room isn't a regular connected room
+        // if post scene isn't a regular connected scene
         vertex.isOneTime = true;
       }
 
-      auto &furthestRoomForVertex = vertex.furthestRoom;
-      if (furthestRoomForVertex != nullptr && furthestRoomForVertex != task->getRoom()) {
-        throw std::runtime_error("Did find more than one room for state");
+      auto &furthestSceneForVertex = vertex.furthestScene;
+      if (furthestSceneForVertex != nullptr && furthestSceneForVertex != task->getScene()) {
+        throw std::runtime_error("Did find more than one scene for state");
       }
 
-      furthestRoomForVertex = task->getRoom();
+      furthestSceneForVertex = task->getScene();
     }
   }
 

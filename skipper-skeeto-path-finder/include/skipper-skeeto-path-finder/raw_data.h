@@ -2,7 +2,7 @@
 
 #include "skipper-skeeto-path-finder/info.h"
 #include "skipper-skeeto-path-finder/item.h"
-#include "skipper-skeeto-path-finder/room.h"
+#include "skipper-skeeto-path-finder/scene.h"
 #include "skipper-skeeto-path-finder/state.h"
 #include "skipper-skeeto-path-finder/task.h"
 
@@ -16,7 +16,7 @@ class RawData {
 public:
   RawData(const nlohmann::json &jsonData);
 
-  const std::array<const Room *, ROOM_COUNT> &getRooms() const;
+  const std::array<const Scene *, SCENE_COUNT> &getScenes() const;
 
   std::vector<const Item *> getItems() const;
 
@@ -26,27 +26,27 @@ public:
 
   const Task *getTaskByKey(const std::string &key) const;
 
-  const std::vector<const Item *> &getItemsForRoom(const Room *room) const;
+  const std::vector<const Item *> &getItemsForScene(const Scene *scene) const;
 
-  const std::vector<const Task *> &getTasksForRoom(const Room *room) const;
+  const std::vector<const Task *> &getTasksForScene(const Scene *scene) const;
 
-  const Room *getRoom(int index) const;
+  const Scene *getScene(int index) const;
 
-  const Room *getRoomByKey(const std::string &key) const;
+  const Scene *getSceneByKey(const std::string &key) const;
 
-  const Room *getStartRoom() const;
+  const Scene *getStartScene() const;
 
-  std::vector<std::pair<unsigned char, State>> getStatesForRoom(const Room *room) const;
+  std::vector<std::pair<unsigned char, State>> getStatesForScene(const Scene *scene) const;
 
 private:
-  const Room *startRoom;
+  const Scene *startScene;
 
-  std::map<std::string, Room> roomMapping;
+  std::map<std::string, Scene> sceneMapping;
   std::map<std::string, Item> itemMapping;
   std::map<std::string, Task> taskMapping;
 
-  std::map<const Room *, std::vector<const Item *>> roomToItemsMapping;
-  std::map<const Room *, std::vector<const Task *>> roomToTasksMapping;
+  std::map<const Scene *, std::vector<const Item *>> sceneToItemsMapping;
+  std::map<const Scene *, std::vector<const Task *>> sceneToTasksMapping;
 
-  std::array<const Room *, ROOM_COUNT> rooms;
+  std::array<const Scene *, SCENE_COUNT> scenes;
 };

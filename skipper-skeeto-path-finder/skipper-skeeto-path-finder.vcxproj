@@ -34,7 +34,7 @@
     <ClInclude Include="include\skipper-skeeto-path-finder\memory_mapped_file_pool.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\path.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\path_controller.h" />
-    <ClInclude Include="include\skipper-skeeto-path-finder\room.h" />
+    <ClInclude Include="include\skipper-skeeto-path-finder\scene.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\runner_info.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\state.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\task.h" />
@@ -54,7 +54,7 @@
     <ClCompile Include="src\memory_mapped_file_pool.cpp" />
     <ClCompile Include="src\path.cpp" />
     <ClCompile Include="src\path_controller.cpp" />
-    <ClCompile Include="src\room.cpp" />
+    <ClCompile Include="src\scene.cpp" />
     <ClCompile Include="src\runner_info.cpp" />
     <ClCompile Include="src\state.cpp" />
     <ClCompile Include="src\task.cpp" />

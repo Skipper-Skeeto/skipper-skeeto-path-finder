@@ -2,22 +2,22 @@
 
 #include "skipper-skeeto-path-finder/info.h"
 #include "skipper-skeeto-path-finder/item.h"
-#include "skipper-skeeto-path-finder/room.h"
+#include "skipper-skeeto-path-finder/scene.h"
 #include "skipper-skeeto-path-finder/task.h"
 
-Path::Path(const Room *startRoom) {
-  state = getStateWithRoom(state, startRoom->getUniqueIndex());
+Path::Path(const Scene *startScene) {
+  state = getStateWithScene(state, startScene->getUniqueIndex());
 }
 
-std::shared_ptr<Path> Path::createFromNewRoom(const Room *room) const {
+std::shared_ptr<Path> Path::createFromNewScene(const Scene *scene) const {
   auto newPath = std::shared_ptr<Path>(new Path());
 
   newPath->previousPath = shared_from_this();
   newPath->depth++;
 
-  newPath->actions.push_back(room);
-  newPath->enteredRoomsCount = enteredRoomsCount + 1;
-  newPath->state = getStateWithRoom(state, room->getUniqueIndex());
+  newPath->actions.push_back(scene);
+  newPath->enteredScenesCount = enteredScenesCount + 1;
+  newPath->state = getStateWithScene(state, scene->getUniqueIndex());
   newPath->foundItems = foundItems;
   newPath->completedTasks = completedTasks;
 
@@ -56,12 +56,12 @@ void Path::completeTasks(const std::vector<const Task *> &tasks) {
   }
 }
 
-int Path::getCurrentRoomIndex() const {
-  return ((1ULL << STATE_ROOM_INDEX_SIZE) - 1) & state;
+int Path::getCurrentSceneIndex() const {
+  return ((1ULL << STATE_SCENE_INDEX_SIZE) - 1) & state;
 }
 
-unsigned char Path::getVisitedRoomsCount() const {
-  return enteredRoomsCount;
+unsigned char Path::getVisitedScenesCount() const {
+  return enteredScenesCount;
 }
 
 bool Path::isDone() const {
@@ -80,12 +80,12 @@ bool Path::hasCompletedTask(const Task *task) const {
   return completedTasks & (1ULL << task->getUniqueIndex());
 }
 
-void Path::setPostRoomState(bool hasPostRoom) {
-  postRoom = hasPostRoom;
+void Path::setPostSceneState(bool hasPostScene) {
+  postScene = hasPostScene;
 }
 
-bool Path::hasPostRoom() const {
-  return postRoom;
+bool Path::hasPostScene() const {
+  return postScene;
 }
 
 std::vector<const Action *> Path::getAllActions() const {
@@ -100,6 +100,6 @@ std::vector<const Action *> Path::getAllActions() const {
   }
 }
 
-RawState Path::getStateWithRoom(const RawState &state, int roomIndex) {
-  return ((~((1ULL << STATE_ROOM_INDEX_SIZE) - 1) & state) | roomIndex);
+RawState Path::getStateWithScene(const RawState &state, int sceneIndex) {
+  return ((~((1ULL << STATE_SCENE_INDEX_SIZE) - 1) & state) | sceneIndex);
 }

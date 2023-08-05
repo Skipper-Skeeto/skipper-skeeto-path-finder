@@ -14,7 +14,7 @@ public:
 private:
   static const char *MEMORY_DUMP_DIR;
 
-  enum class EnterRoomResult {
+  enum class EnterSceneResult {
     CannotEnter,
     CanEnter,
     CanEnterWithTaskObstacle,
@@ -24,13 +24,13 @@ private:
 
   std::vector<std::shared_ptr<Path>> findPaths(std::shared_ptr<Path> originPath, const Vertex *targetVertex) const;
 
-  EnterRoomResult canEnterRoom(std::shared_ptr<const Path> path, const Room *room) const;
+  EnterSceneResult canEnterScene(std::shared_ptr<const Path> path, const Scene *scene) const;
 
-  void performPossibleActions(std::shared_ptr<Path> path, const Task *possiblePostRoomTask) const;
+  void performPossibleActions(std::shared_ptr<Path> path, const Task *possiblePostSceneTask) const;
 
-  std::vector<const Task *> getPossibleTasks(std::shared_ptr<const Path> path, const Room *room) const;
+  std::vector<const Task *> getPossibleTasks(std::shared_ptr<const Path> path, const Scene *scene) const;
 
-  std::vector<const Item *> getPossibleItems(std::shared_ptr<const Path> path, const Room *room) const;
+  std::vector<const Item *> getPossibleItems(std::shared_ptr<const Path> path, const Scene *scene) const;
 
   bool canCompleteTask(std::shared_ptr<const Path> path, const Task *task) const;
 

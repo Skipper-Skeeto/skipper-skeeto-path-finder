@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-class Room;
+class Scene;
 class Item;
 class Task;
 
@@ -11,7 +11,7 @@ class Vertex {
 public:
   std::string key;
 
-  const Room *furthestRoom = nullptr;
+  const Scene *furthestScene = nullptr;
 
   bool isOneTime = false;
 
