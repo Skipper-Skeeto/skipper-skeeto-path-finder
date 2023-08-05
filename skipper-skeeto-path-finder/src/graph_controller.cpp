@@ -26,7 +26,7 @@ const unsigned long long int GraphController::ALL_VERTICES_STATE_MASK = (1ULL <<
 #define FORCE_FINISH_THRESHOLD_DEPTH 10
 
 GraphController::GraphController(const PathController *pathController, const GraphData *data, const std::string &resultDir)
-    : commonState(resultDir), data(data), pathController(pathController) {
+    : commonState(resultDir, THREAD_COUNT), data(data), pathController(pathController) {
 }
 
 void GraphController::start() {
@@ -35,11 +35,20 @@ void GraphController::start() {
   FileHelper::createDir(TEMP_DIR);
   FileHelper::createDir(TEMP_PATHS_DIR);
 
-  auto threadFunction = [this](bool preferBest) {
+  auto threadFunction = [this](int threadIndex) {
+    bool preferBest = (threadIndex % 2 == 0);
+
     GraphPathPool pool;
 
     RunnerInfo *runnerInfo = nullptr;
     while (!commonState.shouldStop()) {
+      if(commonState.shouldPause(threadIndex)) {
+        if(runnerInfo != nullptr) {
+          serializePool(&pool, runnerInfo->getIdentifier(), false);
+        }
+        break;
+      }
+
       int oldRunnerInfoIdentifier = -1;
       if (runnerInfo != nullptr) {
         oldRunnerInfoIdentifier = runnerInfo->getIdentifier();
@@ -99,12 +108,42 @@ void GraphController::start() {
 
   std::array<std::thread, THREAD_COUNT> threads;
   for (int index = 0; index < threads.size(); ++index) {
-    bool preferBest = (index < (threads.size() / 2));
-    threads[index] = std::thread(threadFunction, preferBest);
+    threads[index] = std::thread(threadFunction, index);
   }
 
+  std::thread cinThread(
+    [this]() {
+      while(!commonState.shouldStop()) {
+        int newThreadCount;
+	std::cin >> newThreadCount;
+	if(newThreadCount == 0) {
+	  newThreadCount = THREAD_COUNT;
+	} else if (newThreadCount = 1000) {
+	  newThreadCount = 0;
+	}
+	if(newThreadCount <= THREAD_COUNT) {
+	  std::cout << "Updating thread count to " << newThreadCount << std::endl;
+	  commonState.setMaxActiveRunners(newThreadCount);
+	}
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+      }
+    }
+  );
+
+  int lastIndex = THREAD_COUNT - 1;
   while (!commonState.shouldStop()) {
     printAndDump();
+
+    while(lastIndex >= 0 && commonState.shouldPause(lastIndex)) {
+      threads[lastIndex].join();
+      std::cout << "JOINED THREAD #" << lastIndex << std::endl;
+      --lastIndex;
+    }
+    while(lastIndex < THREAD_COUNT && !commonState.shouldPause(lastIndex+1)) {
+      ++lastIndex;
+      threads[lastIndex] = std::thread(threadFunction, lastIndex);
+      std::cout << "STARTED THREAD #" << lastIndex << std::endl;
+    }
 
     std::this_thread::sleep_for(std::chrono::seconds(5));
   }
@@ -114,6 +153,9 @@ void GraphController::start() {
   }
 
   printAndDump();
+
+  std::cout << "We're now close to done. Enter a random number and press enter: ";
+  cinThread.join();
 }
 
 void GraphController::setupStartRunner() {

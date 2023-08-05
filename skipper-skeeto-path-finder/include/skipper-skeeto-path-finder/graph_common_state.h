@@ -18,7 +18,7 @@ class GraphPathPool;
 
 class GraphCommonState {
 public:
-  GraphCommonState(const std::string &resultDir);
+  GraphCommonState(const std::string &resultDir, int maxActiveRunners);
 
   bool makesSenseToInitialize(const RunnerInfo *runnerInfo, const GraphPath *path) const;
 
@@ -56,6 +56,10 @@ public:
 
   bool shouldStop() const;
 
+  bool shouldPause(int index) const;
+
+  void setMaxActiveRunners(int count);
+
 private:
   bool checkForDuplicateState(GraphPath *path, unsigned long long int visitedVerticesState);
 
@@ -64,6 +68,7 @@ private:
   mutable std::mutex finalStateMutex;
   mutable std::mutex runnerInfoMutex;
   mutable std::mutex stopMutex;
+  mutable std::mutex maxActiveRunnersMutex;
   mutable std::mutex pathCountMutex;
   mutable std::mutex printMutex;
 
@@ -84,6 +89,7 @@ private:
   std::list<RunnerInfo> passiveRunners;
 
   bool stopping = false;
+  int maxActiveRunners;
 
   std::array<int, LOG_PATH_COUNT_MAX> addedPathsCount{};
   std::array<int, LOG_PATH_COUNT_MAX> startedPathsCount{};

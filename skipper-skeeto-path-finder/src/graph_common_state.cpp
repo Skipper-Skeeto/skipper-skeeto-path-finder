@@ -12,7 +12,7 @@
 #include <psapi.h>
 #endif
 
-GraphCommonState::GraphCommonState(const std::string &resultDir) : resultDir(resultDir) {
+GraphCommonState::GraphCommonState(const std::string &resultDir, int maxActiveRunners) : resultDir(resultDir), maxActiveRunners(maxActiveRunners) {
 }
 
 bool GraphCommonState::makesSenseToInitialize(const RunnerInfo *runnerInfo, const GraphPath *path) const {
@@ -288,6 +288,18 @@ bool GraphCommonState::shouldStop() const {
   std::lock_guard<std::mutex> stopGuard(stopMutex);
 
   return stopping;
+}
+
+bool GraphCommonState::shouldPause(int index) const {
+  std::lock_guard<std::mutex> maxActiveRunnersGuard(maxActiveRunnersMutex);
+
+  return maxActiveRunners <= index;
+}
+
+void GraphCommonState::setMaxActiveRunners(int count) {
+  std::lock_guard<std::mutex> maxActiveRunnersGuard(maxActiveRunnersMutex);
+
+  maxActiveRunners = count;
 }
 
 bool GraphCommonState::checkForDuplicateState(GraphPath *path, unsigned long long int visitedVerticesState) {
