@@ -202,7 +202,7 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
       return false;
     }
 
-    if (!forceFinish && !commonState.makesSenseToInitialize(runnerInfo, path)) {
+    if (!forceContinue && !commonState.makesSenseToInitialize(runnerInfo, path)) {
       commonState.registerStartedPath(depth);
 
       return false;
