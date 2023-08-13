@@ -16,13 +16,13 @@ GraphCommonState::GraphCommonState(const std::string &resultDir, int maxActiveRu
 }
 
 bool GraphCommonState::makesSenseToInitialize(const RunnerInfo *runnerInfo, const GraphPath *path) const {
-  // If we're sure we won't get a better one, there's no reason to start at all
-  return path->getMinimumEndDistance() < runnerInfo->getLocalMaxDistance();
+  // If we're sure we won't get an acceptable one, there's no reason to start at all
+  return isAcceptableDistance(path->getMinimumEndDistance(), runnerInfo->getLocalMaxDistance());
 }
 
 bool GraphCommonState::makesSenseToKeep(const RunnerInfo *runnerInfo, GraphPath *path, unsigned long long int visitedVerticesState) {
-  if (path->getMinimumEndDistance() >= runnerInfo->getLocalMaxDistance()) {
-    // If we're sure we won't get a better one, there's no reason to keep it
+  if (!isAcceptableDistance(path->getMinimumEndDistance(), runnerInfo->getLocalMaxDistance())) {
+    // If we're sure we won't get an acceptable one, there's no reason to keep it
     return false;
   }
 
@@ -327,4 +327,14 @@ bool GraphCommonState::checkForDuplicateState(GraphPath *path, unsigned long lon
   path->setHasStateMax(isGood);
 
   return isGood;
+}
+
+bool GraphCommonState::isAcceptableDistance(unsigned char distance, unsigned char maxDistance) const {
+#ifdef FOUND_BEST_DISTANCE
+  // We allow more to get all possible paths
+  return distance <= maxDistance;
+#else
+  // We allow less to make sure we find a best path as quickly as possible
+  return distance < maxDistance;
+#endif // FOUND_BEST_DISTANCE
 }

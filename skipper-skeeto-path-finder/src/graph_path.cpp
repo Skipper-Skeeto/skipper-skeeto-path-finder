@@ -141,6 +141,10 @@ void GraphPath::maybeSetBestEndDistance(GraphPathPool *pool, unsigned char dista
   }
 }
 
+bool GraphPath::hasFoundDistance() const {
+  return BEST_END_DISTANCE_STATE.getBits<BEST_END_DISTANCE_INDEX, DISTANCE_BITS>() < MAX_DISTANCE;
+}
+
 unsigned char GraphPath::getBestEndDistance() const {
   return BEST_END_DISTANCE_STATE.getBits<BEST_END_DISTANCE_INDEX, DISTANCE_BITS>();
 }

@@ -63,6 +63,8 @@ public:
 private:
   bool checkForDuplicateState(GraphPath *path, unsigned long long int visitedVerticesState);
 
+  bool isAcceptableDistance(unsigned char distance, unsigned char maxDistance) const;
+
   const std::string resultDir;
 
   mutable std::mutex finalStateMutex;
@@ -72,7 +74,12 @@ private:
   mutable std::mutex pathCountMutex;
   mutable std::mutex printMutex;
 
+#ifdef FOUND_BEST_DISTANCE
+  unsigned char maxDistance = FOUND_BEST_DISTANCE;
+#else
   unsigned char maxDistance = GraphPath::MAX_DISTANCE;
+#endif // FOUND_BEST_DISTANCE
+
   phmap::parallel_flat_hash_map<
       unsigned long long int,
       unsigned char,

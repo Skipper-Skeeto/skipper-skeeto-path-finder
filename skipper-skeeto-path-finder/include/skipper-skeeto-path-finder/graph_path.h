@@ -49,6 +49,8 @@ public:
 
   void maybeSetBestEndDistance(GraphPathPool *pool, unsigned char distance);
 
+  bool hasFoundDistance() const;
+
   unsigned char getBestEndDistance() const;
 
   std::vector<char> getRoute(const GraphPathPool *pool) const;
