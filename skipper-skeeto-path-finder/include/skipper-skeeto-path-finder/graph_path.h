@@ -15,8 +15,6 @@ public:
 
   void initialize(char vertexIndex, unsigned long int parentPathIndex, unsigned char minimumEndDistance);
 
-  void initializeAsCopy(const GraphPath *sourcePath, unsigned long int parentPathIndex);
-
   char getCurrentVertex() const;
 
   void updateFocusedSubPath(unsigned long int index, unsigned char iterationCount);
