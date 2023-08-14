@@ -21,6 +21,7 @@ private:
   };
 
   static const unsigned long long int ALL_VERTICES_STATE_MASK;
+  static const unsigned long int ROOT_PATH_INDEX;
 
   void setupStartRunner();
 

@@ -22,8 +22,7 @@
 #include <thread>
 
 const unsigned long long int GraphController::ALL_VERTICES_STATE_MASK = (1ULL << VERTICES_COUNT) - 1;
-
-#define FORCE_FINISH_THRESHOLD_DEPTH 10
+const unsigned long int GraphController::ROOT_PATH_INDEX = 1; // This should always be the root
 
 GraphController::GraphController(const PathController *pathController, const GraphData *data, const std::string &resultDir)
     : commonState(resultDir, THREAD_COUNT), data(data), pathController(pathController) {
@@ -71,7 +70,7 @@ void GraphController::start() {
         deserializePool(&pool, runnerInfo);
       }
 
-      auto pathIndex = 1; // This should always be the root
+      auto pathIndex = ROOT_PATH_INDEX;
       auto path = pool.getGraphPath(pathIndex);
 
       unsigned long long int visitedVerticesState = 0;
@@ -86,7 +85,7 @@ void GraphController::start() {
       while (!pool.isFull()) {
         commonState.updateLocalMax(runnerInfo);
 
-        bool forceContinue = depth < FORCE_FINISH_THRESHOLD_DEPTH && !path->hasFoundDistance();
+        bool forceContinue = !path->hasFoundDistance();
         bool continueWork = moveOnDistributed(&pool, runnerInfo, pathIndex, path, visitedVerticesState, depth, forceContinue);
         if (!continueWork) {
           deletePoolFile(runnerInfo);
@@ -232,7 +231,10 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
   auto focusedSubPath = pool->getGraphPath(focusedSubPathIndex);
   auto subDepth = depth + 1;
   unsigned long long subPathVisitedVerticesState = visitedVerticesState | (1ULL << focusedSubPath->getCurrentVertex());
-  bool subforceContinue = forceContinue || (depth < FORCE_FINISH_THRESHOLD_DEPTH && !path->hasFoundDistance());
+
+  // We force a continue if we know we're the first layer of subpaths (without found best distances).
+  // This is to ensure we have best distances for as many paths as possible when we want to split up runners
+  bool subforceContinue = forceContinue || (pathIndex == ROOT_PATH_INDEX && !focusedSubPath->hasFoundDistance());
 
   bool continueWork = moveOnDistributed(pool, runnerInfo, focusedSubPathIndex, focusedSubPath, subPathVisitedVerticesState, subDepth, subforceContinue);
   if (continueWork) {
