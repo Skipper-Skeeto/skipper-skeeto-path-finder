@@ -1,5 +1,6 @@
 #pragma once
 
+#include "skipper-skeeto-path-finder/info.h"
 #include "skipper-skeeto-path-finder/state.h"
 
 #include <iostream>
@@ -40,6 +41,17 @@ public:
   void setHasStateMax(bool hasMax);
 
   bool hasStateMax() const;
+
+#ifdef FOUND_BEST_DISTANCE
+  /**
+   * This has two meanings:
+   * - If it isn't initialized (hasSetSubPath() == false), true means that it should be waiting for another route to complete
+   * - If it is initialized, true means all of its subpaths has isWaitingForResult() returning true
+   */
+  void setIsWaitingForResult(bool isWaiting);
+
+  bool isWaitingForResult() const;
+#endif // FOUND_BEST_DISTANCE
 
   bool isExhausted() const;
 

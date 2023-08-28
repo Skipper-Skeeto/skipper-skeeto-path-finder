@@ -8,6 +8,7 @@
 #define DISTANCE_BITS 7
 #define FOCUSED_SUB_PATH_SET_BITS 1
 #define HAS_STATE_MAX_BITS 1
+#define IS_WAITING_FOR_RESULT_BITS 1
 #define SUB_PATH_ITERATION_COUNT_BITS 5
 
 static_assert((1ULL << POOL_INDEX_BITS) > POOL_COUNT, "Too many items allowed in graph path pools. Reduce POOL_TOTAL_BYTES, increase THREAD_COUNT or restructure GraphPath so POOL_INDEX_BITS can be biggger");
@@ -29,13 +30,15 @@ static_assert(sizeof(State) * 8 >= (BEST_END_DISTANCE_INDEX + DISTANCE_BITS), "B
 #define CURRENT_VERTEX_STATE stateB
 #define FOCUSED_SUB_PATH_SET_STATE stateB
 #define HAS_STATE_MAX_STATE stateB
+#define IS_WAITING_FOR_RESULT_STATE stateB
 #define SUB_PATH_ITERATION_COUNT_STATE stateB
 #define NEXT_PATH_INDEX 0
 #define PREVIOUS_SUB_PATH_INDEX (NEXT_PATH_INDEX + POOL_INDEX_BITS)
 #define CURRENT_VERTEX_INDEX (PREVIOUS_SUB_PATH_INDEX + POOL_INDEX_BITS)
 #define FOCUSED_SUB_PATH_SET_INDEX (CURRENT_VERTEX_INDEX + CURRENT_VERTEX_BITS)
 #define HAS_STATE_MAX_INDEX (FOCUSED_SUB_PATH_SET_INDEX + FOCUSED_SUB_PATH_SET_BITS)
-#define SUB_PATH_ITERATION_COUNT_INDEX (HAS_STATE_MAX_INDEX + HAS_STATE_MAX_BITS)
+#define IS_WAITING_FOR_RESULT_INDEX (HAS_STATE_MAX_INDEX + HAS_STATE_MAX_BITS) // Not needed if FOUND_BEST_DISTANCE is not defined, but does not make any difference for now
+#define SUB_PATH_ITERATION_COUNT_INDEX (IS_WAITING_FOR_RESULT_INDEX + IS_WAITING_FOR_RESULT_BITS)
 static_assert(sizeof(State) * 8 >= (SUB_PATH_ITERATION_COUNT_INDEX + SUB_PATH_ITERATION_COUNT_BITS), "Bits does not fit in state B");
 
 const unsigned char GraphPath::MAX_DISTANCE = (1 << DISTANCE_BITS) - 1;
@@ -111,6 +114,16 @@ bool GraphPath::hasStateMax() const {
   return HAS_STATE_MAX_STATE.meetsCondition<HAS_STATE_MAX_INDEX, HAS_STATE_MAX_BITS>(1);
 }
 
+#ifdef FOUND_BEST_DISTANCE
+void GraphPath::setIsWaitingForResult(bool isWaiting) {
+  IS_WAITING_FOR_RESULT_STATE.setBits<IS_WAITING_FOR_RESULT_INDEX, IS_WAITING_FOR_RESULT_BITS>(isWaiting ? 1 : 0);
+}
+
+bool GraphPath::isWaitingForResult() const {
+  return IS_WAITING_FOR_RESULT_STATE.meetsCondition<IS_WAITING_FOR_RESULT_INDEX, IS_WAITING_FOR_RESULT_BITS>(1);
+}
+#endif // FOUND_BEST_DISTANCE
+
 char GraphPath::getCurrentVertex() const {
   return CURRENT_VERTEX_STATE.getBits<CURRENT_VERTEX_INDEX, CURRENT_VERTEX_BITS>();
 }
@@ -162,6 +175,11 @@ void GraphPath::serialize(std::ostream &outstream) const {
 void GraphPath::deserialize(std::istream &instream) {
   instream.read(reinterpret_cast<char *>(&stateA), sizeof(stateA));
   instream.read(reinterpret_cast<char *>(&stateB), sizeof(stateB));
+
+#ifdef FOUND_BEST_DISTANCE
+  // When looking for all possible paths based on best distance we don't want to look for distances again
+  setIsWaitingForResult(false);
+#endif // FOUND_BEST_DISTANCE
 }
 
 void GraphPath::cleanUp() {

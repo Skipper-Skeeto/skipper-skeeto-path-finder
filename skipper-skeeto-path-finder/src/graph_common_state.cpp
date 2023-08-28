@@ -15,18 +15,22 @@
 GraphCommonState::GraphCommonState(const std::string &resultDir, int maxActiveRunners) : resultDir(resultDir), maxActiveRunners(maxActiveRunners) {
 }
 
-bool GraphCommonState::makesSenseToInitialize(const RunnerInfo *runnerInfo, const GraphPath *path) const {
-  // If we're sure we won't get an acceptable one, there's no reason to start at all
-  return isAcceptableDistance(path->getMinimumEndDistance(), runnerInfo->getLocalMaxDistance());
+GraphRouteResult GraphCommonState::makeInitialCheck(const RunnerInfo *runnerInfo, GraphPath *path, unsigned long long int visitedVerticesState) {
+  if (!isAcceptableDistance(path->getMinimumEndDistance(), runnerInfo->getLocalMaxDistance())) {
+    // If we're sure we won't get an acceptable one, there's no reason to start at all
+    return GraphRouteResult::Stop;
+  }
+
+  return checkForDuplicateState(path, visitedVerticesState);
 }
 
-bool GraphCommonState::makesSenseToKeep(const RunnerInfo *runnerInfo, GraphPath *path, unsigned long long int visitedVerticesState) {
+bool GraphCommonState::makesSenseToKeep(const RunnerInfo *runnerInfo, const GraphPath *path, unsigned long long int visitedVerticesState) const {
   if (!isAcceptableDistance(path->getMinimumEndDistance(), runnerInfo->getLocalMaxDistance())) {
     // If we're sure we won't get an acceptable one, there's no reason to keep it
     return false;
   }
 
-  return checkForDuplicateState(path, visitedVerticesState);
+  return hasBestState(path, visitedVerticesState);
 }
 
 void GraphCommonState::handleFinishedPath(const GraphPathPool *pool, RunnerInfo *runnerInfo, const GraphPath *path) {
@@ -45,6 +49,10 @@ void GraphCommonState::handleFinishedPath(const GraphPathPool *pool, RunnerInfo 
     maxDistance = distance;
     goodOnes.clear();
     dumpedGoodOnes = 0;
+
+#ifdef FOUND_BEST_DISTANCE
+    finishedStateRoutes.clear();
+#endif // FOUND_BEST_DISTANCE
   }
 
   auto runnerRoute = runnerInfo->getRoute();
@@ -61,9 +69,62 @@ void GraphCommonState::handleFinishedPath(const GraphPathPool *pool, RunnerInfo 
 
   goodOnes.push_back(route);
 
+#ifdef FOUND_BEST_DISTANCE
+  unsigned long long int visitedVerticesState = 0;
+  for (auto vertexIndex : route) {
+    visitedVerticesState |= (1ULL << vertexIndex);
+    finishedStateRoutes[createUniqueState(vertexIndex, visitedVerticesState)].push_back(route);
+    // Note that updating distanceForState will be done elsewhere
+  }
+#endif // FOUND_BEST_DISTANCE
+
   std::lock_guard<std::mutex> guardPrint(printMutex);
   std::cout << "Found new good one with distance " << +distance << " in runner " << runnerInfo->getIdentifier() << std::endl;
 }
+
+#ifdef FOUND_BEST_DISTANCE
+bool GraphCommonState::handleWaitingPath(const GraphPathPool *pool, RunnerInfo *runnerInfo, const GraphPath *path, unsigned long long int visitedVerticesState) {
+  auto state = distanceForState.at(createUniqueState(path, visitedVerticesState));
+  if (!isFinalizedFromState(state)){
+    return false;
+  }
+
+  auto bestDistance = distanceFromState(state);
+  if (bestDistance < path->getMinimumEndDistance()) {
+    return true; // We "handled" it by stating we don't need it anymore
+  }
+
+  std::lock_guard<std::mutex> guardFinalState(finalStateMutex);
+
+  auto routeIterator = finishedStateRoutes.find(createUniqueState(path, visitedVerticesState));
+  if (routeIterator == finishedStateRoutes.end()) {
+    return true; // Of all possible routes from this unique vertex state, no routes finised
+  }
+
+  runnerInfo->setHighScore(maxDistance);
+
+  auto runnerRoute = runnerInfo->getRoute();
+  auto pathRoute = path->getRoute(pool);
+
+  // Important that this is a copy and not a reference, as we want to alter the copy!
+  for (auto finishedRoute : routeIterator->second) {
+    for (unsigned char index = 0; index < runnerRoute.size() + runnerRoute.size(); ++index) {
+      if (index < runnerRoute.size()) {
+        finishedRoute[index] = runnerRoute[index];
+      } else {
+        finishedRoute[index] = pathRoute[index - runnerRoute.size()];
+      }
+    }
+
+    goodOnes.push_back(finishedRoute);
+  }
+
+  std::lock_guard<std::mutex> guardPrint(printMutex);
+  std::cout << "Found " << routeIterator->second.size() << " new good ones for existing best distance in runner " << runnerInfo->getIdentifier() << std::endl;
+
+  return true;
+}
+#endif // FOUND_BEST_DISTANCE
 
 void GraphCommonState::updateLocalMax(RunnerInfo *runnerInfo) {
   std::lock_guard<std::mutex> guard(finalStateMutex);
@@ -203,8 +264,6 @@ void GraphCommonState::removeActiveRunnerInfo(RunnerInfo *runnerInfo) {
   activeRunners.remove_if([runnerInfo](auto &activeRunnerInfo) {
     return runnerInfo == &activeRunnerInfo;
   });
-
-  registerRemovedPath(depth);
 }
 
 void GraphCommonState::splitAndRemoveActiveRunnerInfo(RunnerInfo *parentRunnerInfo, std::list<RunnerInfo> childRunnerInfos) {
@@ -257,7 +316,11 @@ void GraphCommonState::registerStartedPath(int depth) {
   ++startedPathsCount[depth];
 }
 
-void GraphCommonState::registerRemovedPath(int depth) {
+void GraphCommonState::registerRemovedPath(const GraphPath *path, unsigned long long int visitedVerticesState, int depth) {
+  if (path->hasStateMax()) {
+    finalizeDistanceState(path, visitedVerticesState);
+  }
+
   if (!appliesForLogging(depth)) {
     return;
   }
@@ -302,31 +365,87 @@ void GraphCommonState::setMaxActiveRunners(int count) {
   maxActiveRunners = count;
 }
 
-bool GraphCommonState::checkForDuplicateState(GraphPath *path, unsigned long long int visitedVerticesState) {
-  auto uniqueState = visitedVerticesState | ((unsigned long long int)path->getCurrentVertex() << VERTICES_COUNT);
+ unsigned long long int GraphCommonState::createUniqueState(const GraphPath *path, unsigned long long int visitedVerticesState) {
+  return createUniqueState(path->getCurrentVertex(), visitedVerticesState);
+ }
+
+ unsigned long long int GraphCommonState::createUniqueState(char currentVertex, unsigned long long int visitedVerticesState) {
+   return visitedVerticesState | ((unsigned long long int)currentVertex << VERTICES_COUNT);
+ }
+
+ unsigned char GraphCommonState::createDistanceState(unsigned char distance, bool isFinalized) {
+   return (distance << 1) | (isFinalized ? 1 : 0);
+ }
+
+ unsigned char GraphCommonState::distanceFromState(unsigned char state) {
+   return state >> 1;
+ }
+
+ bool GraphCommonState::isFinalizedFromState(unsigned char state) {
+   return (state & 1) == 1;
+ }
+
+GraphRouteResult GraphCommonState::checkForDuplicateState(GraphPath *path, unsigned long long int visitedVerticesState) {
   auto distance = path->getMinimumEndDistance();
 
   // Should default to true since lambda won't be called in case the value wasn't present
-  bool isGood = true;
+  GraphRouteResult result = GraphRouteResult::Continue;
 
   distanceForState.try_emplace_l(
-      uniqueState,
-      [path, distance, &isGood](unsigned char &value) {
-        int result = distance - value;
+      createUniqueState(path, visitedVerticesState),
+      [path, distance, &result](unsigned char &value) {
+        int difference = distance - distanceFromState(value);
 
-        if (result > 0) {
-          isGood = false;
-        } else if (result == 0) {
-          isGood = path->hasStateMax();
+        if (difference > 0) {
+          result = GraphRouteResult::Stop;
+        } else if (difference == 0) {
+          if (path->hasStateMax()) {
+            // This can happen even for initialize as we might not have fully initialized previously do to a full pool
+            result = GraphRouteResult::Continue;
+          } else {
+#ifdef FOUND_BEST_DISTANCE
+            result = GraphRouteResult::WaitForResult;
+#else
+            result = GraphRouteResult::Stop;
+#endif // FOUND_BEST_DISTANCE
+          }
         } else {
-          value = distance;
+          value = createDistanceState(distance, false);
         }
       },
-      distance);
+      createDistanceState(distance, false)
+      );
 
-  path->setHasStateMax(isGood);
+  path->setHasStateMax(result == GraphRouteResult::Continue);
 
-  return isGood;
+#ifdef FOUND_BEST_DISTANCE
+  path->setIsWaitingForResult(result == GraphRouteResult::WaitForResult);
+#endif // FOUND_BEST_DISTANCE
+
+  return result;
+}
+
+bool GraphCommonState::hasBestState(const GraphPath *path, unsigned long long int visitedVerticesState) const {
+  auto state = distanceForState.at(createUniqueState(path, visitedVerticesState));
+  auto bestDistance = distanceFromState(state);
+
+  return bestDistance >= path->getMinimumEndDistance();
+}
+
+void GraphCommonState::finalizeDistanceState(const GraphPath *path, unsigned long long int visitedVerticesState) {
+  auto distance = path->getMinimumEndDistance();
+
+  distanceForState.try_emplace_l(
+      createUniqueState(path, visitedVerticesState),
+      [distance](unsigned char &value) {
+        int difference = distance - distanceFromState(value);
+
+        if (difference <= 0) {
+          value = createDistanceState(distance, true);
+        }
+      },
+      createDistanceState(distance, true)
+  );
 }
 
 bool GraphCommonState::isAcceptableDistance(unsigned char distance, unsigned char maxDistance) const {

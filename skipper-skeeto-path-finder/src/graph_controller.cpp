@@ -82,15 +82,29 @@ void GraphController::start() {
 
       auto depth = runnerInfo->getVisitedVerticesCount();
 
-      while (!pool.isFull()) {
+      bool continueLooking = true;
+      while (continueLooking && !pool.isFull()) {
         commonState.updateLocalMax(runnerInfo);
 
         bool forceContinue = !path->hasFoundDistance();
-        bool continueWork = moveOnDistributed(&pool, runnerInfo, pathIndex, path, visitedVerticesState, depth, forceContinue);
-        if (!continueWork) {
+        auto graphRouteResult = moveOnDistributed(&pool, runnerInfo, pathIndex, path, visitedVerticesState, depth, forceContinue);
+        switch (graphRouteResult) {
+        case GraphRouteResult::Continue:
+          break;
+#ifdef FOUND_BEST_DISTANCE
+        case GraphRouteResult::WaitForResult:
+          continueLooking = false; // We'll get back to this later
+          break;
+#endif // FOUND_BEST_DISTANCE
+        case GraphRouteResult::Stop:
+          commonState.registerRemovedPath(path, visitedVerticesState, depth);
           deletePoolFile(runnerInfo);
           commonState.removeActiveRunnerInfo(runnerInfo);
           runnerInfo = nullptr;
+          continueLooking = false;
+          break;
+        case GraphRouteResult::PoolFull:
+          continueLooking = false;
           break;
         }
       }
@@ -191,40 +205,67 @@ void GraphController::setupStartRunner() {
   commonState.addRunnerInfos(runnerInfos);
 }
 
-bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerInfo, unsigned long int pathIndex, GraphPath *path, unsigned long long int visitedVerticesState, int depth, bool forceContinue) {
+GraphRouteResult GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerInfo, unsigned long int pathIndex, GraphPath *path, unsigned long long int visitedVerticesState, int depth, bool forceContinue) {
   if (!path->hasSetSubPath()) {
     if (visitedVerticesState == ALL_VERTICES_STATE_MASK) {
       path->maybeSetBestEndDistance(pool, path->getMinimumEndDistance());
 
       commonState.handleFinishedPath(pool, runnerInfo, path);
 
-      return false;
+      return GraphRouteResult::Stop;
     }
+   
+#ifdef FOUND_BEST_DISTANCE
+    if (path->isWaitingForResult()) {
+      bool isHandled = commonState.handleWaitingPath(pool, runnerInfo, path, visitedVerticesState);
+      if (isHandled) {
+        return GraphRouteResult::Stop;
+      } else {
+        return GraphRouteResult::WaitForResult;
+      }
+    }
+#endif // FOUND_BEST_DISTANCE
 
-    if (!forceContinue && !commonState.makesSenseToInitialize(runnerInfo, path)) {
-      commonState.registerStartedPath(depth);
+    // Important to call this even if forceContinue is true
+    auto initialResult = commonState.makeInitialCheck(runnerInfo, path, visitedVerticesState);
 
-      return false;
+    if (!forceContinue) {
+      switch (initialResult) {
+      case GraphRouteResult::Continue:
+        break;
+#ifdef FOUND_BEST_DISTANCE
+      case GraphRouteResult::WaitForResult:
+#endif // FOUND_BEST_DISTANCE
+      case GraphRouteResult::Stop:
+      case GraphRouteResult::PoolFull:
+
+        commonState.registerStartedPath(depth); // We need to do this as long as it's the parent that registers removed subpaths
+
+        return initialResult; // PoolFull shouldn't happen, but better be safe than sorry
+      }
     }
 
     if (!initializePath(pool, pathIndex, path, visitedVerticesState, depth)) {
-      return true; // Should just be because of full pool, so we want to continue
+      return GraphRouteResult::PoolFull; // Should just be because of full pool, so we want to continue
     }
   }
 
   if (path->isExhausted()) {
-    return false;
+    return GraphRouteResult::Stop;
   }
 
-  if (!forceContinue && !commonState.makesSenseToKeep(runnerInfo, path, visitedVerticesState)) {
-    logRemovedSubPaths(pool, path, depth);
+  if (!forceContinue) {
+    bool makeSenseToKeep = commonState.makesSenseToKeep(runnerInfo, path, visitedVerticesState);
+    if (!makeSenseToKeep) {
+      handleRemovedSubPaths(pool, path, visitedVerticesState, depth);
 
-    return false;
+      return GraphRouteResult::Stop;
+    }
   }
 
   auto subPathIterationCount = path->getSubPathIterationCount();
   if (subPathIterationCount == 0) {
-    subPathIterationCount = sortSubPaths(pool, pathIndex, path);
+    subPathIterationCount = sortSubPathsAndCleanTempState(pool, pathIndex, path);
   }
 
   auto focusedSubPathIndex = path->getFocusedSubPath();
@@ -233,20 +274,44 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
   unsigned long long subPathVisitedVerticesState = visitedVerticesState | (1ULL << focusedSubPath->getCurrentVertex());
 
   // We force a continue if we know we're the first layer of subpaths (without found best distances).
-  // This is to ensure we have best distances for as many paths as possible when we want to split up runners
+  // This is to ensure we have best distances for as many paths as possible whe 
   bool subforceContinue = forceContinue || (pathIndex == ROOT_PATH_INDEX && !focusedSubPath->hasFoundDistance());
 
-  bool continueWork = moveOnDistributed(pool, runnerInfo, focusedSubPathIndex, focusedSubPath, subPathVisitedVerticesState, subDepth, subforceContinue);
-  if (continueWork) {
-    if (pool->isFull()) {
-      // We want to continue with the same focus next time. It just didn't finish becasue pool was full
-      return true;
+  auto graphRouteResult = moveOnDistributed(pool, runnerInfo, focusedSubPathIndex, focusedSubPath, subPathVisitedVerticesState, subDepth, subforceContinue);
+  switch (graphRouteResult) {
+  case GraphRouteResult::Continue:
+#ifdef FOUND_BEST_DISTANCE
+  case GraphRouteResult::WaitForResult: 
+#endif // FOUND_BEST_DISTANCE
+  {
+    auto nextPathIndex = focusedSubPath->getNextPath();
+
+#ifdef FOUND_BEST_DISTANCE
+    while (subPathIterationCount > 1) {
+      auto subPath = pool->getGraphPath(nextPathIndex);
+      if (!subPath->hasSetSubPath() || !subPath->isWaitingForResult()) {
+        break;
+      }
+
+      nextPathIndex = focusedSubPath->getNextPath();
+      --subPathIterationCount;
     }
+
+    if (focusedSubPathIndex == nextPathIndex && graphRouteResult == GraphRouteResult::WaitForResult) {
+      path->setIsWaitingForResult(true);
+    }
+#endif // FOUND_BEST_DISTANCE
 
     path->updateFocusedSubPath(focusedSubPath->getNextPath(), subPathIterationCount - 1);
 
-    return true;
-  } else {
+    if (nextPathIndex != focusedSubPathIndex) {
+      return GraphRouteResult::Continue;
+    } 
+
+    return graphRouteResult;
+  }
+  case GraphRouteResult::Stop:
+  {
     auto nextSubPathIndex = focusedSubPath->getNextPath();
     auto nextSubPath = pool->getGraphPath(nextSubPathIndex);
     if (nextSubPath == focusedSubPath) {
@@ -261,11 +326,19 @@ bool GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerI
       path->updateFocusedSubPath(nextSubPathIndex, subPathIterationCount - 1);
     }
 
-    commonState.registerRemovedPath(subDepth);
+    commonState.registerRemovedPath(focusedSubPath, subPathVisitedVerticesState, subDepth);
 
     focusedSubPath->cleanUp();
 
-    return !path->isExhausted();
+    if (path->isExhausted()) {
+      return GraphRouteResult::Stop;
+    } else {
+      return GraphRouteResult::Continue;
+    }
+  }
+  case GraphRouteResult::PoolFull:
+    // Note that we want to continue with the same focus next time
+    return graphRouteResult;
   }
 }
 
@@ -380,7 +453,7 @@ bool GraphController::hasVisitedVertex(unsigned long long int visitedVerticesSta
   return meetsCondition(visitedVerticesState, (1ULL << vertexIndex));
 }
 
-unsigned char GraphController::sortSubPaths(GraphPathPool *pool, unsigned long int pathIndex, GraphPath *path) {
+unsigned char GraphController::sortSubPathsAndCleanTempState(GraphPathPool *pool, unsigned long int pathIndex, GraphPath *path) {
   auto focusedIndex = path->getFocusedSubPath();
   auto endIndex = pool->getGraphPath(focusedIndex)->getPreviousPath();
   auto currentIndex = focusedIndex;
@@ -390,6 +463,14 @@ unsigned char GraphController::sortSubPaths(GraphPathPool *pool, unsigned long i
     ++itemCount;
 
     auto currentPath = pool->getGraphPath(currentIndex);
+
+#ifdef FOUND_BEST_DISTANCE
+    // Start from a scratch for all paths that has been initialized
+    if (currentPath->hasSetSubPath()) {
+      currentPath->setIsWaitingForResult(false);
+    }
+#endif // FOUND_BEST_DISTANCE
+
     auto nextIndex = currentPath->getNextPath();
 
     auto potentialNewIndex = currentPath->getPreviousPath();
@@ -436,25 +517,33 @@ unsigned char GraphController::sortSubPaths(GraphPathPool *pool, unsigned long i
   return itemCount;
 }
 
-void GraphController::logRemovedSubPaths(GraphPathPool *pool, GraphPath *path, int depth) {
+void GraphController::handleRemovedSubPaths(GraphPathPool *pool, GraphPath *path, unsigned long long int visitedVerticesState, int depth) {
   auto subDepth = depth + 1;
 
+#ifdef FOUND_BEST_DISTANCE
+  if (!commonState.appliesForLogging(subDepth) && !path->hasStateMax()) {
+    return;
+  }
+#else // FOUND_BEST_DISTANCE
   if (!commonState.appliesForLogging(subDepth)) {
     return;
   }
+#endif // FOUND_BEST_DISTANCE
 
   auto initialSubPathIndex = path->getFocusedSubPath();
   auto nextSubPathIndex = initialSubPathIndex;
   while (true) {
 
     auto subPath = pool->getGraphPath(nextSubPathIndex);
+    unsigned long long subPathVisitedVerticesState = visitedVerticesState | (1ULL << subPath->getCurrentVertex());
+
     if (subPath->hasSetSubPath()) {
-      logRemovedSubPaths(pool, subPath, subDepth);
+      handleRemovedSubPaths(pool, subPath, subPathVisitedVerticesState, subDepth);
     } else {
       commonState.registerStartedPath(subDepth);
     }
 
-    commonState.registerRemovedPath(subDepth);
+    commonState.registerRemovedPath(subPath, subPathVisitedVerticesState, subDepth);
 
     nextSubPathIndex = subPath->getNextPath();
     if (nextSubPathIndex == initialSubPathIndex) {

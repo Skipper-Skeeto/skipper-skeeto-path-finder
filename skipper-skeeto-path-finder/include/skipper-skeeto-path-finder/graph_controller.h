@@ -25,7 +25,7 @@ private:
 
   void setupStartRunner();
 
-  bool moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerInfo, unsigned long int pathIndex, GraphPath *path, unsigned long long int visitedVerticesState, int depth, bool forceContinue);
+  GraphRouteResult moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerInfo, unsigned long int pathIndex, GraphPath *path, unsigned long long int visitedVerticesState, int depth, bool forceContinue);
 
   bool initializePath(GraphPathPool *pool, unsigned long int pathIndex, GraphPath *path, unsigned long long int visitedVerticesState, int depth);
 
@@ -33,9 +33,9 @@ private:
 
   bool hasVisitedVertex(unsigned long long int visitedVerticesState, unsigned char vertexIndex);
 
-  unsigned char sortSubPaths(GraphPathPool *pool, unsigned long int pathIndex, GraphPath *path);
+  unsigned char sortSubPathsAndCleanTempState(GraphPathPool *pool, unsigned long int pathIndex, GraphPath *path);
 
-  void logRemovedSubPaths(GraphPathPool *pool, GraphPath *path, int depth);
+  void handleRemovedSubPaths(GraphPathPool *pool, GraphPath *path, unsigned long long int visitedVerticesState, int depth);
 
   void splitAndRemove(GraphPathPool *pool, RunnerInfo *runnerInfo);
 

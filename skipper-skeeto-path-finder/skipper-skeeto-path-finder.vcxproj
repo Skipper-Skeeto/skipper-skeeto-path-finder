@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="include\skipper-skeeto-path-finder\action.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\edge.h" />
+    <ClInclude Include="include\skipper-skeeto-path-finder\graph_route_result.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\raw_data.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\file_helper.h" />
     <ClInclude Include="include\skipper-skeeto-path-finder\graph_common_state.h" />
