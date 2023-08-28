@@ -117,7 +117,7 @@ void GraphController::start() {
 	std::cin >> newThreadCount;
 	if(newThreadCount == 0) {
 	  newThreadCount = THREAD_COUNT;
-	} else if (newThreadCount = 1000) {
+	} else if (newThreadCount == 1000) {
 	  newThreadCount = 0;
 	}
 	if(newThreadCount <= THREAD_COUNT) {
