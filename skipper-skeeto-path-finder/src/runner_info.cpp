@@ -4,12 +4,15 @@ std::mutex RunnerInfo::identifierMutex;
 unsigned int RunnerInfo::nextIdentifier = 0;
 
 RunnerInfo::RunnerInfo(const std::vector<char> &parentPath) : identifier(createIdentifier()),
-                                                              parentPath(parentPath) {
+                                                              parentPath(parentPath),
+                                                              waitForResults(false) {
 }
 
 RunnerInfo::RunnerInfo(const RunnerInfo &other) : identifier(other.identifier),
                                                   parentPath(other.parentPath),
-                                                  highscore(other.highscore) {
+                                                  highscore(other.highscore),
+                                                  localMaxDistance(other.localMaxDistance),
+                                                  waitForResults(other.waitForResults) {
 }
 
 unsigned int RunnerInfo::getIdentifier() const {
@@ -49,6 +52,18 @@ RunnerInfo RunnerInfo::makeSubRunner(char vertex) {
   newParentPath.push_back(vertex);
 
   return {newParentPath};
+}
+
+void RunnerInfo::setWaitForResults(bool shouldWait) {
+  std::lock_guard<std::mutex> waitForResultsGuard(waitForResultsMutex);
+
+  waitForResults = shouldWait;
+}
+
+bool RunnerInfo::shouldWaitForResults() const {
+  std::lock_guard<std::mutex> waitForResultsGuard(waitForResultsMutex);
+
+  return waitForResults;
 }
 
 unsigned int RunnerInfo::createIdentifier() {

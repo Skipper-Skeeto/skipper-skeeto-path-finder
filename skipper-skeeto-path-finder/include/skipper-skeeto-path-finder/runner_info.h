@@ -1,5 +1,7 @@
 #pragma once
 
+#include "skipper-skeeto-path-finder/info.h"
+
 #include <mutex>
 #include <vector>
 
@@ -24,6 +26,10 @@ public:
   std::vector<char> getRoute() const;
 
   RunnerInfo makeSubRunner(char vertices);
+ 
+  void setWaitForResults(bool shouldWait);
+
+  bool shouldWaitForResults() const;
 
 private:
   static unsigned int createIdentifier();
@@ -33,6 +39,9 @@ private:
 
   mutable std::mutex highscoreMutex;
   unsigned char highscore = 255;
+
+  mutable std::mutex waitForResultsMutex;
+  bool waitForResults;
 
   std::vector<char> parentPath;
   unsigned int identifier;

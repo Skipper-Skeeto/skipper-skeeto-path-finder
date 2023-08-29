@@ -172,11 +172,23 @@ void GraphCommonState::printStatus() {
 
   std::cout << std::endl;
 
-  std::cout << "Status: " << (passiveRunners.size() + activeRunners.size()) << " runners, found " << goodOnes.size() << " at distance " << +maxDistance << std::endl;
+  auto waitingCount = 0;
+  for (const auto &info : activeRunners) {
+    if (info.shouldWaitForResults()) {
+      ++waitingCount;
+    }
+  }
+  for (const auto &info : passiveRunners) {
+    if (info.shouldWaitForResults()) {
+      ++waitingCount;
+    }
+  }
+
+  std::cout << "Status: " << (passiveRunners.size() + activeRunners.size()) << " runners (with " << waitingCount << " waiting for result), found " << goodOnes.size() << " at distance " << +maxDistance << std::endl;
 
   std::cout << "Active runners:";
   for (const auto &info : activeRunners) {
-    std::cout << " " << info.getIdentifier() << " (" << +info.getHighScore() << ")";
+    std::cout << " " << info.getIdentifier() << " (" << +info.getHighScore() << "/" << (info.shouldWaitForResults() ? "w" : "a") << ")";
   }
   std::cout << std::endl;
 
@@ -223,6 +235,12 @@ RunnerInfo *GraphCommonState::getNextRunnerInfo(RunnerInfo *currentInfo, bool pr
   auto newRunnerIterator = passiveRunners.begin();
   if (preferBest) {
     auto minIterator = std::min_element(passiveRunners.begin(), passiveRunners.end(), [](const RunnerInfo &a, const RunnerInfo &b) {
+      if (a.shouldWaitForResults() && !b.shouldWaitForResults()) {
+        return false;
+      } else if (b.shouldWaitForResults()) {
+        return true;
+      }
+
       return a.getHighScore() < b.getHighScore();
     });
 
@@ -231,6 +249,16 @@ RunnerInfo *GraphCommonState::getNextRunnerInfo(RunnerInfo *currentInfo, bool pr
         newRunnerIterator = minIterator;
       } else {
         return currentInfo;
+      }
+    }
+  } else {
+    // Prefer first runner that doesn't just have all paths waiting
+    while (newRunnerIterator->shouldWaitForResults()) {
+      ++newRunnerIterator;
+
+      if (newRunnerIterator == passiveRunners.end()) {
+        newRunnerIterator = passiveRunners.begin();
+        break;
       }
     }
   }

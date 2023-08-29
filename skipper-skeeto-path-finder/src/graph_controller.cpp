@@ -93,6 +93,7 @@ void GraphController::start() {
           break;
 #ifdef FOUND_BEST_DISTANCE
         case GraphRouteResult::WaitForResult:
+          runnerInfo->setWaitForResults(true); // Nothing more we can do with this runner
           continueLooking = false; // We'll get back to this later
           break;
 #endif // FOUND_BEST_DISTANCE
