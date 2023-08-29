@@ -175,11 +175,6 @@ void GraphPath::serialize(std::ostream &outstream) const {
 void GraphPath::deserialize(std::istream &instream) {
   instream.read(reinterpret_cast<char *>(&stateA), sizeof(stateA));
   instream.read(reinterpret_cast<char *>(&stateB), sizeof(stateB));
-
-#ifdef FOUND_BEST_DISTANCE
-  // When looking for all possible paths based on best distance we don't want to look for distances again
-  setIsWaitingForResult(false);
-#endif // FOUND_BEST_DISTANCE
 }
 
 void GraphPath::cleanUp() {
