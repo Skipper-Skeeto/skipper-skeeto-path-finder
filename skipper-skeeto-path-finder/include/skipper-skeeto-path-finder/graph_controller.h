@@ -33,7 +33,7 @@ private:
 
   bool hasVisitedVertex(unsigned long long int visitedVerticesState, unsigned char vertexIndex);
 
-  unsigned char sortSubPaths(GraphPathPool *pool, unsigned long int pathIndex, GraphPath *path);
+  unsigned char sortSubPaths(GraphPathPool *pool, const RunnerInfo *runnerInfo, unsigned long int pathIndex, GraphPath *path);
 
   void handleRemovedSubPaths(GraphPathPool *pool, GraphPath *path, unsigned long long int visitedVerticesState, int depth);
 

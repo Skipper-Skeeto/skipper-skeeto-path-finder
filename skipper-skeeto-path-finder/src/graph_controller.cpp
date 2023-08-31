@@ -265,7 +265,7 @@ GraphRouteResult GraphController::moveOnDistributed(GraphPathPool *pool, RunnerI
 
   auto subPathIterationCount = path->getSubPathIterationCount();
   if (subPathIterationCount == 0) {
-    subPathIterationCount = sortSubPaths(pool, pathIndex, path);
+    subPathIterationCount = sortSubPaths(pool, runnerInfo, pathIndex, path);
   }
 
   auto focusedSubPathIndex = path->getFocusedSubPath();
@@ -453,7 +453,7 @@ bool GraphController::hasVisitedVertex(unsigned long long int visitedVerticesSta
   return meetsCondition(visitedVerticesState, (1ULL << vertexIndex));
 }
 
-unsigned char GraphController::sortSubPaths(GraphPathPool *pool, unsigned long int pathIndex, GraphPath *path) {
+unsigned char GraphController::sortSubPaths(GraphPathPool *pool, const RunnerInfo *runnerInfo, unsigned long int pathIndex, GraphPath *path) {
   auto focusedIndex = path->getFocusedSubPath();
   auto endIndex = pool->getGraphPath(focusedIndex)->getPreviousPath();
   auto currentIndex = focusedIndex;
@@ -471,7 +471,15 @@ unsigned char GraphController::sortSubPaths(GraphPathPool *pool, unsigned long i
     while (potentialNewIndex != endIndex) {
       auto potentialNewPath = pool->getGraphPath(potentialNewIndex);
 
-      if (currentPath->getBestEndDistance() < potentialNewPath->getBestEndDistance()) {
+      bool potentialIsBetter =
+#ifdef FOUND_BEST_DISTANCE
+        // When finding final route for waiting paths some waiting might be waiting for other waiting paths (across runners), but we
+        // know that in that case it's always the paths that got the furthers that is the best - so we'll sort them first
+        (runnerInfo->shouldHandleWaiting() && currentPath->hasSetSubPath() && !potentialNewPath->hasSetSubPath()) ||
+#endif // FOUND_BEST_DISTANCE
+          (currentPath->getBestEndDistance() < potentialNewPath->getBestEndDistance());
+
+      if (potentialIsBetter) {
         newIndex = potentialNewIndex;
       } else {
         break;
