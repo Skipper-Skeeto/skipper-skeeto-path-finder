@@ -32,7 +32,7 @@ public:
   bool handleWaitingPath(const GraphPathPool *pool, RunnerInfo *runnerInfo, const GraphPath *path, unsigned long long int visitedVerticesState);
 #endif // FOUND_BEST_DISTANCE
 
-  void updateLocalMax(RunnerInfo *runnerInfo);
+  void updateLocalValues(RunnerInfo *runnerInfo);
 
   void dumpGoodOnes();
 
@@ -59,6 +59,8 @@ public:
   bool appliesForLogging(int depth) const;
 
   void registerPoolDumpFailed(int runnerInfoIdentifier);
+  
+  bool shouldHandleWaiting() const;
 
   bool shouldStop() const;
 
@@ -112,9 +114,11 @@ private:
 
   std::list<RunnerInfo> activeRunners;
   std::list<RunnerInfo> passiveRunners;
+  std::list<RunnerInfo> waitingRunners;
 
   bool stopping = false;
   int maxActiveRunners;
+  bool consumingWaiting = false;
 
   std::array<int, LOG_PATH_COUNT_MAX> addedPathsCount{};
   std::array<int, LOG_PATH_COUNT_MAX> startedPathsCount{};

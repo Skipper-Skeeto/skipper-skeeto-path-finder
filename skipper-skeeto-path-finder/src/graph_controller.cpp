@@ -84,8 +84,6 @@ void GraphController::start() {
 
       bool continueLooking = true;
       while (continueLooking && !pool.isFull()) {
-        commonState.updateLocalMax(runnerInfo);
-
         bool forceContinue = !path->hasFoundDistance();
         auto graphRouteResult = moveOnDistributed(&pool, runnerInfo, pathIndex, path, visitedVerticesState, depth, forceContinue);
         switch (graphRouteResult) {
@@ -93,7 +91,7 @@ void GraphController::start() {
           break;
 #ifdef FOUND_BEST_DISTANCE
         case GraphRouteResult::WaitForResult:
-          runnerInfo->setWaitForResults(true); // Nothing more we can do with this runner
+          runnerInfo->setWaitForResults(true); // Nothing more we can do with this runner for now
           continueLooking = false; // We'll get back to this later
           break;
 #endif // FOUND_BEST_DISTANCE
@@ -217,11 +215,12 @@ GraphRouteResult GraphController::moveOnDistributed(GraphPathPool *pool, RunnerI
     }
    
 #ifdef FOUND_BEST_DISTANCE
-    if (path->isWaitingForResult()) {
+    if (runnerInfo->shouldHandleWaiting()) {
       bool isHandled = commonState.handleWaitingPath(pool, runnerInfo, path, visitedVerticesState);
       if (isHandled) {
         return GraphRouteResult::Stop;
       } else {
+        path->setIsWaitingForResult(true);
         return GraphRouteResult::WaitForResult;
       }
     }
@@ -266,7 +265,7 @@ GraphRouteResult GraphController::moveOnDistributed(GraphPathPool *pool, RunnerI
 
   auto subPathIterationCount = path->getSubPathIterationCount();
   if (subPathIterationCount == 0) {
-    subPathIterationCount = sortSubPathsAndCleanTempState(pool, pathIndex, path);
+    subPathIterationCount = sortSubPaths(pool, pathIndex, path);
   }
 
   auto focusedSubPathIndex = path->getFocusedSubPath();
@@ -290,11 +289,11 @@ GraphRouteResult GraphController::moveOnDistributed(GraphPathPool *pool, RunnerI
 #ifdef FOUND_BEST_DISTANCE
     while (subPathIterationCount > 1) {
       auto subPath = pool->getGraphPath(nextPathIndex);
-      if (!subPath->hasSetSubPath() || !subPath->isWaitingForResult()) {
+      if (!subPath->isWaitingForResult()) {
         break;
       }
 
-      nextPathIndex = focusedSubPath->getNextPath();
+      nextPathIndex = subPath->getNextPath();
       --subPathIterationCount;
     }
 
@@ -454,7 +453,7 @@ bool GraphController::hasVisitedVertex(unsigned long long int visitedVerticesSta
   return meetsCondition(visitedVerticesState, (1ULL << vertexIndex));
 }
 
-unsigned char GraphController::sortSubPathsAndCleanTempState(GraphPathPool *pool, unsigned long int pathIndex, GraphPath *path) {
+unsigned char GraphController::sortSubPaths(GraphPathPool *pool, unsigned long int pathIndex, GraphPath *path) {
   auto focusedIndex = path->getFocusedSubPath();
   auto endIndex = pool->getGraphPath(focusedIndex)->getPreviousPath();
   auto currentIndex = focusedIndex;
@@ -464,13 +463,6 @@ unsigned char GraphController::sortSubPathsAndCleanTempState(GraphPathPool *pool
     ++itemCount;
 
     auto currentPath = pool->getGraphPath(currentIndex);
-
-#ifdef FOUND_BEST_DISTANCE
-    // Start from a scratch for all paths that has been initialized
-    if (currentPath->hasSetSubPath()) {
-      currentPath->setIsWaitingForResult(false);
-    }
-#endif // FOUND_BEST_DISTANCE
 
     auto nextIndex = currentPath->getNextPath();
 
@@ -655,7 +647,7 @@ bool GraphController::serializePool(GraphPathPool *pool, unsigned int runnerInfo
 void GraphController::deserializePool(GraphPathPool *pool, RunnerInfo *runnerInfo) {
   std::string fileName = getPoolFileName(runnerInfo->getIdentifier());
   std::ifstream dumpFile(fileName, std::ios::binary);
-  pool->deserialize(dumpFile);
+  pool->deserialize(dumpFile, runnerInfo->shouldHandleWaiting());
 }
 
 void GraphController::deletePoolFile(const RunnerInfo *runnerInfo) const {

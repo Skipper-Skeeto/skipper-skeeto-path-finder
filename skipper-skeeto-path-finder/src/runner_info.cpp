@@ -39,6 +39,14 @@ unsigned char RunnerInfo::getLocalMaxDistance() const {
   return localMaxDistance;
 }
 
+void RunnerInfo::setHandleWaiting(bool handle) {
+  handleWaiting = handle;
+}
+
+bool RunnerInfo::shouldHandleWaiting() const {
+  return handleWaiting;
+}
+
 int RunnerInfo::getVisitedVerticesCount() const {
   return parentPath.size();
 }

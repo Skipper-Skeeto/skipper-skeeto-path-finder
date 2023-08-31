@@ -20,7 +20,7 @@ public:
 
   void serializeAndClear(std::ostream &outstream);
 
-  void deserialize(std::istream &instream);
+  void deserialize(std::istream &instream, bool clearWaitingState);
 
   void reset();
 

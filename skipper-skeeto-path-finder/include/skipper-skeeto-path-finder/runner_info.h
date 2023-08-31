@@ -21,6 +21,10 @@ public:
 
   unsigned char getLocalMaxDistance() const;
 
+  void setHandleWaiting(bool handle);
+
+  bool shouldHandleWaiting() const;
+
   int getVisitedVerticesCount() const;
 
   std::vector<char> getRoute() const;
@@ -46,4 +50,5 @@ private:
   std::vector<char> parentPath;
   unsigned int identifier;
   unsigned char localMaxDistance;
+  bool handleWaiting = false;
 };

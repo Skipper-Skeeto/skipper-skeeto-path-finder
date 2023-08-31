@@ -30,10 +30,15 @@ void GraphPathPool::serializeAndClear(std::ostream &outstream) {
   }
 }
 
-void GraphPathPool::deserialize(std::istream &instream) {
+void GraphPathPool::deserialize(std::istream &instream, bool clearWaitingState) {
   reset();
   while (instream.peek() != EOF) {
-    pool->at(generateNewIndex()).deserialize(instream);
+    auto &path = pool->at(generateNewIndex());
+    path.deserialize(instream);
+
+    if (clearWaitingState) {
+      path.setIsWaitingForResult(false);
+    }
   }
 }
 

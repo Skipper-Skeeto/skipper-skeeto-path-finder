@@ -126,11 +126,6 @@ bool GraphCommonState::handleWaitingPath(const GraphPathPool *pool, RunnerInfo *
 }
 #endif // FOUND_BEST_DISTANCE
 
-void GraphCommonState::updateLocalMax(RunnerInfo *runnerInfo) {
-  std::lock_guard<std::mutex> guard(finalStateMutex);
-  runnerInfo->setLocalMaxDistance(maxDistance);
-}
-
 void GraphCommonState::dumpGoodOnes() {
   std::lock_guard<std::mutex> guardFinalState(finalStateMutex);
   if (dumpedGoodOnes >= goodOnes.size()) {
@@ -172,19 +167,9 @@ void GraphCommonState::printStatus() {
 
   std::cout << std::endl;
 
-  auto waitingCount = 0;
-  for (const auto &info : activeRunners) {
-    if (info.shouldWaitForResults()) {
-      ++waitingCount;
-    }
-  }
-  for (const auto &info : passiveRunners) {
-    if (info.shouldWaitForResults()) {
-      ++waitingCount;
-    }
-  }
+  std::cout << "Status: " << (passiveRunners.size() + activeRunners.size()) << " relevant runners, found " << goodOnes.size() << " at distance " << +maxDistance << ". consumingWaiting=" << consumingWaiting << std::endl;
 
-  std::cout << "Status: " << (passiveRunners.size() + activeRunners.size()) << " runners (with " << waitingCount << " waiting for result), found " << goodOnes.size() << " at distance " << +maxDistance << std::endl;
+  std::cout << "On top of that, " << waitingRunners.size() << " runners are waiting for result - " << (consumingWaiting ? "and they are currently being consumed" : "and they are not being consumed") << std::endl;
 
   std::cout << "Active runners:";
   for (const auto &info : activeRunners) {
@@ -228,41 +213,6 @@ void GraphCommonState::addRunnerInfos(std::list<RunnerInfo> runnerInfos) {
 RunnerInfo *GraphCommonState::getNextRunnerInfo(RunnerInfo *currentInfo, bool preferBest) {
   std::lock_guard<std::mutex> runnerInfoGuard(runnerInfoMutex);
 
-  if (passiveRunners.empty()) {
-    return currentInfo;
-  }
-
-  auto newRunnerIterator = passiveRunners.begin();
-  if (preferBest) {
-    auto minIterator = std::min_element(passiveRunners.begin(), passiveRunners.end(), [](const RunnerInfo &a, const RunnerInfo &b) {
-      if (a.shouldWaitForResults() && !b.shouldWaitForResults()) {
-        return false;
-      } else if (b.shouldWaitForResults()) {
-        return true;
-      }
-
-      return a.getHighScore() < b.getHighScore();
-    });
-
-    if (minIterator != passiveRunners.end()) {
-      if (currentInfo == nullptr || minIterator->getHighScore() <= currentInfo->getHighScore()) {
-        newRunnerIterator = minIterator;
-      } else {
-        return currentInfo;
-      }
-    }
-  } else {
-    // Prefer first runner that doesn't just have all paths waiting
-    while (newRunnerIterator->shouldWaitForResults()) {
-      ++newRunnerIterator;
-
-      if (newRunnerIterator == passiveRunners.end()) {
-        newRunnerIterator = passiveRunners.begin();
-        break;
-      }
-    }
-  }
-
   if (currentInfo != nullptr) {
     auto currentInfoIterator = std::find_if(activeRunners.begin(), activeRunners.end(), [currentInfo](auto &runnerInfo) {
       return currentInfo == &runnerInfo;
@@ -271,14 +221,41 @@ RunnerInfo *GraphCommonState::getNextRunnerInfo(RunnerInfo *currentInfo, bool pr
     if (currentInfoIterator == activeRunners.end()) {
       std::lock_guard<std::mutex> guardPrint(printMutex);
       std::cout << "ERROR: Runner with id " << currentInfo->getIdentifier() << " not found in active runners" << std::endl;
+    } else if (currentInfo->shouldWaitForResults()) {
+      waitingRunners.splice(waitingRunners.end(), activeRunners, currentInfoIterator);
     } else {
       passiveRunners.splice(passiveRunners.end(), activeRunners, currentInfoIterator);
     }
   }
 
-  activeRunners.splice(activeRunners.end(), passiveRunners, newRunnerIterator);
+  if (passiveRunners.empty()) {
+    if (activeRunners.empty()) {
+      consumingWaiting = true;
+    }
+  }
 
-  return &activeRunners.back();
+  if (consumingWaiting){
+    auto newRunnerIterator = waitingRunners.begin();
+
+    activeRunners.splice(activeRunners.end(), waitingRunners, newRunnerIterator);
+  } else {
+    auto newRunnerIterator = passiveRunners.begin();
+    if (preferBest) {
+      newRunnerIterator = std::min_element(passiveRunners.begin(), passiveRunners.end(), [](const RunnerInfo &a, const RunnerInfo &b) {
+        return a.getHighScore() < b.getHighScore();
+      });
+    }
+
+    activeRunners.splice(activeRunners.end(), passiveRunners, newRunnerIterator);
+  }
+
+  auto newRunner = &activeRunners.back();
+  newRunner->setHandleWaiting(consumingWaiting);
+
+  std::lock_guard<std::mutex> guard(finalStateMutex);
+  newRunner->setLocalMaxDistance(maxDistance);
+
+  return newRunner;
 }
 
 void GraphCommonState::removeActiveRunnerInfo(RunnerInfo *runnerInfo) {
@@ -292,6 +269,10 @@ void GraphCommonState::removeActiveRunnerInfo(RunnerInfo *runnerInfo) {
   activeRunners.remove_if([runnerInfo](auto &activeRunnerInfo) {
     return runnerInfo == &activeRunnerInfo;
   });
+
+  if (activeRunners.empty() && passiveRunners.empty()) {
+      consumingWaiting = true;
+  }
 }
 
 void GraphCommonState::splitAndRemoveActiveRunnerInfo(RunnerInfo *parentRunnerInfo, std::list<RunnerInfo> childRunnerInfos) {
@@ -321,7 +302,7 @@ void GraphCommonState::splitAndRemoveActiveRunnerInfo(RunnerInfo *parentRunnerIn
 int GraphCommonState::runnerInfoCount() const {
   std::lock_guard<std::mutex> runnerInfoGuard(runnerInfoMutex);
 
-  return activeRunners.size() + passiveRunners.size();
+  return activeRunners.size() + passiveRunners.size() + waitingRunners.size();
 }
 
 void GraphCommonState::registerAddedPaths(int depth, int number) {
@@ -346,6 +327,8 @@ void GraphCommonState::registerStartedPath(int depth) {
 
 void GraphCommonState::registerRemovedPath(const GraphPath *path, unsigned long long int visitedVerticesState, int depth) {
   if (path->hasStateMax()) {
+    // It would have been nice to set this for only failed paths to keep other logic simpler, but this function is for (other) simplicity also
+    // called for successful paths at the moment
     finalizeDistanceState(path, visitedVerticesState);
   }
 
@@ -369,6 +352,12 @@ void GraphCommonState::registerPoolDumpFailed(int runnerInfoIdentifier) {
   stopping = true;
 
   std::cout << "Stopping after pool dump failed for runner " << runnerInfoIdentifier << std::endl;
+}
+
+bool GraphCommonState::shouldHandleWaiting() const {
+  std::lock_guard<std::mutex> runnerInfoGuard(runnerInfoMutex);
+
+  return consumingWaiting;
 }
 
 bool GraphCommonState::shouldStop() const {
