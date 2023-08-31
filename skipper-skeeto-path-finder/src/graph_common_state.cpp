@@ -167,7 +167,7 @@ void GraphCommonState::printStatus() {
 
   std::cout << std::endl;
 
-  std::cout << "Status: " << (passiveRunners.size() + activeRunners.size()) << " relevant runners, found " << goodOnes.size() << " at distance " << +maxDistance << ". consumingWaiting=" << consumingWaiting << std::endl;
+  std::cout << "Status: " << (passiveRunners.size() + activeRunners.size()) << " relevant runners, found " << goodOnes.size() << " at distance " << +maxDistance << std::endl;
 
   std::cout << "On top of that, " << waitingRunners.size() << " runners are waiting for result - " << (consumingWaiting ? "and they are currently being consumed" : "and they are not being consumed") << std::endl;
 
@@ -179,9 +179,10 @@ void GraphCommonState::printStatus() {
 
   std::cout << "Paths [ Added" << std::setw(14)
             << "| Started" << std::setw(25)
-            << "| Removed" << std::setw(26)
+            << "| Removed" << std::setw(25)
+            << "| Waiting" << std::setw(26)
             << "| Splitted" << std::setw(35)
-            << "| Removed + splitted" << std::setw(6)
+            << "| Remove + wait + split" << std::setw(6)
             << "]" << std::endl;
 
   for (int index = 0; index < LOG_PATH_COUNT_MAX; ++index) {
@@ -189,8 +190,9 @@ void GraphCommonState::printStatus() {
               << std::setw(10) << addedPathsCount[index] << " | "
               << std::setw(12) << startedPathsCount[index] << " (" << std::setw(6) << (addedPathsCount[index] > 0 ? (double)startedPathsCount[index] * 100 / addedPathsCount[index] : 0) << "%) | "
               << std::setw(12) << removedPathsCount[index] << " (" << std::setw(6) << (addedPathsCount[index] > 0 ? (double)removedPathsCount[index] * 100 / addedPathsCount[index] : 0) << "%) | "
+              << std::setw(12) << waitingPathsCount[index] << " (" << std::setw(6) << (addedPathsCount[index] > 0 ? (double)waitingPathsCount[index] * 100 / addedPathsCount[index] : 0) << "%) | "
               << std::setw(12) << splittedPathsCount[index] << " (" << std::setw(6) << (addedPathsCount[index] > 0 ? (double)splittedPathsCount[index] * 100 / addedPathsCount[index] : 0) << "%) | "
-              << std::setw(12) << removedPathsCount[index] + splittedPathsCount[index] << " (" << std::setw(6) << (addedPathsCount[index] > 0 ? (double)(removedPathsCount[index] + splittedPathsCount[index]) * 100 / addedPathsCount[index] : 0) << "%) "
+              << std::setw(12) << removedPathsCount[index] + waitingPathsCount[index] + splittedPathsCount[index] << " (" << std::setw(6) << (addedPathsCount[index] > 0 ? (double)(removedPathsCount[index] + waitingPathsCount[index] + splittedPathsCount[index]) * 100 / addedPathsCount[index] : 0) << "%) "
               << "]" << std::endl;
   }
 
@@ -331,6 +333,22 @@ void GraphCommonState::registerStartedPath(int depth) {
   ++startedPathsCount[depth];
 }
 
+void GraphCommonState::registerWaitingPath(int depth) {
+  if (!appliesForLogging(depth)) {
+    return;
+  }
+  
+  std::lock_guard<std::mutex> runnerInfoGuard(runnerInfoMutex);
+  if (consumingWaiting) {
+    // No more can be starting at this point (and it's just easier to catch that here at the moment)
+    return;
+  }
+
+  std::lock_guard<std::mutex> pathCountGuard(pathCountMutex);
+
+  ++waitingPathsCount[depth];
+}
+
 void GraphCommonState::registerRemovedPath(const GraphPath *path, unsigned long long int visitedVerticesState, int depth) {
   if (path->hasStateMax()) {
     // It would have been nice to set this for only failed paths to keep other logic simpler, but this function is for (other) simplicity also
@@ -345,6 +363,12 @@ void GraphCommonState::registerRemovedPath(const GraphPath *path, unsigned long 
   std::lock_guard<std::mutex> pathCountGuard(pathCountMutex);
 
   ++removedPathsCount[depth];
+
+  std::lock_guard<std::mutex> runnerInfoGuard(runnerInfoMutex);
+  if (consumingWaiting) {
+    // At this point we know all remaining are waiting
+    --waitingPathsCount[depth];
+  }
 }
 
 bool GraphCommonState::appliesForLogging(int depth) const {
@@ -358,12 +382,6 @@ void GraphCommonState::registerPoolDumpFailed(int runnerInfoIdentifier) {
   stopping = true;
 
   std::cout << "Stopping after pool dump failed for runner " << runnerInfoIdentifier << std::endl;
-}
-
-bool GraphCommonState::shouldHandleWaiting() const {
-  std::lock_guard<std::mutex> runnerInfoGuard(runnerInfoMutex);
-
-  return consumingWaiting;
 }
 
 bool GraphCommonState::shouldStop() const {

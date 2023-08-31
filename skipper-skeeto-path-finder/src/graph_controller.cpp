@@ -92,6 +92,7 @@ void GraphController::start() {
 #ifdef FOUND_BEST_DISTANCE
         case GraphRouteResult::WaitForResult:
           runnerInfo->setWaitForResults(true); // Nothing more we can do with this runner for now
+          commonState.registerWaitingPath(depth);
           continueLooking = false; // We'll get back to this later
           break;
 #endif // FOUND_BEST_DISTANCE
@@ -205,6 +206,12 @@ void GraphController::setupStartRunner() {
 }
 
 GraphRouteResult GraphController::moveOnDistributed(GraphPathPool *pool, RunnerInfo *runnerInfo, unsigned long int pathIndex, GraphPath *path, unsigned long long int visitedVerticesState, int depth, bool forceContinue) {
+#ifdef FOUND_BEST_DISTANCE
+  if (path->isWaitingForResult()) {
+    return GraphRouteResult::WaitForResult;
+  }
+#endif // FOUND_BEST_DISTANCE
+
   if (!path->hasSetSubPath()) {
     if (visitedVerticesState == ALL_VERTICES_STATE_MASK) {
       path->maybeSetBestEndDistance(pool, path->getMinimumEndDistance());
@@ -240,6 +247,12 @@ GraphRouteResult GraphController::moveOnDistributed(GraphPathPool *pool, RunnerI
       case GraphRouteResult::PoolFull:
 
         commonState.registerStartedPath(depth); // We need to do this as long as it's the parent that registers removed subpaths
+
+#ifdef FOUND_BEST_DISTANCE
+        if (initialResult == GraphRouteResult::WaitForResult) {
+          commonState.registerWaitingPath(depth);
+        }
+#endif // FOUND_BEST_DISTANCE
 
         return initialResult; // PoolFull shouldn't happen, but better be safe than sorry
       }

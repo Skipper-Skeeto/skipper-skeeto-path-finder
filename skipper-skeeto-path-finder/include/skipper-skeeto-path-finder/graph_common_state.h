@@ -54,13 +54,13 @@ public:
 
   void registerStartedPath(int depth);
 
+  void registerWaitingPath(int depth);
+
   void registerRemovedPath(const GraphPath *path, unsigned long long int visitedVerticesState, int depth);
 
   bool appliesForLogging(int depth) const;
 
   void registerPoolDumpFailed(int runnerInfoIdentifier);
-  
-  bool shouldHandleWaiting() const;
 
   bool shouldStop() const;
 
@@ -122,6 +122,7 @@ private:
 
   std::array<int, LOG_PATH_COUNT_MAX> addedPathsCount{};
   std::array<int, LOG_PATH_COUNT_MAX> startedPathsCount{};
+  std::array<int, LOG_PATH_COUNT_MAX> waitingPathsCount{};
   std::array<int, LOG_PATH_COUNT_MAX> splittedPathsCount{};
   std::array<int, LOG_PATH_COUNT_MAX> removedPathsCount{};
 };
