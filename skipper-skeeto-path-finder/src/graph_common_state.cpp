@@ -231,10 +231,16 @@ RunnerInfo *GraphCommonState::getNextRunnerInfo(RunnerInfo *currentInfo, bool pr
   if (passiveRunners.empty()) {
     if (activeRunners.empty()) {
       consumingWaiting = true;
+    } else {
+      return nullptr;
     }
   }
 
   if (consumingWaiting){
+    if (waitingRunners.empty()) {
+      return nullptr;
+    }
+
     auto newRunnerIterator = waitingRunners.begin();
 
     activeRunners.splice(activeRunners.end(), waitingRunners, newRunnerIterator);
