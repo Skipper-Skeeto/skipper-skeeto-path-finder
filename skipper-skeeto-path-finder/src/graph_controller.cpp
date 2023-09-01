@@ -485,8 +485,15 @@ unsigned char GraphController::sortSubPaths(GraphPathPool *pool, const RunnerInf
     while (potentialNewIndex != endIndex) {
       auto potentialNewPath = pool->getGraphPath(potentialNewIndex);
 
+#ifdef FOUND_BEST_DISTANCE
+      if (currentPath->isWaitingForResult()) {
+        break; // We don't want to check more, we don't want to move up waiting results
+      }
+#endif // FOUND_BEST_DISTANCE
+
       bool potentialIsBetter =
 #ifdef FOUND_BEST_DISTANCE
+        potentialNewPath->isWaitingForResult() ||
         // When finding final route for waiting paths some waiting might be waiting for other waiting paths (across runners), but we
         // know that in that case it's always the paths that got the furthers that is the best - so we'll sort them first
         (runnerInfo->shouldHandleWaiting() && currentPath->hasSetSubPath() && !potentialNewPath->hasSetSubPath()) ||
