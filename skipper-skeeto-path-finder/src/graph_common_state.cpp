@@ -441,7 +441,7 @@ GraphRouteResult GraphCommonState::checkForDuplicateState(GraphPath *path, unsig
           result = GraphRouteResult::Stop;
         } else if (difference == 0) {
           if (path->hasStateMax()) {
-            // This can happen even for initialize as we might not have fully initialized previously do to a full pool
+            // This can happen even for initialial check as we might not have fully initialized previously due to a full pool and thus check again
             result = GraphRouteResult::Continue;
           } else {
 #ifdef FOUND_BEST_DISTANCE
