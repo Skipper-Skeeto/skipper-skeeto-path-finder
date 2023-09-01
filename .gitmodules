@@ -1,0 +1,6 @@
+[submodule "libs/parallel-hashmap"]
+	path = libs/parallel-hashmap
+	url = https://github.com/greg7mdp/parallel-hashmap.git
+[submodule "data"]
+	path = data
+	url = git@github.com:Skipper-Skeeto/skipper-skeeto-data.git
