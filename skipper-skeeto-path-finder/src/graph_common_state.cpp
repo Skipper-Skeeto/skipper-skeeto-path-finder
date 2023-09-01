@@ -360,11 +360,11 @@ void GraphCommonState::registerRemovedPath(const GraphPath *path, unsigned long 
     return;
   }
 
+  std::lock_guard<std::mutex> runnerInfoGuard(runnerInfoMutex); // Has to be before pathCountMutex to avoid deadlock
   std::lock_guard<std::mutex> pathCountGuard(pathCountMutex);
 
   ++removedPathsCount[depth];
 
-  std::lock_guard<std::mutex> runnerInfoGuard(runnerInfoMutex);
   if (consumingWaiting) {
     // At this point we know all remaining are waiting
     --waitingPathsCount[depth];
