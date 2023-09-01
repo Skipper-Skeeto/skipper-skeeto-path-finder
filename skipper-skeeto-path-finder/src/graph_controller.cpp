@@ -298,9 +298,10 @@ GraphRouteResult GraphController::moveOnDistributed(GraphPathPool *pool, RunnerI
 #endif // FOUND_BEST_DISTANCE
   {
     auto nextPathIndex = focusedSubPath->getNextPath();
+    --subPathIterationCount;
 
 #ifdef FOUND_BEST_DISTANCE
-    while (subPathIterationCount > 1) {
+    while (subPathIterationCount > 0) {
       auto subPath = pool->getGraphPath(nextPathIndex);
       if (!subPath->isWaitingForResult()) {
         break;
@@ -315,7 +316,7 @@ GraphRouteResult GraphController::moveOnDistributed(GraphPathPool *pool, RunnerI
     }
 #endif // FOUND_BEST_DISTANCE
 
-    path->updateFocusedSubPath(focusedSubPath->getNextPath(), subPathIterationCount - 1);
+    path->updateFocusedSubPath(nextPathIndex, subPathIterationCount);
 
     if (nextPathIndex != focusedSubPathIndex) {
       return GraphRouteResult::Continue;
