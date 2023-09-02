@@ -92,7 +92,6 @@ void GraphController::start() {
 #ifdef FOUND_BEST_DISTANCE
         case GraphRouteResult::WaitForResult:
           runnerInfo->setWaitForResults(true); // Nothing more we can do with this runner for now
-          commonState.registerWaitingPath(depth);
           continueLooking = false; // We'll get back to this later
           break;
 #endif // FOUND_BEST_DISTANCE
@@ -313,6 +312,7 @@ GraphRouteResult GraphController::moveOnDistributed(GraphPathPool *pool, RunnerI
 
     if (focusedSubPathIndex == nextPathIndex && graphRouteResult == GraphRouteResult::WaitForResult) {
       path->setIsWaitingForResult(true);
+      commonState.registerWaitingPath(depth);
     }
 #endif // FOUND_BEST_DISTANCE
 
