@@ -20,6 +20,12 @@ class GraphPathPool;
 
 class GraphCommonState {
 public:
+  enum class NextRunnerPriority {
+    Next,
+    Best,
+    Random
+  };
+
   GraphCommonState(const std::string &resultDir, int maxActiveRunners);
 
   GraphRouteResult makeInitialCheck(const RunnerInfo *runnerInfo, GraphPath *path, unsigned long long int visitedVerticesState);
@@ -44,7 +50,7 @@ public:
 
   void addRunnerInfos(std::list<RunnerInfo> runnerInfos);
 
-  RunnerInfo *getNextRunnerInfo(RunnerInfo *currentInfo, bool preferBest);
+  RunnerInfo *getNextRunnerInfo(RunnerInfo *currentInfo, NextRunnerPriority priority);
 
   void removeActiveRunnerInfo(RunnerInfo *runnerInfo);
 

@@ -13,6 +13,7 @@
 #endif
 
 GraphCommonState::GraphCommonState(const std::string &resultDir, int maxActiveRunners) : resultDir(resultDir), maxActiveRunners(maxActiveRunners) {
+  srand(time(NULL));
 }
 
 GraphRouteResult GraphCommonState::makeInitialCheck(const RunnerInfo *runnerInfo, GraphPath *path, unsigned long long int visitedVerticesState) {
@@ -176,7 +177,7 @@ void GraphCommonState::printStatus() {
 
   std::cout << "Active runners:";
   for (const auto &info : activeRunners) {
-    std::cout << " " << info.getIdentifier() << " (" << +info.getHighScore() << "/" << (info.shouldWaitForResults() ? "w" : "a") << ")";
+    std::cout << " " << info.getIdentifier() << " (" << +info.getHighScore() << "/" << (info.shouldWaitForResults() ? "w" : "a") << "/" << info.getLatestPickReason() << ")";
   }
   std::cout << std::endl;
 
@@ -215,7 +216,7 @@ void GraphCommonState::addRunnerInfos(std::list<RunnerInfo> runnerInfos) {
   passiveRunners.splice(passiveRunners.end(), runnerInfos);
 }
 
-RunnerInfo *GraphCommonState::getNextRunnerInfo(RunnerInfo *currentInfo, bool preferBest) {
+RunnerInfo *GraphCommonState::getNextRunnerInfo(RunnerInfo *currentInfo, GraphCommonState::NextRunnerPriority priority) {
   std::lock_guard<std::mutex> runnerInfoGuard(runnerInfoMutex);
 
   if (currentInfo != nullptr) {
@@ -241,26 +242,40 @@ RunnerInfo *GraphCommonState::getNextRunnerInfo(RunnerInfo *currentInfo, bool pr
     }
   }
 
+  char pickReason = '?';
   if (consumingWaiting){
     if (waitingRunners.empty()) {
       return nullptr;
     }
+
+    pickReason = 'w';
 
     auto newRunnerIterator = waitingRunners.begin();
 
     activeRunners.splice(activeRunners.end(), waitingRunners, newRunnerIterator);
   } else {
     auto newRunnerIterator = passiveRunners.begin();
-    if (preferBest) {
+    switch(priority){
+    case GraphCommonState::NextRunnerPriority::Next:
+      pickReason = 'n';
+      break;
+    case GraphCommonState::NextRunnerPriority::Best:
+      pickReason = 'b';
       newRunnerIterator = std::min_element(passiveRunners.begin(), passiveRunners.end(), [](const RunnerInfo &a, const RunnerInfo &b) {
         return a.getHighScore() < b.getHighScore();
       });
+      break;
+    case GraphCommonState::NextRunnerPriority::Random:
+      pickReason = 'r';
+      newRunnerIterator = std::next(passiveRunners.begin(), rand() % passiveRunners.size());
+      break;
     }
 
     activeRunners.splice(activeRunners.end(), passiveRunners, newRunnerIterator);
   }
 
   auto newRunner = &activeRunners.back();
+  newRunner->setLatestPickReason(pickReason);
   newRunner->setHandleWaiting(consumingWaiting);
 
   std::lock_guard<std::mutex> guard(finalStateMutex);

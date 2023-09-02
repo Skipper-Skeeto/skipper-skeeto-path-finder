@@ -74,6 +74,14 @@ bool RunnerInfo::shouldWaitForResults() const {
   return waitForResults;
 }
 
+void RunnerInfo::setLatestPickReason(char reason) {
+  lastestPickReason = reason;
+}
+
+char RunnerInfo::getLatestPickReason() const {
+  return lastestPickReason;
+}
+
 unsigned int RunnerInfo::createIdentifier() {
   std::lock_guard<std::mutex> identifierGuard(identifierMutex);
 

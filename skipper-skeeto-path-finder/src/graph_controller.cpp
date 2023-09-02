@@ -38,6 +38,14 @@ void GraphController::start() {
     bool preferBest = (threadIndex % 2 == 0);
 
     GraphPathPool pool;
+    GraphCommonState::NextRunnerPriority runnerPriority = GraphCommonState::NextRunnerPriority::Next;
+    if (threadIndex % 2 == 0) {
+      // 50% should use the best
+      runnerPriority = GraphCommonState::NextRunnerPriority::Best;
+    } else if (threadIndex % 4 == 1) {
+      // 25% should use a random
+      runnerPriority = GraphCommonState::NextRunnerPriority::Random;    
+    }
 
     RunnerInfo *runnerInfo = nullptr;
     while (!commonState.shouldStop()) {
@@ -53,7 +61,7 @@ void GraphController::start() {
         oldRunnerInfoIdentifier = runnerInfo->getIdentifier();
       }
 
-      runnerInfo = commonState.getNextRunnerInfo(runnerInfo, preferBest);
+      runnerInfo = commonState.getNextRunnerInfo(runnerInfo, runnerPriority);
       if (runnerInfo == nullptr) {
         std::this_thread::sleep_for(std::chrono::seconds(10));
         continue;

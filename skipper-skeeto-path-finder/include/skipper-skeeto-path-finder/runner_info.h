@@ -35,6 +35,11 @@ public:
 
   bool shouldWaitForResults() const;
 
+  // Note: Should only be used from the common state for now as it's not threadsafe
+  void setLatestPickReason(char reason);
+
+  char getLatestPickReason() const;
+
 private:
   static unsigned int createIdentifier();
 
@@ -51,4 +56,5 @@ private:
   unsigned int identifier;
   unsigned char localMaxDistance;
   bool handleWaiting = false;
+  char lastestPickReason = '?';
 };
