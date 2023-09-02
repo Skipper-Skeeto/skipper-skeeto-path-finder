@@ -181,8 +181,8 @@ void GraphCommonState::printStatus() {
             << "| Started" << std::setw(25)
             << "| Removed" << std::setw(25)
             << "| Waiting" << std::setw(26)
-            << "| Splitted" << std::setw(35)
-            << "| Remove + wait + split" << std::setw(6)
+            << "| Splitted" << std::setw(38)
+            << "| Remove + wait + split" << std::setw(3)
             << "]" << std::endl;
 
   for (int index = 0; index < LOG_PATH_COUNT_MAX; ++index) {
