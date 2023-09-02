@@ -34,6 +34,8 @@ public:
 
   void updateLocalValues(RunnerInfo *runnerInfo);
 
+  bool hasNewGoodOnes() const;
+
   void dumpGoodOnes();
 
   std::pair<std::vector<std::array<char, VERTICES_COUNT>>, int> getGoodOnes() const;

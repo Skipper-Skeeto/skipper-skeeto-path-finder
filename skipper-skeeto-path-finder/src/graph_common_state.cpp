@@ -126,12 +126,15 @@ bool GraphCommonState::handleWaitingPath(const GraphPathPool *pool, RunnerInfo *
 }
 #endif // FOUND_BEST_DISTANCE
 
+bool GraphCommonState::hasNewGoodOnes() const {
+  std::lock_guard<std::mutex> guardFinalState(finalStateMutex);
+  
+  return dumpedGoodOnes < goodOnes.size();
+}
+
 void GraphCommonState::dumpGoodOnes() {
   std::lock_guard<std::mutex> guardFinalState(finalStateMutex);
-  if (dumpedGoodOnes >= goodOnes.size()) {
-    return;
-  }
-
+  
   int newDumpedCount = goodOnes.size() - dumpedGoodOnes;
 
   std::string fileName = resultDir + "/" + std::to_string(maxDistance) + ".txt";

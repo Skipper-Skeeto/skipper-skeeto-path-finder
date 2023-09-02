@@ -755,6 +755,10 @@ void GraphController::setNewIndex(GraphPathPool *pool, const PathReferences &pat
 void GraphController::printAndDump() {
   commonState.printStatus();
 
+  if (!commonState.hasNewGoodOnes()) {
+    return;
+  }
+
   commonState.dumpGoodOnes();
 
   std::vector<std::array<char, VERTICES_COUNT>> graphResults;
