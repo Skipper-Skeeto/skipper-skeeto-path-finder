@@ -542,11 +542,7 @@ unsigned char GraphController::sortSubPaths(GraphPathPool *pool, const RunnerInf
 void GraphController::handleRemovedSubPaths(GraphPathPool *pool, GraphPath *path, unsigned long long int visitedVerticesState, int depth) {
   auto subDepth = depth + 1;
 
-#ifdef FOUND_BEST_DISTANCE
-  if (!commonState.appliesForLogging(subDepth) && !path->hasStateMax()) {
-    return;
-  }
-#else // FOUND_BEST_DISTANCE
+#ifndef FOUND_BEST_DISTANCE
   if (!commonState.appliesForLogging(subDepth)) {
     return;
   }
