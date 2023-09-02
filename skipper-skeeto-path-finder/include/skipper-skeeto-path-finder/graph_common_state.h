@@ -121,6 +121,7 @@ private:
   bool stopping = false;
   int maxActiveRunners;
   bool consumingWaiting = false;
+  int statusCount = 0;
 
   std::array<int, LOG_PATH_COUNT_MAX> addedPathsCount{};
   std::array<int, LOG_PATH_COUNT_MAX> startedPathsCount{};

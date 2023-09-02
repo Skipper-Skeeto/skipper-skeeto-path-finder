@@ -170,7 +170,7 @@ void GraphCommonState::printStatus() {
 
   std::cout << std::endl;
 
-  std::cout << "Status: " << (passiveRunners.size() + activeRunners.size()) << " relevant runners, found " << goodOnes.size() << " at distance " << +maxDistance << std::endl;
+  std::cout << "Status #" << statusCount++ << ": " << (passiveRunners.size() + activeRunners.size()) << " relevant runners, found " << goodOnes.size() << " at distance " << +maxDistance << std::endl;
 
   std::cout << "On top of that, " << waitingRunners.size() << " runners are waiting for result - " << (consumingWaiting ? "and they are currently being consumed" : "and they are not being consumed") << std::endl;
 
