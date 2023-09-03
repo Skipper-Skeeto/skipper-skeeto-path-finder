@@ -383,8 +383,8 @@ void GraphCommonState::registerRemovedPath(const GraphPath *path, unsigned long 
 
   ++removedPathsCount[depth];
 
-  if (consumingWaiting) {
-    // At this point we know all remaining are waiting
+  if (consumingWaiting || path->isWaitingForResult()) {
+    // When consumingWaiting is true we know all remaining are waiting
     --waitingPathsCount[depth];
   }
 }
