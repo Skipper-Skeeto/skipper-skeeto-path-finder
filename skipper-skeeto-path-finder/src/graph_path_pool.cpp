@@ -36,9 +36,11 @@ void GraphPathPool::deserialize(std::istream &instream, bool clearWaitingState) 
     auto &path = pool->at(generateNewIndex());
     path.deserialize(instream);
 
+#ifdef FOUND_BEST_DISTANCE
     if (clearWaitingState) {
       path.setIsWaitingForResult(false);
     }
+#endif // FOUND_BEST_DISTANCE
   }
 }
 

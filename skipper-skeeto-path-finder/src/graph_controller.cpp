@@ -570,9 +570,12 @@ void GraphController::handleRemovedSubPaths(GraphPathPool *pool, GraphPath *path
 
     if (subPath->hasSetSubPath()) {
       handleRemovedSubPaths(pool, subPath, subPathVisitedVerticesState, subDepth);
-    } else if(!subPath->isWaitingForResult()) {
+    } 
+#ifdef FOUND_BEST_DISTANCE
+    else if(!subPath->isWaitingForResult()) {
       commonState.registerStartedPath(subDepth);
     }
+#endif // FOUND_BEST_DISTANCE
 
     commonState.registerRemovedPath(subPath, subPathVisitedVerticesState, subDepth);
 

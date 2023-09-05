@@ -383,10 +383,12 @@ void GraphCommonState::registerRemovedPath(const GraphPath *path, unsigned long 
 
   ++removedPathsCount[depth];
 
+#ifdef FOUND_BEST_DISTANCE
   if (consumingWaiting || path->isWaitingForResult()) {
     // When consumingWaiting is true we know all remaining are waiting
     --waitingPathsCount[depth];
   }
+#endif // FOUND_BEST_DISTANCE
 }
 
 bool GraphCommonState::appliesForLogging(int depth) const {
