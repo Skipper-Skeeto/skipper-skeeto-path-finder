@@ -257,7 +257,12 @@ GraphRouteResult GraphController::moveOnDistributed(GraphPathPool *pool, RunnerI
 
 #ifdef FOUND_BEST_DISTANCE
         if (initialResult == GraphRouteResult::WaitForResult) {
+          path->setIsWaitingForResult(true);
+
           commonState.registerWaitingPath(depth);
+        } else {
+          // Might never be relevant as default is false, but makeInitialCheck can be called twice, so better be safe than sorry
+          path->setIsWaitingForResult(false); 
         }
 #endif // FOUND_BEST_DISTANCE
 

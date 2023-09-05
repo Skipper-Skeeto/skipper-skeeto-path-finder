@@ -477,10 +477,6 @@ GraphRouteResult GraphCommonState::checkForDuplicateState(GraphPath *path, unsig
 
   path->setHasStateMax(result == GraphRouteResult::Continue);
 
-#ifdef FOUND_BEST_DISTANCE
-  path->setIsWaitingForResult(result == GraphRouteResult::WaitForResult);
-#endif // FOUND_BEST_DISTANCE
-
   return result;
 }
 
