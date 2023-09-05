@@ -12,6 +12,16 @@ LIBS = -lboost_iostreams
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
 CPPFLAGS ?= $(INC_FLAGS) -MMD -MP -O3 -march=native
+ifeq($(game_version), "1-1") 
+CPPFLAGS += -D GAME_VERSION=0
+else ifeq($(game_version), "1-2") 
+CPPFLAGS += -D GAME_VERSION=1
+else ifeq($(game_version), "2") 
+CPPFLAGS += -D GAME_VERSION=2
+else 
+$(error Please specify game_version, for instance "make game_version=1-2")
+endif
+
 
 LFLAGS = -L${BOOST_ROOT}/lib
 
