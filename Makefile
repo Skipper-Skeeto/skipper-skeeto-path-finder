@@ -23,6 +23,7 @@ else
 $(error Please specify a valid game_version, for instance "make game_version=1-2")
 endif
 
+CHECK_GAME_VERSION:=$(BUILD_DIR)/.last-game-version.$(game_version)
 
 LFLAGS = -L${BOOST_ROOT}/lib
 
@@ -30,9 +31,15 @@ $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 	$(CXX) -pthread $(OBJS) -o $@ $(LDFLAGS) -static $(LFLAGS) $(LIBS) \
 		-lrt -Wl,--whole-archive -lpthread -Wl,--no-whole-archive  # Avoid segmentation fault when joining the threads. See https://stackoverflow.com/a/45271521
 
-$(BUILD_DIR)/%.cpp.o: %.cpp
+$(BUILD_DIR)/%.cpp.o: %.cpp $(CHECK_GAME_VERSION)
 	$(MKDIR_P) $(dir $@)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+
+# https://stackoverflow.com/q/65400877/2761541
+$(BUILD_DIR)/.last-game-version.$(game_version):
+	-rm -f $(BUILD_DIR)/.last-game-version.*
+	$(MKDIR_P) $(dir $@)
+	touch $@
 
 
 .PHONY: clean
