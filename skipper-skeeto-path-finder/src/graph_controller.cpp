@@ -116,7 +116,7 @@ void GraphController::start() {
         }
       }
 
-      if (runnerInfo != nullptr && (pool.isFull() || commonState.runnerInfoCount() < THREAD_COUNT)) {
+      if (runnerInfo != nullptr && (pool.isFull() || (!runnerInfo->shouldWaitForResults() && commonState.runnerInfoCount() < THREAD_COUNT))) {
         deletePoolFile(runnerInfo);
         splitAndRemove(&pool, runnerInfo);
         runnerInfo = nullptr;
