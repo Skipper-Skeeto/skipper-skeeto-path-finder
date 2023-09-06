@@ -234,13 +234,7 @@ RunnerInfo *GraphCommonState::getNextRunnerInfo(RunnerInfo *currentInfo, GraphCo
     }
   }
 
-  if (passiveRunners.empty()) {
-    if (activeRunners.empty()) {
-      consumingWaiting = true;
-    } else {
-      return nullptr;
-    }
-  }
+  updateConsumingWaitingState();
 
   char pickReason = '?';
   if (consumingWaiting){
@@ -254,6 +248,10 @@ RunnerInfo *GraphCommonState::getNextRunnerInfo(RunnerInfo *currentInfo, GraphCo
 
     activeRunners.splice(activeRunners.end(), waitingRunners, newRunnerIterator);
   } else {
+    if (passiveRunners.empty()) {
+      return nullptr;
+    }
+
     auto newRunnerIterator = passiveRunners.begin();
     switch(priority){
     case GraphCommonState::NextRunnerPriority::Next:
@@ -296,9 +294,7 @@ void GraphCommonState::removeActiveRunnerInfo(RunnerInfo *runnerInfo) {
     return runnerInfo == &activeRunnerInfo;
   });
 
-  if (activeRunners.empty() && passiveRunners.empty()) {
-      consumingWaiting = true;
-  }
+  updateConsumingWaitingState();
 }
 
 void GraphCommonState::splitAndRemoveActiveRunnerInfo(RunnerInfo *parentRunnerInfo, std::list<RunnerInfo> childRunnerInfos) {
@@ -512,5 +508,18 @@ bool GraphCommonState::isAcceptableDistance(unsigned char distance, unsigned cha
 #else
   // We allow less to make sure we find a best path as quickly as possible
   return distance < maxDistance;
+#endif // FOUND_BEST_DISTANCE
+}
+
+void GraphCommonState::updateConsumingWaitingState() {
+#ifdef FOUND_BEST_DISTANCE
+  if (!consumingWaiting) {
+    consumingWaiting = passiveRunners.empty() && activeRunners.empty();
+
+    if (consumingWaiting) {
+      std::lock_guard<std::mutex> guardPrint(printMutex);
+      std::cout << "Starting to consume waiting paths" << std::endl;
+    }
+  }
 #endif // FOUND_BEST_DISTANCE
 }

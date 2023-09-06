@@ -89,6 +89,8 @@ private:
 
   bool isAcceptableDistance(unsigned char distance, unsigned char maxDistance) const;
 
+  void updateConsumingWaitingState();
+
   const std::string resultDir;
 
   mutable std::mutex finalStateMutex;
