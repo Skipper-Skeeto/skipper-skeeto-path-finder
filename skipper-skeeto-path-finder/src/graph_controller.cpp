@@ -67,7 +67,8 @@ void GraphController::start() {
         continue;
       }
 
-      if (runnerInfo->getIdentifier() != oldRunnerInfoIdentifier) {
+      // Note that we want to deserialize when the runner is waiting even if it's the same as deserialize also clears the paths waiting states
+      if (runnerInfo->getIdentifier() != oldRunnerInfoIdentifier || runnerInfo->shouldHandleWaiting()) {
         if (oldRunnerInfoIdentifier != -1) {
           bool success = serializePool(&pool, oldRunnerInfoIdentifier, false);
           if (!success) {
