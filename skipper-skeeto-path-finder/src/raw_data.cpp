@@ -166,19 +166,27 @@ RawData::RawData(const nlohmann::json &jsonData) {
   }
 
   for (const auto &scene : scenes) {
-    bool foundPostScene = false;
+    std::vector<const Task*> tasksWithPostScene;
     for (const auto &task : getTasksForScene(scene)) {
       if (task->getPostScene() != nullptr) {
-        if (foundPostScene) {
-          std::stringstream stringStream;
-          stringStream << "Logic cannot handle more than one task with post-scene in a scene. "
-                       << "This was the case for the scene \"" << scene->getKey() << "\"! "
-                       << "Update PathController if it is needed.";
-          throw std::runtime_error(stringStream.str());
-        }
-
-        foundPostScene = true;
+        tasksWithPostScene.push_back(task);
       }
+    }
+
+    if (tasksWithPostScene.size() > 1) {
+      std::stringstream stringStream;
+      stringStream << "Logic cannot handle more than one task with post-scene in a scene. "
+                   << "This was the case for the scene \"" << scene->getKey() << "\"! Tasks: ";
+
+      for (int index = 0; index < tasksWithPostScene.size(); ++index) {
+        stringStream << "\"" << tasksWithPostScene[index]->getKey() << "\"";
+        if (index > 0) {
+          stringStream << ", ";
+        }
+      }
+
+      stringStream << ". Update PathController if it is needed.";
+      throw std::runtime_error(stringStream.str());
     }
   }
 }
